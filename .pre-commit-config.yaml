@@ -55,7 +55,7 @@ repos:
         args:
           - --addons-dir=.
           - --org-name=dhongu
-          - --repo-name=deltatech
+          - --repo-name=deltatech_stock_valuation
           - --branch=17.0
           - --if-source-changed
           - --keep-source-digest
