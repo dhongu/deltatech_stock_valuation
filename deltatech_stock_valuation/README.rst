@@ -13,13 +13,18 @@ Product Valuation
 .. |badge1| image:: https://img.shields.io/badge/maturity-Alpha-red.png
     :target: https://odoo-community.org/page/development-status
     :alt: Alpha
-.. |badge2| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech-lightgray.png?logo=github
-    :target: https://github.com/dhongu/deltatech/tree/17.0/deltatech_stock_valuation
-    :alt: dhongu/deltatech
+.. |badge2| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github
+    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/17.0/deltatech_stock_valuation
+    :alt: dhongu/deltatech_stock_valuation
 
 |badge1| |badge2|
 
 Features:
+
+- caclul cost mediu ponderat pe aria de evaluare si cont pentru fiecare
+  produs
+- caclulul evaluarii unui produs se face din notele contabile
+- se definiesc care sunt conturile utilizte la evaluarea produselor
 
 pentru inializare e necesar o actiune server cu urmatorul cod
 
@@ -66,6 +71,6 @@ Current maintainer:
 
 |maintainer-dhongu| 
 
-This module is part of the `dhongu/deltatech <https://github.com/dhongu/deltatech/tree/17.0/deltatech_stock_valuation>`_ project on GitHub.
+This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/17.0/deltatech_stock_valuation>`_ project on GitHub.
 
 You are welcome to contribute.
