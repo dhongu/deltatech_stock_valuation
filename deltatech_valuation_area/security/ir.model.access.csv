@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_valuation_area_manager,Access Valuation Area,model_valuation_area,account.group_account_manager,1,1,1,1
+access_valuation_area_user,Access Valuation Area,model_valuation_area,base.group_user,1,0,0,0
