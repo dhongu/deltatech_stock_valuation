@@ -9,8 +9,8 @@
     "version": "17.0.0.0.1",
     "author": "Terrabit, Dorin Hongu",
     "website": "https://www.terrabit.ro",
-    "category": "Inventory/Inventory",
-    "depends": ["stock_account", "deltatech_obyc"],
+    "category": "Valuation/Valuation",
+    "depends": ["stock_account", "deltatech_valuation_area"],
     "license": "OPL-1",
     "data": [
         "security/ir.model.access.csv",

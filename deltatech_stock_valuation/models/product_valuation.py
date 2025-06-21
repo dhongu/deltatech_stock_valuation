@@ -64,7 +64,7 @@ class ProductValuation(models.Model):
             )
         return valuation
 
-    def recompute_amount(self):
+    def _recompute_amount(self):
         for item in self:
             domain = [
                 ("product_id", "=", item.product_id.id),
@@ -88,7 +88,7 @@ class ProductValuation(models.Model):
                     }
                 )
 
-    def recompute_amount_sql(self):
+    def _recompute_amount_sql(self):
         valuation_areas = self.mapped("valuation_area_id")
         products = self.mapped("product_id")
         accounts = self.mapped("account_id")
@@ -192,7 +192,7 @@ class ProductValuation(models.Model):
 
         return sql
 
-    def recompute_all_amount(self):
+    def _recompute_all_amount(self):
         params = {
             "account_ids": tuple(self.env["account.account"].search([("is_for_stock_valuation", "=", True)]).ids),
         }
@@ -428,7 +428,7 @@ class ProductValuationHistory(models.Model):
 
         return sql
 
-    def recompute_amount(self):
+    def _recompute_amount(self):
         valuation_areas = self.mapped("valuation_area_id")
         products = self.mapped("product_id")
         accounts = self.mapped("account_id")
@@ -465,7 +465,7 @@ class ProductValuationHistory(models.Model):
         self._invalidate_cache()
         self._compute_final()
 
-    def recompute_all_amount(self):
+    def _recompute_all_amount(self):
         """
          Recalculare istoric valorilor
         :return:
