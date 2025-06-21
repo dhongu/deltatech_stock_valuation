@@ -1,0 +1,14 @@
+<odoo>
+
+  <!-- Meniu principal pentru configurarea OBYC -->
+
+
+    <menuitem
+        id="menu_valuation_area"
+        name="Evaluation Area"
+        action="action_valuation_area"
+        parent="stock.menu_warehouse_config"
+        sequence="10"
+    />
+
+</odoo>
