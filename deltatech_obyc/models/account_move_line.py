@@ -8,30 +8,12 @@ from odoo.exceptions import UserError
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
 
-    valuation_area_id = fields.Many2one("valuation.area", string="Valuation Area")
 
     def _get_account_modifier(self):
         account_modifier = self.env["account.modifier"]
         return account_modifier
 
-    def _get_valuation_area(self):
-        self.ensure_one()
-        valuation_area = self.valuation_area_id
-        if not valuation_area:
-            valuation_area = self.company_id.valuation_area_id
 
-            stock_move = self.move_id.stock_move_id
-            if self.purchase_line_id:
-                stock_move = next(iter(self.purchase_line_id.move_ids), None)
-            if "sale_line_ids" in self._fields:
-                if self.sale_line_ids:
-                    stock_move = next(iter(self.sale_line_ids.mapped("move_ids")), None)
-            if stock_move:
-                valuation_area = stock_move._get_valuation_area()
-        if not valuation_area:
-            raise UserError(_("Valuation area is not defined"))
-
-        return valuation_area
 
     def _compute_account_id(self):
         self = self.with_context(transaction_key="skip")
