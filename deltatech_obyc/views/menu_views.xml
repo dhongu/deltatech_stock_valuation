@@ -11,13 +11,6 @@
     <!-- Submeniuri pentru fiecare model -->
 
 
-    <menuitem
-        id="menu_valuation_area"
-        name="Evaluation Area"
-        action="action_valuation_area"
-        parent="menu_obyc_config"
-        sequence="10"
-    />
 
     <menuitem
         id="menu_product_valuation_class"
