@@ -3,7 +3,7 @@
         <field name="name">product.account.determination.tree</field>
         <field name="model">product.account.determination</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="transaction_key" />
                 <field name="account_modifier_id" />
                 <field name="valuation_class_id" />
@@ -11,7 +11,7 @@
                 <field name="acc_src_id" />
                 <field name="acc_dest_id" />
                 <field name="acc_valuation_id" />
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -41,7 +41,7 @@
     <record id="action_product_account_determination" model="ir.actions.act_window">
         <field name="name">Product Account Determination</field>
         <field name="res_model">product.account.determination</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
 

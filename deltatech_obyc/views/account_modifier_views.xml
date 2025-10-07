@@ -3,10 +3,10 @@
         <field name="name">account.modifier.tree</field>
         <field name="model">account.modifier</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="code" />
                 <field name="name" />
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -26,6 +26,6 @@
     <record id="action_account_modifier" model="ir.actions.act_window">
         <field name="name">Account Modifiers</field>
         <field name="res_model">account.modifier</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 </odoo>

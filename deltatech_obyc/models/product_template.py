@@ -14,11 +14,11 @@ class ProductTemplate(models.Model):
         company_dependent=True,
     )
 
-    def get_product_accounts(self, fiscal_pos=None):
-        res = super().get_product_accounts(fiscal_pos)
+    def _get_product_accounts(self):
+        res = super()._get_product_accounts()
         if self.valuation_class_id:
             for key in res:
-                res[key] = False
+                res[key] = self.env["account.account"]
             transaction_key = self.env.context.get("transaction_key")
             if not self.env.context.get("transaction_key"):
                 raise UserError(_("Transaction key is not defined. Please set it in the context."))
