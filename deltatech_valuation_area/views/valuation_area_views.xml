@@ -3,12 +3,12 @@
         <field name="name">valuation.area.tree</field>
         <field name="model">valuation.area</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="code" />
                 <field name="name" />
                 <field name="company_id" />
                 <field name="stock_journal_id" />
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -30,7 +30,7 @@
     <record id="action_valuation_area" model="ir.actions.act_window">
         <field name="name">Valuation Area</field>
         <field name="res_model">valuation.area</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
 

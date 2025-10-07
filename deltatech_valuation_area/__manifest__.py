@@ -4,7 +4,7 @@
 
 {
     "name": "Deltatech Stock Valuation Area",
-    "version": "17.0.1.0.0",
+    "version": "18.0.1.0.0",
     "summary": "Stock Valuation Area Management",
     "category": "Valuation/Valuation",
     "author": "Terrabit, Dorin Hongu",

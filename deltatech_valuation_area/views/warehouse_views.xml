@@ -12,7 +12,7 @@
         </field>
     </record>
 
-    <!-- Extend Warehouse Tree View to add valuation_area_id field -->
+    <!-- Extend Warehouse List View to add valuation_area_id field -->
     <record id="view_warehouse_tree_valuation_area" model="ir.ui.view">
         <field name="name">stock.warehouse.tree.valuation.area</field>
         <field name="model">stock.warehouse</field>
