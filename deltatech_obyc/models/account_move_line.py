@@ -1,19 +1,15 @@
 # © 2025 Deltatech
 # See README.rst file on addons root folder for license details
 
-from odoo import _, fields, models
-from odoo.exceptions import UserError
+from odoo import models
 
 
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
 
-
     def _get_account_modifier(self):
         account_modifier = self.env["account.modifier"]
         return account_modifier
-
-
 
     def _compute_account_id(self):
         self = self.with_context(transaction_key="skip")
