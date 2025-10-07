@@ -11,7 +11,6 @@
     "website": "https://www.terrabit.ro",
     "data": [
         "security/ir.model.access.csv",
-
         "views/stock_picking_views.xml",
         "views/account_journal_views.xml",
         "views/product_valuation_class_views.xml",
