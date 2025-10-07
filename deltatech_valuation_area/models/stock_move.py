@@ -1,6 +1,6 @@
 import logging
 
-from odoo import _, models
+from odoo import models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -21,10 +21,10 @@ class StockMove(models.Model):
         if self.location_id.usage == "internal" and self.location_dest_id.usage == "internal":
             if self.location_id.valuation_area_id != self.location_dest_id.valuation_area_id:
                 raise UserError(
-                    _("Source and destination locations must have the same valuation area for internal moves.")
+                    self.env._("Source and destination locations must have the same valuation area for internal moves.")
                 )
         if not valuation_area and raise_if_not_found:
-            raise UserError(_("Valuation area is not defined"))
+            raise UserError(self.env._("Valuation area is not defined"))
         return valuation_area
 
     def _prepare_account_move_line(self, qty, cost, credit_account_id, debit_account_id, svl_id, description):
