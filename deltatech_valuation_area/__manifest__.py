@@ -18,7 +18,7 @@
         "views/menu_views.xml",
         "views/account_move_view.xml",
     ],
-    "depends": ["stock", "account", "stock_account" ],
+    "depends": ["stock", "account", "stock_account"],
     "license": "LGPL-3",
     "images": ["static/description/main_screenshot.png"],
     "development_status": "Beta",
