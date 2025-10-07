@@ -9,22 +9,6 @@ _logger = logging.getLogger(__name__)
 class StockMove(models.Model):
     _inherit = "stock.move"
 
-    def _get_valuation_area(self):
-        valuation_area = self.company_id.valuation_area_id
-        if self.warehouse_id.valuation_area_id:
-            valuation_area = self.warehouse_id.valuation_area_id
-        if self.location_id.valuation_area_id and self.location_id.usage == "internal":
-            valuation_area = self.location_id.valuation_area_id
-        if self.location_dest_id.valuation_area_id and self.location_dest_id.usage == "internal":
-            valuation_area = self.location_dest_id.valuation_area_id
-        if self.location_id.usage == "internal" and self.location_dest_id.usage == "internal":
-            if self.location_id.valuation_area_id != self.location_dest_id.valuation_area_id:
-                raise UserError(
-                    _("Source and destination locations must have the same valuation area for internal moves.")
-                )
-        if not valuation_area:
-            raise UserError(_("Valuation area is not defined"))
-        return valuation_area
 
     def _get_accounting_data_for_valuation(self):
         if not self.product_id.valuation_class_id:
