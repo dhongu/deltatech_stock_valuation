@@ -1,7 +1,7 @@
 # © 2025 Deltatech
 # See README.rst file on addons root folder for license details
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -26,7 +26,7 @@ class AccountMoveLine(models.Model):
         for line in self:
             if line.product_id and line.product_id.type == "product" and not line.valuation_area_id:
                 raise UserError(
-                    _(
+                    self.env._(
                         "Valuation Area is required for stockable products. If the product is not stockable, you can leave it empty."
                     )
                 )
@@ -47,7 +47,7 @@ class AccountMoveLine(models.Model):
             if stock_move:
                 valuation_area = stock_move._get_valuation_area(raise_if_not_found)
         if not valuation_area and raise_if_not_found:
-            raise UserError(_("Valuation area is not defined"))
+            raise UserError(self.env._("Valuation area is not defined"))
 
         return valuation_area
 
