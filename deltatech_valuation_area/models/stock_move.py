@@ -27,7 +27,6 @@ class StockMove(models.Model):
             raise UserError(_("Valuation area is not defined"))
         return valuation_area
 
-
     def _prepare_account_move_line(self, qty, cost, credit_account_id, debit_account_id, svl_id, description):
         res = super()._prepare_account_move_line(qty, cost, credit_account_id, debit_account_id, svl_id, description)
         valuation_area = self._get_valuation_area()

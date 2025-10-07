@@ -8,9 +8,13 @@ from odoo.exceptions import UserError
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
 
-    valuation_area_id = fields.Many2one("valuation.area", string="Valuation Area",
-                                        compute="_compute_valuation_area", store=True, readonly=False,
-                                        )
+    valuation_area_id = fields.Many2one(
+        "valuation.area",
+        string="Valuation Area",
+        compute="_compute_valuation_area",
+        store=True,
+        readonly=False,
+    )
 
     # _sql_constraints = [
     #     ('valuation_area_id_required',
@@ -20,8 +24,12 @@ class AccountMoveLine(models.Model):
     @api.constrains("product_id")
     def _check_valuation_area(self):
         for line in self:
-            if line.product_id and line.product_id.type == 'product' and not line.valuation_area_id:
-                raise UserError(_("Valuation Area is required for stockable products. If the product is not stockable, you can leave it empty."))
+            if line.product_id and line.product_id.type == "product" and not line.valuation_area_id:
+                raise UserError(
+                    _(
+                        "Valuation Area is required for stockable products. If the product is not stockable, you can leave it empty."
+                    )
+                )
 
     def _get_valuation_area(self, raise_if_not_found=True):
         self.ensure_one()
@@ -43,7 +51,6 @@ class AccountMoveLine(models.Model):
 
         return valuation_area
 
-
     @api.depends("product_id")
     def _compute_valuation_area(self):
         for line in self:
@@ -51,5 +58,4 @@ class AccountMoveLine(models.Model):
                 valuation_area = line._get_valuation_area(raise_if_not_found=False)
             else:
                 valuation_area = False
-            line.valuation_area_id =  valuation_area
-
+            line.valuation_area_id = valuation_area
