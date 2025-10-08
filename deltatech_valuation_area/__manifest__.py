@@ -16,7 +16,7 @@
         "views/stock_location_views.xml",
         "views/warehouse_views.xml",
         "views/menu_views.xml",
-        # "views/account_move_view.xml",
+        "views/account_move_view.xml",
     ],
     "depends": ["stock", "account", "stock_account"],
     "license": "LGPL-3",
