@@ -49,11 +49,11 @@ class AccountMoveLine(models.Model):
 
         return res
 
-    def _generate_price_difference_vals(self, layers):
-        self = self.with_context(
-            valuation_area=self._get_valuation_area(),
-            account_modifier=self._get_account_modifier(),
-            transaction_key="stock_receipt_price_difference",
-        )
-
-        return super()._generate_price_difference_vals(layers)
+    # def _generate_price_difference_vals(self, layers):
+    #     self = self.with_context(
+    #         valuation_area=self._get_valuation_area(),
+    #         account_modifier=self._get_account_modifier(),
+    #         transaction_key="stock_receipt_price_difference",
+    #     )
+    #
+    #     return super()._generate_price_difference_vals(layers)

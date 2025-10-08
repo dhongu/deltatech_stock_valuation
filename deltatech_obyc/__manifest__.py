@@ -4,7 +4,7 @@
 
 {
     "name": "Deltatech OBYC - Account Determination",
-    "version": "18.0.1.0.0",
+    "version": "19.0.1.0.0",
     "summary": "Implementare OBYC-style account mapping pentru tranzacții de stoc",
     "category": "Valuation/Valuation",
     "author": "Terrabit, Dorin Hongu",
@@ -19,7 +19,14 @@
         "views/account_modifier_views.xml",
         "views/menu_views.xml",
     ],
-    "depends": ["stock", "account", "stock_account", "purchase_stock", "deltatech_valuation_area"],
+    "depends": [
+        "stock",
+        "account",
+        "stock_account",
+        "purchase_stock",
+        "stock_landed_costs",
+        "deltatech_valuation_area",
+    ],
     "license": "LGPL-3",
     "images": ["static/description/main_screenshot.png"],
     "development_status": "Beta",

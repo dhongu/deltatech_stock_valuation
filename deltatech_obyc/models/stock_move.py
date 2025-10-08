@@ -1,6 +1,6 @@
 import logging
 
-from odoo import _, models
+from odoo import models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -9,59 +9,59 @@ _logger = logging.getLogger(__name__)
 class StockMove(models.Model):
     _inherit = "stock.move"
 
-    def _get_accounting_data_for_valuation(self):
-        if not self.product_id.valuation_class_id:
-            return super()._get_accounting_data_for_valuation()
+    # def _get_accounting_data_for_valuation(self):
+    #     if not self.product_id.valuation_class_id:
+    #         return super()._get_accounting_data_for_valuation()
+    #
+    #     valuation_area = self._get_valuation_area()
+    #
+    #     journal_id = valuation_area.stock_journal_id.id
+    #     if not journal_id:
+    #         raise UserError(_("Stock journal is not defined for the valuation area"))
+    #
+    #     picking_type = self.picking_type_id
+    #     transaction_key = self._compute_transaction_key()
+    #     account_modifier = self.env["account.modifier"]
+    #     if picking_type:
+    #         account_modifier = picking_type.account_modifier_id
+    #
+    #     _get_rule_account = self.env["product.account.determination"]._get_rule_account
+    #
+    #     rule = _get_rule_account(
+    #         valuation_area=valuation_area,
+    #         valuation_class=self.product_id.valuation_class_id,
+    #         transaction_key=transaction_key,
+    #         account_modifier=account_modifier,
+    #         company=self.company_id,
+    #     )
+    #     acc_src = rule.acc_src_id.id
+    #     acc_dest = rule.acc_dest_id.id
+    #     acc_valuation = rule.acc_valuation_id.id
+    #
+    #     return journal_id, acc_src, acc_dest, acc_valuation
 
-        valuation_area = self._get_valuation_area()
+    # def _prepare_account_move_vals(
+    #     self, credit_account_id, debit_account_id, journal_id, qty, description, svl_id, cost
+    # ):
+    #     self.ensure_one()
+    #     if credit_account_id == debit_account_id:
+    #         return False
+    #     vals = super()._prepare_account_move_vals(
+    #         credit_account_id, debit_account_id, journal_id, qty, description, svl_id, cost
+    #     )
+    #     if self.company_id.account_storno and self.origin_returned_move_id:
+    #         vals["is_storno"] = True
+    #     return vals
 
-        journal_id = valuation_area.stock_journal_id.id
-        if not journal_id:
-            raise UserError(_("Stock journal is not defined for the valuation area"))
-
-        picking_type = self.picking_type_id
-        transaction_key = self._compute_transaction_key()
-        account_modifier = self.env["account.modifier"]
-        if picking_type:
-            account_modifier = picking_type.account_modifier_id
-
-        _get_rule_account = self.env["product.account.determination"]._get_rule_account
-
-        rule = _get_rule_account(
-            valuation_area=valuation_area,
-            valuation_class=self.product_id.valuation_class_id,
-            transaction_key=transaction_key,
-            account_modifier=account_modifier,
-            company=self.company_id,
-        )
-        acc_src = rule.acc_src_id.id
-        acc_dest = rule.acc_dest_id.id
-        acc_valuation = rule.acc_valuation_id.id
-
-        return journal_id, acc_src, acc_dest, acc_valuation
-
-    def _prepare_account_move_vals(
-        self, credit_account_id, debit_account_id, journal_id, qty, description, svl_id, cost
-    ):
-        self.ensure_one()
-        if credit_account_id == debit_account_id:
-            return False
-        vals = super()._prepare_account_move_vals(
-            credit_account_id, debit_account_id, journal_id, qty, description, svl_id, cost
-        )
-        if self.company_id.account_storno and self.origin_returned_move_id:
-            vals["is_storno"] = True
-        return vals
-
-    def _account_entry_move(self, qty, description, svl_id, cost):
-        if not qty:
-            self = self.with_context(price_difference=True)
-        am_vals_list = super()._account_entry_move(qty, description, svl_id, cost)
-        for am_vals in am_vals_list:
-            if not am_vals:
-                am_vals_list.remove(am_vals)
-
-        return am_vals_list
+    # def _account_entry_move(self, qty, description, svl_id, cost):
+    #     if not qty:
+    #         self = self.with_context(price_difference=True)
+    #     am_vals_list = super()._account_entry_move(qty, description, svl_id, cost)
+    #     for am_vals in am_vals_list:
+    #         if not am_vals:
+    #             am_vals_list.remove(am_vals)
+    #
+    #     return am_vals_list
 
     def _compute_transaction_key(self):
         source_usage = self.location_id.usage
@@ -112,9 +112,74 @@ class StockMove(models.Model):
 
         if not tr_key:
             raise UserError(
-                _(f"Transaction key could not be determined for the move from {source_usage} to {dest_usage}.")
+                self.env._(
+                    "Transaction key could not be determined for the move from {source_usage} to {dest_usage}.",
+                    source_usage=source_usage,
+                    dest_usage=dest_usage,
+                )
             )
         if self.env.context.get("price_difference"):
             # If the context indicates a price difference, we use a specific transaction key
             tr_key = "price_difference"
         return tr_key
+
+    def _get_rule_account(self):
+        self.ensure_one()
+        if not self.product_id.valuation_class_id:
+            return self.env["product.account.determination"]
+        transaction_key = self._compute_transaction_key()
+        account_modifier = self.env["account.modifier"]
+        valuation_area = self._get_valuation_area()
+        if self.picking_type_id:
+            account_modifier = self.picking_type_id.account_modifier_id
+
+        _get_rule_account = self.env["product.account.determination"]._get_rule_account
+
+        rule = _get_rule_account(
+            valuation_area=valuation_area,
+            valuation_class=self.product_id.valuation_class_id,
+            transaction_key=transaction_key,
+            account_modifier=account_modifier,
+            company=self.company_id,
+        )
+
+        return rule
+
+
+    def _should_create_account_move(self):
+        if not self.product_id.valuation_class_id:
+            return super()._should_create_account_move()
+
+        rule = self._get_rule_account()
+        if not rule.acc_src_id and not rule.acc_dest_id and not rule.acc_valuation_id:
+            should = False
+        else:
+            should = True
+        return should
+
+
+    def _get_account_move_line_vals(self):
+        if not self.product_id.valuation_class_id:
+            return super()._get_account_move_line_vals()
+
+        rule = self._get_rule_account()
+
+        if rule.acc_src_id:
+            debit_acc = rule.acc_valuation_id
+            credit_acc = rule.acc_src_id
+        else:
+            debit_acc = rule.acc_dest_id
+            credit_acc = rule.acc_valuation_id
+        return [{
+            'account_id': credit_acc.id,
+            'name': self.reference,
+            'debit': 0,
+            'credit': self.value,
+            'product_id': self.product_id.id,
+        }, {
+            'account_id': debit_acc.id,
+            'name': self.reference,
+            'debit': self.value,
+            'credit': 0,
+            'product_id': self.product_id.id,
+        }]
