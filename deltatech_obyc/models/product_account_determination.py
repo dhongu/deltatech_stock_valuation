@@ -3,7 +3,7 @@
 
 import logging
 
-from odoo import _, fields, models
+from odoo import fields, models
 from odoo.exceptions import RedirectWarning
 
 _logger = logging.getLogger(__name__)
@@ -34,6 +34,7 @@ TRANSACTION_KEYS = [
     # Production transactions
     ("production_issue", "Production Issue"),
     ("production_receipt", "Production Receipt"),
+    ("landed_cost", "Landed Cost"),
 ]
 
 
@@ -91,10 +92,15 @@ class ProductAccountDetermination(models.Model):
 
         if not rule:
             action = self.env.ref("deltatech_obyc.action_product_account_determination")
-            msg = _(
-                f"No account determination rule found for transaction key '{transaction_key_name}', "
-                f"account modifier '{modifier_name}', valuation class '{valuation_class_name}', "
-                f"valuation area '{area_name}' and company '{company_name}'."
+            msg = self.env._(
+                "No account determination rule found for transaction key '%(transaction_key_name)s', "
+                "account modifier '%(modifier_name)s', valuation class '%(valuation_class_name)s', "
+                "valuation area '%(area_name)s' and company '%(company_name)s'.",
+                transaction_key_name=transaction_key_name,
+                modifier_name=modifier_name,
+                valuation_class_name=valuation_class_name,
+                area_name=area_name,
+                company_name=company_name,
             )
 
             additional_context = {
@@ -105,6 +111,8 @@ class ProductAccountDetermination(models.Model):
                 "default_company_id": company.id,
             }
 
-            raise RedirectWarning(msg, action.id, _("Go to the configuration"), additional_context=additional_context)
+            raise RedirectWarning(
+                msg, action.id, self.env._("Go to the configuration"), additional_context=additional_context
+            )
 
         return rule

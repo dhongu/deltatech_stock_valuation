@@ -1,7 +1,7 @@
 # © 2025 Deltatech
 # See README.rst file on addons root folder for license details
 
-from odoo import _, fields, models
+from odoo import fields, models
 from odoo.exceptions import UserError
 
 
@@ -21,7 +21,9 @@ class ProductTemplate(models.Model):
                 res[key] = self.env["account.account"]
             transaction_key = self.env.context.get("transaction_key")
             if not self.env.context.get("transaction_key"):
-                raise UserError(_("Transaction key is not defined. Please set it in the context."))
+                # raise UserError(self.env._("Transaction key is not defined. Please set it in the context."))
+                raise Exception("Transaction Key not set")
+
             if transaction_key == "skip":
                 return res
             if self.env.context.get("transaction_key"):
@@ -44,6 +46,6 @@ class ProductTemplate(models.Model):
                     res["stock_input"] = rule.acc_src_id.id
                     res["stock_output"] = rule.acc_dest_id.id
                 else:
-                    raise UserError(_("No account found for the given valuation class and transaction key."))
+                    raise UserError(self.env._("No account found for the given valuation class and transaction key."))
 
         return res
