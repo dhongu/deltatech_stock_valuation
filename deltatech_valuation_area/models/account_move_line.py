@@ -45,7 +45,7 @@ class AccountMoveLine(models.Model):
                 if self.sale_line_ids:
                     stock_moves = self.sale_line_ids.mapped("move_ids")
             if stock_moves:
-                stock_move =next(iter(stock_moves), None)
+                stock_move = next(iter(stock_moves), None)
                 valuation_area = stock_move._get_valuation_area(raise_if_not_found)
         if not valuation_area and raise_if_not_found:
             raise UserError(self.env._("Valuation area is not defined"))
