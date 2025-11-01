@@ -23,7 +23,7 @@ class TestStockMoveAccountDetermination(TestCommon):
         cls.product = cls.env["product.product"].create(
             {
                 "name": "Test Product",
-                "type": "product",
+                "is_storable": True,
                 "categ_id": cls.product_category.id,
                 "valuation_class_id": cls.valuation_class.id,
                 "standard_price": 100.0,
