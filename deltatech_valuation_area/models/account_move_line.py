@@ -24,7 +24,7 @@ class AccountMoveLine(models.Model):
     @api.constrains("product_id")
     def _check_valuation_area(self):
         for line in self:
-            if line.product_id and line.product_id.type == "product" and not line.valuation_area_id:
+            if line.product_id and line.product_id.is_storable and not line.valuation_area_id:
                 raise UserError(
                     _(
                         "Valuation Area is required for stockable products. If the product is not stockable, you can leave it empty."

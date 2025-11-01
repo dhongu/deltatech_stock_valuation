@@ -243,7 +243,7 @@ class TestOBYCAccountDetermination(TestCommon):
             valuation_area=self.valuation_area,
             account_modifier=self.account_modifier,
         )
-        accounts = product_template.get_product_accounts()
+        accounts = product_template._get_product_accounts()
 
         self.assertTrue(accounts["stock_valuation"])
         self.assertTrue(accounts["income"])
@@ -261,7 +261,7 @@ class TestOBYCAccountDetermination(TestCommon):
         )
 
         self.assertEqual(accounts["stock_valuation"], rule.acc_valuation_id.id)
-        self.assertEqual(accounts["income"], rule.acc_src_id.id)
-        self.assertEqual(accounts["expense"], rule.acc_dest_id.id)
-        self.assertEqual(accounts["stock_input"], rule.acc_src_id.id)
-        self.assertEqual(accounts["stock_output"], rule.acc_dest_id.id)
+        self.assertEqual(accounts["income"], rule.acc_src_id)
+        self.assertEqual(accounts["expense"], rule.acc_dest_id)
+        self.assertEqual(accounts["stock_input"], rule.acc_src_id)
+        self.assertEqual(accounts["stock_output"], rule.acc_dest_id)
