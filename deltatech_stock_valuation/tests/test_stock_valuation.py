@@ -10,7 +10,7 @@ from odoo.tests import tagged
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
 
-@tagged("post_install", "-at_install")
+@tagged("post_install", "-at_install", "deltatech_stock_valuation")
 class TestStockValuation(AccountTestInvoicingCommon):
     @classmethod
     def setUpClass(cls, chart_template_ref=None):
@@ -20,7 +20,7 @@ class TestStockValuation(AccountTestInvoicingCommon):
             {
                 "name": "Account A",
                 "code": "1234",
-                "user_type_id": cls.env.ref("account.data_account_type_current_assets").id,
+                "account_type": "asset_current",
                 "is_for_stock_valuation": True,
             }
         )
