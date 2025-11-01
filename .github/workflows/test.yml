@@ -48,6 +48,7 @@ jobs:
           - 5432:5432
     env:
       OCA_ENABLE_CHECKLOG_ODOO: "1"
+      OCA_TEST_REPORT_XUNIT: /tmp/junit.xml
     steps:
       - uses: actions/checkout@v4
         with:
@@ -61,7 +62,7 @@ jobs:
       - name: Initialize test db
         run: oca_init_test_database
       - name: Run tests
-        run: oca_run_tests
+        run: oca_run_tests --xunit-file=/tmp/junit.xml
 
       - name: Upload code coverage to Codecov
         if: ${{ !cancelled() }}
