@@ -69,7 +69,7 @@
         <field name="groups_id" eval="[(4, ref('base.group_no_one'))]" />
         <field name="state">code</field>
         <field name="code">
-            records.recompute_amount()
+            records._recompute_amount()
         </field>
     </record>
 
@@ -181,7 +181,7 @@
         <field name="groups_id" eval="[(4, ref('base.group_no_one'))]" />
         <field name="state">code</field>
         <field name="code">
-            records.recompute_amount()
+            records._recompute_amount()
         </field>
     </record>
 

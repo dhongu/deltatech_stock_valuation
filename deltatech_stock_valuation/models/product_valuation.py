@@ -395,7 +395,7 @@ class ProductValuationHistory(models.Model):
                 ) as sub
              GROUP BY  product_id, valuation_area_id, account_id, company_id, currency_id,  month
         """
-        _logger.info(sql)
+
         return sql
 
     def _get_sql_sub_select(self, all_records=True):
