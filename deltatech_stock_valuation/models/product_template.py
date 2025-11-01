@@ -27,4 +27,4 @@ class ProductTemplate(models.Model):
                     variant.id, valuation_area.id, account.id, company.id
                 )
 
-        valuations.recompute_amount()
+        valuations._recompute_amount()
