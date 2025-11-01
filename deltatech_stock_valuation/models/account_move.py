@@ -32,8 +32,6 @@ class AccountMove(models.Model):
                     )
                     valuation._recompute_amount()
 
-
-
     def write(self, vals):
         res = super().write(vals)
         if vals.get("state"):
