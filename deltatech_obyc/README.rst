@@ -17,7 +17,7 @@ Deltatech OBYC - Account Determination
     :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
 .. |badge3| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github
-    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/17.0/deltatech_obyc
+    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/18.0/deltatech_obyc
     :alt: dhongu/deltatech_stock_valuation
 
 |badge1| |badge2| |badge3|
@@ -47,7 +47,6 @@ on:
 - Introduces configurable master data:
 
   - ``product.valuation.class`` – assigned to product templates
-  - ``product.valuation.area`` – assigned to companies
   - ``account.modifier`` – optionally used in operations (e.g., picking
     types)
 
@@ -169,8 +168,6 @@ The module implements the following transaction keys:
 - **product.account.determination**: Core mapping rule
 - **product.valuation.class**: Master data used to group products by
   accounting behavior
-- **product.valuation.area**: Organizational structure influencing
-  account determination
 - **account.modifier**: Optional field used to refine selection (similar
   to SAP account modifier)
 
@@ -513,6 +510,6 @@ Current maintainer:
 
 |maintainer-dhongu| 
 
-This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/17.0/deltatech_obyc>`_ project on GitHub.
+This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/18.0/deltatech_obyc>`_ project on GitHub.
 
 You are welcome to contribute.
