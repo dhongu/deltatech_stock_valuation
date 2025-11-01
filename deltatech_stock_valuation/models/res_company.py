@@ -22,9 +22,12 @@ class ResCompany(models.Model):
             return
 
         if not self.valuation_area_id:
+            # Ensure required fields for valuation.area are provided (module requires a non-null code)
+            code = (self.name or "COMPANY")[:16].upper().replace(" ", "_")
             valuation_area = self.env["valuation.area"].create(
                 {
                     "name": self.name,
+                    "code": code or "COMPANY",
                     "company_id": self.id,
                 }
             )
