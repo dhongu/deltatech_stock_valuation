@@ -14,7 +14,7 @@ Product Valuation
     :target: https://odoo-community.org/page/development-status
     :alt: Alpha
 .. |badge2| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github
-    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/17.0/deltatech_stock_valuation
+    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/18.0/deltatech_stock_valuation
     :alt: dhongu/deltatech_stock_valuation
 
 |badge1| |badge2|
@@ -71,6 +71,6 @@ Current maintainer:
 
 |maintainer-dhongu| 
 
-This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/17.0/deltatech_stock_valuation>`_ project on GitHub.
+This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/18.0/deltatech_stock_valuation>`_ project on GitHub.
 
 You are welcome to contribute.
