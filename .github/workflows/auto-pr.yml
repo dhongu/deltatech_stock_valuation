@@ -16,7 +16,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # avem nevoie de istoricul complet pentru git log
+
+      - name: Set up GitHub CLI
+        run: sudo apt-get update && sudo apt-get install -y gh
 
       - name: Check if PR already exists
         id: check_pr
@@ -33,6 +36,12 @@ jobs:
             echo "PR_NUM=" >> $GITHUB_OUTPUT
           fi
 
+      - name: Fetch target branch
+        env:
+          TARGET_BRANCH: "18.0"
+        run: |
+          git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
+
       - name: Create PR to 18.0
         id: create_pr
         if: steps.check_pr.outputs.PR_NUM == ''
@@ -41,8 +50,22 @@ jobs:
           TARGET_BRANCH: "18.0"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -e
+          git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
+
+          # Verifică dacă commiturile există în raport cu baza
+          if ! git rev-parse "$TARGET_BRANCH" >/dev/null 2>&1; then
+            echo "Eroare: branch-ul $TARGET_BRANCH nu există local!"
+            exit 1
+          fi
+
           # Obține primul commit al branch-ului relativ la 18.0
-          FIRST_COMMIT=$(git rev-list "$TARGET_BRANCH"..HEAD --reverse | head -n1)
+          FIRST_COMMIT=$(git rev-list "origin/$TARGET_BRANCH"..HEAD --reverse | head -n1)
+
+          if [ -z "$FIRST_COMMIT" ]; then
+            echo "Nu s-a găsit niciun commit nou față de $TARGET_BRANCH"
+            exit 1
+          fi
 
           # Titlul PR = prima linie a commit-ului
           PR_TITLE=$(git log -1 --format=%s "$FIRST_COMMIT")
@@ -52,15 +75,15 @@ jobs:
           PR_BODY="PR creat automat pentru branch-ul $NEW_BRANCH\n\n$PR_BODY"
 
           # Creează PR și obține numărul
-          PR_NUM=$(gh pr create \
+          PR_URL=$(gh pr create \
             --base "$TARGET_BRANCH" \
             --head "$NEW_BRANCH" \
             --title "[$TARGET_BRANCH] $PR_TITLE" \
-            --body "$PR_BODY" | awk '{print $2}' | tr -d '#')
+            --body "$PR_BODY")
 
+          PR_NUM=$(echo "$PR_URL" | grep -oE '[0-9]+$')
           echo "PR_NUM=$PR_NUM" >> $GITHUB_OUTPUT
           echo "Created PR #$PR_NUM"
-
 
       - name: Comment on PR
         env:
