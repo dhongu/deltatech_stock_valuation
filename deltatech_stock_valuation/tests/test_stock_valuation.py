@@ -13,8 +13,8 @@ from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 @tagged("post_install", "-at_install", "deltatech_stock_valuation")
 class TestStockValuation(AccountTestInvoicingCommon):
     @classmethod
-    def setUpClass(cls, chart_template_ref=None):
-        super().setUpClass(chart_template_ref=chart_template_ref)
+    def setUpClass(cls):
+        super().setUpClass()
 
         cls.account = cls.env["account.account"].create(
             {
@@ -34,13 +34,6 @@ class TestStockValuation(AccountTestInvoicingCommon):
         )
 
         cls.env.company.set_stock_valuation_at_company_level()
-        config = cls.env["res.config.settings"].create(
-            {
-                "valuation_area_level": "company",
-                "valuation_area_id": cls.env.company.valuation_area_id.id,
-            }
-        )
-        config.refresh_stock_valuation()
 
     def test_account_move(self):
         today = fields.Date.today()
