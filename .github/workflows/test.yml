@@ -46,6 +46,8 @@ jobs:
           POSTGRES_DB: odoo
         ports:
           - 5432:5432
+    env:
+      OCA_ENABLE_CHECKLOG_ODOO: "1"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,17 +58,9 @@ jobs:
         run: manifestoo -d . check-licenses
       - name: Check development status
         run: manifestoo -d . check-dev-status --default-dev-status=Beta
-
-      - name: Install requirements
-        run: |
-          pip install -r requirements.txt
-
       - name: Initialize test db
         run: oca_init_test_database
-
-      - name: Run tests and generate coverage report
-        # You may need to adjust 'oca_run_tests' or the preceding commands
-        # to ensure it generates a file like coverage.xml
+      - name: Run tests
         run: oca_run_tests
 
       - name: Upload code coverage to Codecov
@@ -82,8 +76,6 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-
-#      - name: Update .pot files
-#        run: oca_export_and_push_pot https://x-access-token:${{ secrets.GIT_PUSH_TOKEN }}@github.com/${{ github.repository }}
-#        if: ${{ matrix.makepot == 'true' && github.event_name == 'push' && github.repository_owner == 'dhongu' }}
-
+      - name: Update .pot files
+        run: oca_export_and_push_pot https://x-access-token:${{ secrets.GIT_PUSH_TOKEN }}@github.com/${{ github.repository }}
+        if: ${{ matrix.makepot == 'true' && github.event_name == 'push' && github.repository_owner == 'OCA' }}
