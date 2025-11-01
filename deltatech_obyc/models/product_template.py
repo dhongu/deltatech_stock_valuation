@@ -39,10 +39,10 @@ class ProductTemplate(models.Model):
                 )
                 if rule:
                     res["stock_valuation"] = rule.acc_valuation_id.id
-                    res["income"] = rule.acc_src_id.id
-                    res["expense"] = rule.acc_dest_id.id
-                    res["stock_input"] = rule.acc_src_id.id
-                    res["stock_output"] = rule.acc_dest_id.id
+                    res["income"] = rule.acc_src_id
+                    res["expense"] = rule.acc_dest_id
+                    res["stock_input"] = rule.acc_src_id
+                    res["stock_output"] = rule.acc_dest_id
                 else:
                     raise UserError(_("No account found for the given valuation class and transaction key."))
 
