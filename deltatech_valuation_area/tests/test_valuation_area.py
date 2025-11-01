@@ -37,7 +37,7 @@ class TestValuationArea(AccountTestInvoicingCommon):
         self.env.company.valuation_area_id = False
 
         # Ensure the product used is stockable to trigger the constraint
-        self.product_a.is_storable = True
+        self.product_a.type = "product"
 
         # Prepare a minimal customer invoice using existing fixtures
         invoice_vals = {
@@ -62,7 +62,7 @@ class TestValuationArea(AccountTestInvoicingCommon):
         self.env.company.valuation_area_id = self.valuation_area
 
         # Ensure the product used is stockable
-        self.product_a.is_storable = True
+        self.product_a.type = "product"
 
         move = self.env["account.move"].create(
             {
