@@ -9,7 +9,6 @@ _logger = logging.getLogger(__name__)
 class StockMove(models.Model):
     _inherit = "stock.move"
 
-
     def _get_accounting_data_for_valuation(self):
         if not self.product_id.valuation_class_id:
             return super()._get_accounting_data_for_valuation()
