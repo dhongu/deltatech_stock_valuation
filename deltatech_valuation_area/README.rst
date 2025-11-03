@@ -1,6 +1,6 @@
-======================================
-Deltatech OBYC - Account Determination
-======================================
+==============================
+Deltatech Stock Valuation Area
+==============================
 
 ..
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -511,7 +511,7 @@ Maintainers
 
 Current maintainer:
 
-|maintainer-dhongu| 
+|maintainer-dhongu|
 
 This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/17.0/deltatech_obyc>`_ project on GitHub.
 
