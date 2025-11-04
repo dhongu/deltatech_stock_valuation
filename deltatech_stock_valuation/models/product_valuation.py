@@ -247,13 +247,10 @@ class ProductValuationHistory(models.Model):
         "Final Quantity", digits="Product Unit of Measure", compute="_compute_final", store=True, default=0.0
     )
 
-    _sql_constraints = [
-        (
-            "product_valuation_history_uniq",
-            "unique (product_id, valuation_area_id, account_id, company_id, month)",
-            "Product valuation history must be unique",
-        )
-    ]
+    _product_valuation_history_uniq = models.Constraint(
+        'unique (product_id, valuation_area_id, account_id, company_id, month)',
+        "Product valuation history must be unique",
+    )
 
     def get_valuation(self, product_id, valuation_area_id, account_id, date, company_id=False):
         """
