@@ -35,13 +35,10 @@ class ProductValuation(models.Model):
         "res.company", string="Company", required=True, index=True, default=lambda self: self.env.company
     )
 
-    # _sql_constraints = [
-    #     (
-    #         "product_valuation_uniq",
-    #         "unique (product_id, valuation_area_id, account_id, company_id)",
-    #         "Product valuation must be unique",
-    #     )
-    # ]
+    _product_valuation_uniq = models.Constraint(
+        'unique (product_id, valuation_area_id, account_id, company_id)',
+        "Product valuation must be unique",
+    )
 
     def get_valuation(self, product_id, valuation_area_id, account_id, company_id=False):
         if not company_id:
