@@ -10,7 +10,7 @@
     "author": "Terrabit, Dorin Hongu",
     "website": "https://www.terrabit.ro",
     "category": "Valuation/Valuation",
-    "depends": ["stock_account", "deltatech_valuation_area"],
+    "depends": ["stock_account", "deltatech_valuation_area","stock_dropshipping"],
     "license": "OPL-1",
     "data": [
         "security/ir.model.access.csv",
