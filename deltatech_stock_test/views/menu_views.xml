@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_stock_test_root"
+              name="Stock Accounting Tests"
+              parent="stock.menu_stock_root"
+              sequence="90"/>
+    <menuitem id="menu_stock_test_scenario"
+              name="Test Scenarios"
+              parent="menu_stock_test_root"
+              action="action_stock_test_scenario"
+              sequence="10"/>
+    <menuitem id="menu_stock_test_run"
+              name="Test Runs"
+              parent="menu_stock_test_root"
+              action="action_stock_test_run"
+              sequence="20"/>
+</odoo>

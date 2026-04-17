@@ -1,0 +1,59 @@
+{
+  "id": "ro_stock_fifo_case_36",
+  "name": "[RO_STOCK_FIFO] Case 36: Receptie locatie evaluata partiala cu diferenta pret in plus, Receptie locatie evaluata finala",
+  "description": "Receptie locatie evaluata partiala cu diferenta pret in plus, Receptie locatie evaluata finala",
+  "mode": "test",
+  "currency": "RON",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "product_fifo",
+      "qty": 5.0,
+      "price": 100.0,
+      "partner": "supplier_1",
+      "currency": "RON",
+      "location": "location1"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 2.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 2.0,
+      "price": 110.0
+    },
+    {
+      "step": "receive_stock",
+      "qty": 3.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 3.0,
+      "price": 110.0,
+      "checks": {
+        "stock": {
+          "product_fifo": [
+            {
+              "qty": 5,
+              "value": 550
+            }
+          ]
+        },
+        "account": {
+          "371001": 550
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371001",
+          "balance": 550
+        }
+      ]
+    }
+  ]
+}

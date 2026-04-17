@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stock_test_run_form" model="ir.ui.view">
+        <field name="name">stock.test.run.form</field>
+        <field name="model">stock.test.run</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="running,passed,failed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="scenario_id"/>
+                            <field name="mode"/>
+                        </group>
+                        <group>
+                            <field name="company_id"/>
+                            <field name="state"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Step Logs">
+                            <field name="log_ids" readonly="1">
+                                <list decoration-danger="state == 'error'"
+                                      decoration-success="state == 'ok'"
+                                      decoration-info="state == 'info'">
+                                    <field name="step_index" string="#"/>
+                                    <field name="step_type"/>
+                                    <field name="state"/>
+                                    <field name="message"/>
+                                    <field name="document_ref" string="Document"/>
+                                    <field name="document_model" string="Model" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Execution Log">
+                            <field name="log" readonly="1"/>
+                        </page>
+                        <page string="Validation Result">
+                            <field name="validation_result" readonly="1"/>
+                        </page>
+                        <page string="Error" invisible="not error_message">
+                            <field name="error_message" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_stock_test_run_list" model="ir.ui.view">
+        <field name="name">stock.test.run.list</field>
+        <field name="model">stock.test.run</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'passed'"
+                  decoration-danger="state == 'failed'"
+                  decoration-info="state == 'running'">
+                <field name="name"/>
+                <field name="scenario_id"/>
+                <field name="mode"/>
+                <field name="company_id"/>
+                <field name="state"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_stock_test_run" model="ir.actions.act_window">
+        <field name="name">Test Runs</field>
+        <field name="res_model">stock.test.run</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

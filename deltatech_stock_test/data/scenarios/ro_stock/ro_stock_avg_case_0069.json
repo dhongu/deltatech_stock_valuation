@@ -1,0 +1,64 @@
+{
+  "id": "ro_stock_avg_case_69",
+  "name": "[RO_STOCK_AVG] Case 69: transfer intern direct",
+  "description": "transfer intern direct",
+  "mode": "test",
+  "currency": "RON",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "product_avg",
+      "qty": 10.0,
+      "price": 100.0,
+      "partner": "supplier_1",
+      "currency": "RON"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 10.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 10.0,
+      "price": 100.0
+    },
+    {
+      "step": "receive_stock",
+      "qty": 6.0,
+      "checks": {
+        "stock": {
+          "product_avg": [
+            {
+              "location": "location",
+              "qty": 4,
+              "value": 400
+            },
+            {
+              "location": "location1",
+              "qty": 6,
+              "value": 600
+            }
+          ]
+        },
+        "account": {
+          "371000": 400,
+          "371001": 600
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371000",
+          "balance": 400
+        },
+        {
+          "account": "371001",
+          "balance": 600
+        }
+      ]
+    }
+  ]
+}

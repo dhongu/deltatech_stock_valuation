@@ -1,0 +1,55 @@
+{
+  "id": "ro_stock_avg_case_20",
+  "name": "[RO_STOCK_AVG] Case 20: receptie cu aviz, diferenta pret in minus, de actualizat in modulul de diferente pret prin landed cost",
+  "description": "receptie cu aviz, diferenta pret in minus, de actualizat in modulul de diferente pret prin landed cost",
+  "mode": "test",
+  "currency": "RON",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "product_avg",
+      "qty": 5.0,
+      "price": 100.0,
+      "partner": "supplier_1",
+      "currency": "RON",
+      "notice": true
+    },
+    {
+      "step": "receive_stock",
+      "qty": 5.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 5.0,
+      "price": 90.0,
+      "checks": {
+        "stock": {
+          "product_avg": [
+            {
+              "qty": 5,
+              "value": 450
+            }
+          ]
+        },
+        "account": {
+          "371000": 500,
+          "408100": -50
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371000",
+          "balance": 500
+        },
+        {
+          "account": "408100",
+          "balance": -50
+        }
+      ]
+    }
+  ]
+}

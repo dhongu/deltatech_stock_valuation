@@ -1,0 +1,64 @@
+{
+  "id": "ro_stock_avg_case_53",
+  "name": "[RO_STOCK_AVG] Case 53: receptie normala si dare in folosinta",
+  "description": "receptie normala si dare in folosinta",
+  "mode": "test",
+  "currency": "RON",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "product_avg",
+      "qty": 5.0,
+      "price": 100.0,
+      "partner": "supplier_1",
+      "currency": "RON"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 5.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 5.0,
+      "price": 100.0
+    },
+    {
+      "step": "receive_stock",
+      "qty": 2.0,
+      "checks": {
+        "stock": {
+          "product_avg": [
+            {
+              "location": "location",
+              "qty": 3,
+              "value": 300
+            }
+          ]
+        },
+        "account": {
+          "371000": 300,
+          "607000": 200,
+          "803500": 0
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371000",
+          "balance": 300
+        },
+        {
+          "account": "607000",
+          "balance": 200
+        },
+        {
+          "account": "803500",
+          "balance": 0
+        }
+      ]
+    }
+  ]
+}

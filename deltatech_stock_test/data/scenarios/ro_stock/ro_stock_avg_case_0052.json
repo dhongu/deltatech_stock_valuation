@@ -1,0 +1,60 @@
+{
+  "id": "ro_stock_avg_case_52",
+  "name": "[RO_STOCK_AVG] Case 52: receptie normala si consum si retur consum cu pozitie fiscala setata",
+  "description": "receptie normala si consum si retur consum cu pozitie fiscala setata",
+  "mode": "test",
+  "currency": "RON",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "product_avg",
+      "qty": 5.0,
+      "price": 100.0,
+      "partner": "supplier_1",
+      "currency": "RON",
+      "location": "location2"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 5.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 5.0,
+      "price": 100.0
+    },
+    {
+      "step": "receive_stock",
+      "qty": 2.0,
+      "checks": {
+        "stock": {
+          "product_avg": [
+            {
+              "location": "location2",
+              "qty": 4,
+              "value": 400
+            }
+          ]
+        },
+        "account": {
+          "371002": 400,
+          "607002": 100
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371002",
+          "balance": 400
+        },
+        {
+          "account": "607002",
+          "balance": 100
+        }
+      ]
+    }
+  ]
+}

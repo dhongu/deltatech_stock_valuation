@@ -1,0 +1,68 @@
+{
+  "id": "ro_stock_avg_case_64",
+  "name": "[RO_STOCK_AVG] Case 64: vanzare cu retur",
+  "description": "vanzare cu retur",
+  "mode": "test",
+  "currency": "RON",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "product_avg",
+      "qty": 5.0,
+      "price": 100.0,
+      "partner": "supplier_1",
+      "currency": "RON"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 5.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 5.0,
+      "price": 100.0
+    },
+    {
+      "step": "receive_stock",
+      "qty": 3.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 3.0,
+      "price": 150.0,
+      "checks": {
+        "stock": {
+          "product_avg": [
+            {
+              "qty": 4,
+              "value": 400
+            }
+          ]
+        },
+        "account": {
+          "371000": 400,
+          "607000": 100,
+          "707000": -150
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371000",
+          "balance": 400
+        },
+        {
+          "account": "607000",
+          "balance": 100
+        },
+        {
+          "account": "707000",
+          "balance": -150
+        }
+      ]
+    }
+  ]
+}
