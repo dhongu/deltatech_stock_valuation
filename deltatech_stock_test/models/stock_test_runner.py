@@ -160,11 +160,26 @@ class StockTestRun(models.Model):
         # Final expected_account_moves validation (legacy format)
         expected_moves = scenario.get("expected_account_moves", [])
         validation_lines = []
+        validation_error = None
         if expected_moves:
             validation_lines = self._validate_expected_moves(expected_moves, records)
+            fail_lines = [r for r in validation_lines if r.startswith("[FAIL]")]
+            if fail_lines:
+                validation_error = "\n".join(fail_lines)
             for vline in validation_lines:
-                state = "error" if vline.startswith("FAIL") else "ok"
+                state = "error" if "[FAIL]" in vline else "ok"
                 self._add_log(records, len(steps) + 1, "validate_account_moves", state, vline)
+
+        if validation_error:
+            self.write(
+                {
+                    "state": "failed",
+                    "log": "\n".join(log_lines),
+                    "validation_result": "\n".join(validation_lines),
+                    "error_message": validation_error,
+                }
+            )
+            return False
 
         self.write(
             {
@@ -318,7 +333,7 @@ class StockTestRun(models.Model):
                 initial_balance = records.get("_initial_accounts", {}).get(str(account_code), 0.0)
             delta_balance = balance - initial_balance
             log_lines.append(
-                f"  CHECK Account {account_code}: delta={delta_balance:.2f} (expected={expected_balance}, initial={initial_balance:.2f})"
+                f"  CHECK Account {account_code}: balance={balance:.2f} (delta={delta_balance:.2f}, expected={expected_balance}, initial={initial_balance:.2f})"
             )
             _logger.info(
                 "Account %s: expected delta=%s, initial=%.2f, current=%.2f, delta=%.2f",
@@ -399,12 +414,13 @@ class StockTestRun(models.Model):
                 else:
                     initial_qty = initial.get("qty", 0.0)
                     initial_value = initial.get("value", 0.0)
-                total_qty = total_qty - initial_qty
-                total_value = total_value - initial_value
+                delta_qty = total_qty - initial_qty
+                delta_value = total_value - initial_value
 
                 log_lines.append(
                     f"  CHECK Stock [{product.default_code or product.name}] {product.name} @ {location_key or 'all'}: "
-                    f"qty={total_qty:.3f} (expected={vals.get('qty', '-')}), value={total_value:.2f} (expected={vals.get('value', '-')})"
+                    f"qty={total_qty:.3f} (delta={delta_qty:.3f}, expected={vals.get('qty', '-')}), "
+                    f"value={total_value:.2f} (delta={delta_value:.2f}, expected={vals.get('value', '-')})"
                 )
                 _logger.info(
                     "Stock %s @ %s: qty=%.2f (expected %s), value=%.2f (expected %s)",
@@ -419,35 +435,39 @@ class StockTestRun(models.Model):
                 if vals.get("qty") is not None:
                     if (
                         float_compare(
-                            total_qty, float(vals["qty"]), precision_rounding=0.001
+                            delta_qty, float(vals["qty"]), precision_rounding=0.001
                         )
                         != 0
                     ):
                         raise AssertionError(
                             self.env._(
-                                "Stock qty for %(product)s @ %(location)s: expected %(expected)s, got %(actual).3f"
+                                "Stock qty for %(product)s @ %(location)s: expected %(expected)s, got %(actual).3f (current=%(current).3f, initial=%(initial).3f)"
                             ) % {
                                 "product": product.display_name,
                                 "location": location_key or "all",
                                 "expected": vals["qty"],
-                                "actual": total_qty,
+                                "actual": delta_qty,
+                                "current": total_qty,
+                                "initial": initial_qty,
                             }
                         )
                 if vals.get("value") is not None:
                     if (
                         float_compare(
-                            total_value, float(vals["value"]), precision_rounding=0.01
+                            delta_value, float(vals["value"]), precision_rounding=0.01
                         )
                         != 0
                     ):
                         raise AssertionError(
                             self.env._(
-                                "Stock value for %(product)s @ %(location)s: expected %(expected)s, got %(actual).2f"
+                                "Stock value for %(product)s @ %(location)s: expected %(expected)s, got %(actual).2f (current=%(current).2f, initial=%(initial).2f)"
                             ) % {
                                 "product": product.display_name,
                                 "location": location_key or "all",
                                 "expected": vals["value"],
-                                "actual": total_value,
+                                "actual": delta_value,
+                                "current": total_value,
+                                "initial": initial_value,
                             }
                         )
         return log_lines
@@ -653,17 +673,137 @@ class StockTestRun(models.Model):
             records["last_receipt"] = picking
         return records
 
+    def _run_step_return_stock(self, step, records):
+        """Create a return (reverse) picking for the last receipt.
+
+        Optional fields:
+        - ``qty``: quantity to return (positive); defaults to all received qty.
+        - ``product`` / ``product_code``: return a single product.
+        """
+        picking = records.get("last_receipt")
+        if not picking:
+            raise UserError(self.env._("No receipt found to return stock for."))
+        idx = step.get("_index", 0)
+
+        # Use stock.return.picking wizard logic directly
+        return_moves = []
+        qty = step.get("qty")
+        product_code = step.get("product_code") or step.get("product")
+        product = None
+        if product_code:
+            product = self._resolve_product({"product_code": product_code}, records)
+
+        for move in picking.move_ids.filtered(lambda m: m.state == "done"):
+            if product and move.product_id.id != product.id:
+                continue
+            return_qty = float(qty) if qty is not None else move.quantity_done
+            return_moves.append((move, return_qty))
+
+        if not return_moves:
+            raise UserError(self.env._("No done moves found to return."))
+
+        # Build return picking manually
+        return_picking_type = picking.picking_type_id.return_picking_type_id or picking.picking_type_id
+        return_picking = self.env["stock.picking"].create(
+            {
+                "picking_type_id": return_picking_type.id,
+                "location_id": picking.location_dest_id.id,
+                "location_dest_id": picking.location_id.id,
+                "origin": "Return of %s" % picking.name,
+                "move_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "product_id": move.product_id.id,
+                            "product_uom": move.product_uom.id,
+                            "product_uom_qty": return_qty,
+                            "location_id": picking.location_dest_id.id,
+                            "location_dest_id": picking.location_id.id,
+                            "origin_returned_move_id": move.id,
+                        },
+                    )
+                    for move, return_qty in return_moves
+                ],
+            }
+        )
+        return_picking.action_confirm()
+        return_picking.action_assign()
+        for move in return_picking.move_ids:
+            move._set_quantity_done(move.product_uom_qty)
+            move.picked = True
+        return_picking._action_done()
+
+        records[f"return_{idx}"] = return_picking
+        records["last_return"] = return_picking
+        return records
+
     def _run_step_create_vendor_bill(self, step, records):
         """Create and post a vendor bill on the last purchase order.
 
         Optional fields:
         - ``qty`` / ``price``: override quantity/price for single-line bills.
         - ``products``: list of ``{product, qty, price}`` dicts to override specific lines.
+
+        If ``qty`` is negative, a credit note (in_refund) is created instead of a vendor bill.
         """
         po = records.get("last_purchase_order")
         if not po:
             raise UserError(self.env._("No purchase order found to create vendor bill for."))
         idx = step.get("_index", 0)
+
+        # Detect if this should be a credit note (qty < 0)
+        qty_raw = step.get("qty")
+        is_credit_note = qty_raw is not None and float(qty_raw) < 0
+
+        if is_credit_note:
+            # Create credit note directly
+            price = step.get("price", 0.0)
+            abs_qty = abs(float(qty_raw))
+            # Resolve product: use last bill's lines or PO lines
+            last_bill = records.get("last_vendor_bill")
+            if last_bill:
+                source_lines = last_bill.invoice_line_ids
+            else:
+                po.action_create_invoice()
+                draft_inv = po.invoice_ids.filtered(lambda i: i.state == "draft")[:1]
+                source_lines = draft_inv.invoice_line_ids if draft_inv else self.env["account.move.line"]
+                if draft_inv:
+                    draft_inv.button_cancel()
+                    draft_inv.unlink()
+
+            line_vals = []
+            for src in source_lines:
+                line_vals.append((0, 0, {
+                    "product_id": src.product_id.id,
+                    "quantity": abs_qty,
+                    "price_unit": float(price) if price else src.price_unit,
+                    "account_id": src.account_id.id,
+                    "name": src.name,
+                }))
+
+            if not line_vals and po.order_line:
+                for ol in po.order_line:
+                    line_vals.append((0, 0, {
+                        "product_id": ol.product_id.id,
+                        "quantity": abs_qty,
+                        "price_unit": float(price) if price else ol.price_unit,
+                        "name": ol.name,
+                    }))
+
+            credit_note = self.env["account.move"].create({
+                "move_type": "in_refund",
+                "partner_id": po.partner_id.id,
+                "invoice_date": fields.Date.context_today(self),
+                "currency_id": po.currency_id.id,
+                "invoice_line_ids": line_vals,
+            })
+            credit_note.action_post()
+            records[f"vendor_bill_{idx}"] = credit_note
+            records["last_vendor_bill"] = credit_note
+            return records
+
+        # Normal vendor bill
         po.action_create_invoice()
         invoice = po.invoice_ids.filtered(lambda i: i.state == "draft")[:1]
         if not invoice:
@@ -1170,21 +1310,13 @@ class StockTestRun(models.Model):
 
     def _validate_expected_moves(self, expected_moves, records):
         results = []
+        initial_accounts = records.get("_initial_accounts", {})
+
         for expected in expected_moves:
             journal_name = expected.get("journal")
             journal = self.env["account.journal"].search(
                 [("name", "ilike", journal_name)], limit=1
             ) if journal_name else self.env["account.journal"]
-
-            domain = [
-                ("state", "=", "posted"),
-                ("company_id", "=", self.env.company.id),
-                ("id", ">", records.get("_initial_max_move_id", 0)),
-            ]
-            if journal:
-                domain.append(("journal_id", "=", journal.id))
-
-            moves = self.env["account.move"].search(domain)
 
             for exp_line in expected.get("line_ids", []):
                 account_code = exp_line.get("account")
@@ -1198,25 +1330,60 @@ class StockTestRun(models.Model):
                     results.append(f"WARN: Account {account_code} not found")
                     continue
 
-                lines = moves.line_ids.filtered(lambda l: l.account_id == account)
-                total_debit = sum(lines.mapped("debit"))
-                total_credit = sum(lines.mapped("credit"))
-
-                exp_debit = float(exp_line.get("debit", 0))
-                exp_credit = float(exp_line.get("credit", 0))
-
-                debit_ok = float_compare(total_debit, exp_debit, precision_rounding=0.01) == 0
-                credit_ok = float_compare(total_credit, exp_credit, precision_rounding=0.01) == 0
-
-                status = "OK" if (debit_ok and credit_ok) else "FAIL"
-                results.append(
-                    f"[{status}] Account {account_code}: "
-                    f"debit={total_debit:.2f} (expected {exp_debit:.2f}), "
-                    f"credit={total_credit:.2f} (expected {exp_credit:.2f})"
+                # Compute current total balance for this account (all posted lines)
+                all_lines = self.env["account.move.line"].search(
+                    [
+                        ("account_id", "=", account.id),
+                        ("company_id", "=", self.env.company.id),
+                        ("parent_state", "=", "posted"),
+                    ]
                 )
-                if not (debit_ok and credit_ok):
-                    raise AssertionError(results[-1])
+                if journal:
+                    all_lines = all_lines.filtered(lambda l: l.journal_id == journal)
 
+                total_debit = sum(all_lines.mapped("debit"))
+                total_credit = sum(all_lines.mapped("credit"))
+                total_balance = sum(all_lines.mapped("balance"))
+
+                # Subtract initial values to get delta from this scenario
+                initial_balance = initial_accounts.get(str(account_code), 0.0)
+                delta_balance = total_balance - initial_balance
+
+                # Support both "balance" and "debit"/"credit" in expected line
+                if "balance" in exp_line:
+                    exp_balance = float(exp_line["balance"])
+                    balance_ok = float_compare(delta_balance, exp_balance, precision_rounding=0.01) == 0
+                    status = "OK" if balance_ok else "[FAIL]"
+                    results.append(
+                        f"[{status}] Account {account_code}: "
+                        f"balance_delta={delta_balance:.2f} (expected {exp_balance:.2f}, initial={initial_balance:.2f})"
+                    )
+                else:
+                    # Legacy debit/credit check using delta from new moves only
+                    new_moves_domain = [
+                        ("state", "=", "posted"),
+                        ("company_id", "=", self.env.company.id),
+                        ("id", ">", records.get("_initial_max_move_id", 0)),
+                    ]
+                    if journal:
+                        new_moves_domain.append(("journal_id", "=", journal.id))
+                    new_moves = self.env["account.move"].search(new_moves_domain)
+                    new_lines = new_moves.line_ids.filtered(lambda l: l.account_id == account)
+                    new_debit = sum(new_lines.mapped("debit"))
+                    new_credit = sum(new_lines.mapped("credit"))
+
+                    exp_debit = float(exp_line.get("debit", 0))
+                    exp_credit = float(exp_line.get("credit", 0))
+
+                    debit_ok = float_compare(new_debit, exp_debit, precision_rounding=0.01) == 0
+                    credit_ok = float_compare(new_credit, exp_credit, precision_rounding=0.01) == 0
+
+                    status = "OK" if (debit_ok and credit_ok) else "[FAIL]"
+                    results.append(
+                        f"[{status}] Account {account_code}: "
+                        f"debit={new_debit:.2f} (expected {exp_debit:.2f}), "
+                        f"credit={new_credit:.2f} (expected {exp_credit:.2f})"
+                    )
         return results
 
     # -------------------------------------------------------------------------

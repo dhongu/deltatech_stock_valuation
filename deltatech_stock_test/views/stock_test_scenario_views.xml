@@ -30,7 +30,7 @@
                         <group>
                             <field name="name"/>
                             <field name="mode"/>
-                            <field name="company_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
                         </group>
                         <group>
                             <field name="state"/>
@@ -59,15 +59,23 @@
         <field name="name">stock.test.scenario.list</field>
         <field name="model">stock.test.scenario</field>
         <field name="arch" type="xml">
-            <list>
+            <list decoration-success="state == 'executed'"
+                  decoration-danger="state == 'failed'"
+                  decoration-info="state == 'ready'"
+                  decoration-muted="state == 'draft'">
+                <header>
+                    <button name="action_execute_selected" string="Run Selected" type="object"
+                            class="btn-primary"/>
+                </header>
                 <field name="name"/>
                 <field name="mode"/>
-                <field name="company_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
                 <field name="state"/>
                 <field name="run_count"/>
             </list>
         </field>
     </record>
+
     <record id="action_stock_test_scenario" model="ir.actions.act_window">
         <field name="name">Test Scenarios</field>
         <field name="res_model">stock.test.scenario</field>

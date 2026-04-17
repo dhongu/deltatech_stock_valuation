@@ -23,8 +23,8 @@
       "price": 100.0
     },
     {
-      "step": "receive_stock",
-      "qty": -3.0,
+      "step": "return_stock",
+      "qty": 3.0,
       "checks": {
         "stock": {
           "product_avg": [

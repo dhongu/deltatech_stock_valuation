@@ -93,6 +93,11 @@ class StockTestScenario(models.Model):
             except Exception as e:
                 raise UserError(self.env._("Invalid JSON: %s") % e)
 
+    def action_execute_selected(self):
+        """Run all selected scenarios (from list view action menu)."""
+        for rec in self:
+            rec.action_execute()
+
     def action_execute(self):
         self.ensure_one()
         try:
@@ -105,13 +110,18 @@ class StockTestScenario(models.Model):
             }
         )
         try:
-            run.execute(scenario)
-            self.state = "executed"
-            self.last_error = False
+            result = run.execute(scenario)
+            if result is False:
+                self.state = "failed"
+                self.last_error = run.error_message or self.env._("Execution failed")
+            else:
+                self.state = "executed"
+                self.last_error = False
         except Exception as e:
             self.state = "failed"
             self.last_error = str(e)
-            raise UserError(self.env._("Execution failed: %s") % e)
+            # nu trebuie sa fie afisata eroarea
+            # raise UserError(self.env._("Execution failed: %s") % e)
 
     @api.model
     def load_demo_scenarios(self):
