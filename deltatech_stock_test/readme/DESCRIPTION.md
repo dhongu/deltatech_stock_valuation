@@ -222,6 +222,7 @@ Creates and confirms a purchase order. Supports single-product and multi-line fo
 | `products` | ✅ (multi) | List of `{product, qty, price}` objects |
 | `partner` | ✅ | Partner `ref` or name |
 | `currency` | — | ISO currency code (e.g. `"RON"`) |
+| `notice` | — | If `true`, propagates `l10n_ro_notice = True` to the subsequent `receive_stock` step (Romanian NIR notice) |
 
 The confirmed PO is stored as `last_purchase_order` in the execution context for use by subsequent steps.
 
@@ -258,7 +259,33 @@ The picking is validated only after all moves are marked as received.
 | `product` | — | Product code to receive (single-product mode); if omitted, all products are received |
 | `qty` | — | Quantity to receive (single-product mode); defaults to ordered quantity |
 | `products` | — | List of `{product, qty}` objects for multi-product receive |
+| `notice` | — | If `true`, sets `l10n_ro_notice = True` on the picking (Romanian NIR notice); overrides value from `create_purchase_order` |
 | `checks` | — | Optional stock validation after this step (see **Checks** section) |
+
+> **Note:** `notice: true` can also be set on `create_purchase_order` and will be propagated automatically to the subsequent `receive_stock` step.
+
+---
+
+### `return_stock`
+
+Creates a stock return (reverse picking) for the last received stock picking.
+Use this instead of `receive_stock` with a negative quantity.
+
+```json
+{
+  "step": "return_stock",
+  "qty": 3.0,
+  "product": "product_avg"
+}
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `qty` | ✅ | Quantity to return (positive value) |
+| `product` | — | Product code to return; if omitted, all products from the last receipt are returned |
+| `checks` | — | Optional stock validation after this step (see **Checks** section) |
+
+The return picking is created with reversed source/destination locations and `origin_returned_move_id` set correctly.
 
 ---
 
@@ -450,7 +477,27 @@ Each transactional step can include a `checks` block to validate stock state aft
 
 | Field | Description |
 |---|---|
-| `checks.stock` | Dict of `product_code → [{qty, value}]` — validates on-hand quantity and stock value |
+| `checks.stock` | Dict of `product_code → [{qty, value, location?}]` — validates on-hand quantity and stock value |
+
+The `qty` and `value` in checks are validated as **deltas** relative to the initial stock snapshot taken at the start of the scenario. This means you specify the expected change, not the absolute value.
+
+**Optional `location` filter:**
+
+```json
+"checks": {
+  "stock": {
+    "product_avg": [
+      {"qty": 5, "value": 500, "location": "all"}
+    ]
+  }
+}
+```
+
+| Location value | Description |
+|---|---|
+| `"all"` (default) | All internal locations |
+| `"input"` | Input/receiving location |
+| `"output"` | Output/shipping location |
 
 ---
 
@@ -475,8 +522,27 @@ The `expected_account_moves` section at the root of the scenario defines the acc
 | `journal_type` | Journal type to match: `"purchase"`, `"sale"`, `"general"`, `"stock"` |
 | `line_ids` | List of expected journal lines |
 | `line_ids[].account_code` | Account code prefix to match |
-| `line_ids[].debit` | Expected debit amount |
-| `line_ids[].credit` | Expected credit amount |
+| `line_ids[].debit` | Expected debit amount (legacy format) |
+| `line_ids[].credit` | Expected credit amount (legacy format) |
+| `line_ids[].balance` | Expected net balance = debit − credit (preferred format) |
+
+> **Delta validation:** All amounts are validated as **deltas** relative to the account balances at the start of the scenario (snapshot taken at `snapshot_stock` step). This ensures correct results even when the database already contains prior transactions.
+
+**Using `balance` format (preferred):**
+
+```json
+"expected_account_moves": [
+  {
+    "journal_type": "stock",
+    "line_ids": [
+      {"account_code": "371000", "balance": 500.0},
+      {"account_code": "408000", "balance": -500.0}
+    ]
+  }
+]
+```
+
+A positive `balance` means net debit; a negative `balance` means net credit.
 
 ---
 
@@ -525,6 +591,7 @@ The `expected_account_moves` section at the root of the scenario defines the acc
 |---|---|
 | `stock.test.scenario` | Stores the JSON scenario definition, mode, and state |
 | `stock.test.run` | Records each execution with log, result, and link to scenario |
+| `stock.test.log` | Individual log lines for each step: step number, type, state (`ok`/`error`/`info`), message, and document reference |
 
 ---
 

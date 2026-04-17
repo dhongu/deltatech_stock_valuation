@@ -628,6 +628,8 @@ class StockTestRun(models.Model):
         idx = step.get("_index", 0)
         records[f"purchase_order_{idx}"] = po
         records["last_purchase_order"] = po
+        # Save notice flag for use in receive_stock
+        records["last_po_notice"] = bool(step.get("notice", False))
         return records
 
     def _run_step_receive_stock(self, step, records):
@@ -666,6 +668,10 @@ class StockTestRun(models.Model):
                     done_qty = float(qty) if qty else move.product_qty
                     move._set_quantity_done(done_qty)
                     move.picked = True
+            # Set l10n_ro_notice from purchase order step if applicable
+            notice = step.get("notice", records.get("last_po_notice", False))
+            if notice and hasattr(picking, "l10n_ro_notice"):
+                picking.l10n_ro_notice = True
             # Only validate if all moves are picked
             if all(m.picked for m in picking.move_ids):
                 picking._action_done()

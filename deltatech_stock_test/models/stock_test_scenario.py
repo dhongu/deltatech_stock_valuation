@@ -163,6 +163,7 @@ class StockTestScenario(models.Model):
                 full_xml_id = "deltatech_stock_test.%s" % xml_id
                 existing = self.env.ref(full_xml_id, raise_if_not_found=False)
                 if existing:
+                    vals.pop("state")
                     existing.write(vals)
                     _logger.info("Updated demo scenario: %s", name)
                 else:
