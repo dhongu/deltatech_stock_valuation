@@ -50,7 +50,7 @@ class StockTestRun(models.Model):
         for step in base_data.get("lines", []):
             step = dict(step)
             step_type = step.get("step") or step.get("type")
-            method_name = "_run_step_%s" % step_type.replace("-", "_")
+            method_name = f"_run_step_{step_type.replace('-', '_')}"
             if hasattr(self, method_name):
                 result = getattr(self, method_name)(step, records)
                 if isinstance(result, dict):
@@ -107,7 +107,7 @@ class StockTestRun(models.Model):
             step_type = step.get("step") or step.get("type")
             log_lines.append(f"[{idx + 1}] Running step: {step_type}")
             try:
-                method_name = "_run_step_%s" % step_type.replace("-", "_")
+                method_name = f"_run_step_{step_type.replace('-', '_')}"
                 if hasattr(self, method_name):
                     keys_before = set(records.keys())
                     result = getattr(self, method_name)(step, records)
@@ -145,7 +145,7 @@ class StockTestRun(models.Model):
                             state = "error" if check_line.startswith("FAIL") else "ok"
                             self._add_log(records, idx + 1, "check", state, check_line)
                 else:
-                    raise UserError(self.env._("Unknown step type: %s") % step_type)
+                    raise UserError(self.env._("Unknown step type: %s", step_type))
             except Exception as e:
                 error_msg = str(e)
                 log_lines.append(f"    ERROR: {error_msg}")
@@ -306,7 +306,7 @@ class StockTestRun(models.Model):
                 limit=1,
             )
             if not account:
-                raise AssertionError(self.env._("Account with code %s not found") % account_code)
+                raise AssertionError(self.env._("Account with code %s not found", account_code))
             lines = self.env["account.move.line"].search(
                 [
                     ("account_id", "=", account.id),
@@ -315,7 +315,7 @@ class StockTestRun(models.Model):
                 ]
             )
             if not lines and float(expected_balance) != 0.0:
-                raise AssertionError(self.env._("No posted entries found for account %s") % account_code)
+                raise AssertionError(self.env._("No posted entries found for account %s", account_code))
             balance = sum(lines.mapped("balance"))
             # Subtract initial balance to get only the delta from this scenario
             initial_balance = 0.0
@@ -336,14 +336,12 @@ class StockTestRun(models.Model):
             if float_compare(delta_balance, float(expected_balance), precision_rounding=0.01) != 0:
                 raise AssertionError(
                     self.env._(
-                        "Account %(code)s balance delta expected %(expected)s, got %(actual).2f (initial=%(initial).2f)"
+                        "Account %(code)s balance delta expected %(expected)s, got %(actual).2f (initial=%(initial).2f)",
+                        code=account_code,
+                        expected=expected_balance,
+                        actual=delta_balance,
+                        initial=initial_balance,
                     )
-                    % {
-                        "code": account_code,
-                        "expected": expected_balance,
-                        "actual": delta_balance,
-                        "initial": initial_balance,
-                    }
                 )
         return log_lines
 
@@ -360,7 +358,7 @@ class StockTestRun(models.Model):
             if not product:
                 product = self.env["product.product"].search([("default_code", "=", product_key)], limit=1)
             if not product:
-                raise AssertionError(self.env._("Product not found for key: %s") % product_key)
+                raise AssertionError(self.env._("Product not found for key: %s", product_key))
 
             for vals in check_list:
                 location_key = vals.get("location")
@@ -370,7 +368,7 @@ class StockTestRun(models.Model):
                         limit=1,
                     )
                     if not location:
-                        raise AssertionError(self.env._("Location not found: %s") % location_key)
+                        raise AssertionError(self.env._("Location not found: %s", location_key))
                     quant_domain = [
                         ("product_id", "=", product.id),
                         ("location_id", "=", location.id),
@@ -423,31 +421,27 @@ class StockTestRun(models.Model):
                     if float_compare(delta_qty, float(vals["qty"]), precision_rounding=0.001) != 0:
                         raise AssertionError(
                             self.env._(
-                                "Stock qty for %(product)s @ %(location)s: expected %(expected)s, got %(actual).3f (current=%(current).3f, initial=%(initial).3f)"
+                                "Stock qty for %(product)s @ %(location)s: expected %(expected)s, got %(actual).3f (current=%(current).3f, initial=%(initial).3f)",
+                                product=product.display_name,
+                                location=location_key or "all",
+                                expected=vals["qty"],
+                                actual=delta_qty,
+                                current=total_qty,
+                                initial=initial_qty,
                             )
-                            % {
-                                "product": product.display_name,
-                                "location": location_key or "all",
-                                "expected": vals["qty"],
-                                "actual": delta_qty,
-                                "current": total_qty,
-                                "initial": initial_qty,
-                            }
                         )
                 if vals.get("value") is not None:
                     if float_compare(delta_value, float(vals["value"]), precision_rounding=0.01) != 0:
                         raise AssertionError(
                             self.env._(
-                                "Stock value for %(product)s @ %(location)s: expected %(expected)s, got %(actual).2f (current=%(current).2f, initial=%(initial).2f)"
+                                "Stock value for %(product)s @ %(location)s: expected %(expected)s, got %(actual).2f (current=%(current).2f, initial=%(initial).2f)",
+                                product=product.display_name,
+                                location=location_key or "all",
+                                expected=vals["value"],
+                                actual=delta_value,
+                                current=total_value,
+                                initial=initial_value,
                             )
-                            % {
-                                "product": product.display_name,
-                                "location": location_key or "all",
-                                "expected": vals["value"],
-                                "actual": delta_value,
-                                "current": total_value,
-                                "initial": initial_value,
-                            }
                         )
         return log_lines
 
@@ -462,7 +456,7 @@ class StockTestRun(models.Model):
             limit=1,
         )
         if existing:
-            key = "account_%s" % step["code"]
+            key = f"account_{step['code']}"
             return {key: existing}
         account = Account.create(
             {
@@ -471,7 +465,7 @@ class StockTestRun(models.Model):
                 "account_type": step.get("account_type", "asset_current"),
             }
         )
-        key = "account_%s" % step["code"]
+        key = f"account_{step['code']}"
         return {key: account}
 
     def _run_step_create_partner(self, step, records):
@@ -479,9 +473,9 @@ class StockTestRun(models.Model):
         ref = step.get("ref")
         existing = Partner.search([("name", "=", step["name"])], limit=1)
         if existing:
-            result = {"partner_%s" % step["name"].replace(" ", "_"): existing}
+            result = {f"partner_{step['name'].replace(' ', '_')}": existing}
             if ref:
-                result["partner_%s" % ref] = existing
+                result[f"partner_{ref}"] = existing
             return result
         vals = {
             "name": step["name"],
@@ -492,9 +486,9 @@ class StockTestRun(models.Model):
         if ref:
             vals["ref"] = ref
         partner = Partner.create(vals)
-        result = {"partner_%s" % step["name"].replace(" ", "_"): partner}
+        result = {f"partner_{step['name'].replace(' ', '_')}": partner}
         if ref:
-            result["partner_%s" % ref] = partner
+            result[f"partner_{ref}"] = partner
         return result
 
     def _run_step_create_product_category(self, step, records):
@@ -509,7 +503,7 @@ class StockTestRun(models.Model):
                 update_vals["property_valuation"] = step["property_valuation"]
             if update_vals:
                 existing.write(update_vals)
-            key = "categ_%s" % name.replace(" ", "_")
+            key = f"categ_{name.replace(' ', '_')}"
             return {key: existing}
         vals = {"name": name}
         if step.get("property_cost_method"):
@@ -521,7 +515,7 @@ class StockTestRun(models.Model):
             if parent:
                 vals["parent_id"] = parent.id
         categ = Categ.create(vals)
-        key = "categ_%s" % name.replace(" ", "_")
+        key = f"categ_{name.replace(' ', '_')}"
         return {key: categ}
 
     def _run_step_create_product(self, step, records):
@@ -529,7 +523,7 @@ class StockTestRun(models.Model):
         code = step.get("code", "")
         existing = Product.search([("default_code", "=", code)], limit=1) if code else Product
         if existing and code:
-            key = "product_%s" % code
+            key = f"product_{code}"
             return {key: existing}
 
         categ_key = step.get("categ_key")
@@ -560,7 +554,7 @@ class StockTestRun(models.Model):
                     vals[field] = acc.id
 
         product = Product.create(vals)
-        key = "product_%s" % code if code else "product_%s" % step["name"].replace(" ", "_")
+        key = f"product_{code}" if code else f"product_{step['name'].replace(' ', '_')}"
         return {key: product}
 
     # -------------------------------------------------------------------------
@@ -692,7 +686,7 @@ class StockTestRun(models.Model):
                 "picking_type_id": return_picking_type.id,
                 "location_id": picking.location_dest_id.id,
                 "location_dest_id": picking.location_id.id,
-                "origin": "Return of %s" % picking.name,
+                "origin": f"Return of {picking.name}",
                 "move_ids": [
                     (
                         0,
@@ -1170,10 +1164,10 @@ class StockTestRun(models.Model):
         if partner_name:
             partner = self.env["res.partner"].search([("name", "=", partner_name)], limit=1)
         if not partner:
-            partner_key = "partner_%s" % (partner_name or "").replace(" ", "_")
+            partner_key = f"partner_{(partner_name or '').replace(' ', '_')}"
             partner = records.get(partner_key)
         if not partner:
-            raise UserError(self.env._("Partner not found: %s") % partner_name)
+            raise UserError(self.env._("Partner not found: %s", partner_name))
 
         # Build line specs: support both legacy "invoice_lines" and new "products" list
         line_specs = step.get("products") or step.get("invoice_lines") or []
@@ -1192,11 +1186,11 @@ class StockTestRun(models.Model):
         invoice_lines = []
         for line in line_specs:
             product_code = line.get("product_code") or line.get("product")
-            product = records.get("product_%s" % product_code)
+            product = records.get(f"product_{product_code}")
             if not product:
                 product = self.env["product.product"].search([("default_code", "=", product_code)], limit=1)
             if not product:
-                raise UserError(self.env._("Product not found: %s") % product_code)
+                raise UserError(self.env._("Product not found: %s", product_code))
             invoice_lines.append(
                 (
                     0,
@@ -1217,14 +1211,14 @@ class StockTestRun(models.Model):
                 "invoice_line_ids": invoice_lines,
             }
         )
-        key = step.get("key", "invoice_%s" % step.get("_index", 0))
+        key = step.get("key", f"invoice_{step.get('_index', 0)}")
         return {key: invoice}
 
     def _run_step_post_invoice(self, step, records):
         key = step.get("key", "invoice")
         invoice = records.get(key)
         if not invoice:
-            raise UserError(self.env._("Invoice not found for key: %s") % key)
+            raise UserError(self.env._("Invoice not found for key: %s", key))
         if not invoice.invoice_date:
             invoice.invoice_date = fields.Date.context_today(self)
         invoice.action_post()
@@ -1244,16 +1238,16 @@ class StockTestRun(models.Model):
             limit=1,
         )
         if not picking_type:
-            raise UserError(self.env._("No picking type found for code: %s") % picking_type_code)
+            raise UserError(self.env._("No picking type found for code: %s", picking_type_code))
 
         move_lines = []
         for ml in step.get("move_lines", []):
             product_code = ml.get("product_code")
-            product = records.get("product_%s" % product_code)
+            product = records.get(f"product_{product_code}")
             if not product:
                 product = self.env["product.product"].search([("default_code", "=", product_code)], limit=1)
             if not product:
-                raise UserError(self.env._("Product not found: %s") % product_code)
+                raise UserError(self.env._("Product not found: %s", product_code))
             move_lines.append(
                 (
                     0,
@@ -1277,14 +1271,14 @@ class StockTestRun(models.Model):
                 "move_ids": move_lines,
             }
         )
-        key = step.get("key", "picking_%s" % step.get("_index", 0))
+        key = step.get("key", f"picking_{step.get('_index', 0)}")
         return {key: picking}
 
     def _run_step_validate_picking(self, step, records):
         key = step.get("key", "picking")
         picking = records.get(key)
         if not picking:
-            raise UserError(self.env._("Picking not found for key: %s") % key)
+            raise UserError(self.env._("Picking not found for key: %s", key))
         picking.action_confirm()
         picking.action_assign()
         for move in picking.move_ids:
@@ -1332,8 +1326,6 @@ class StockTestRun(models.Model):
                 if journal:
                     all_lines = all_lines.filtered(lambda l: l.journal_id == journal)
 
-                total_debit = sum(all_lines.mapped("debit"))
-                total_credit = sum(all_lines.mapped("credit"))
                 total_balance = sum(all_lines.mapped("balance"))
 
                 # Subtract initial values to get delta from this scenario
@@ -1384,18 +1376,18 @@ class StockTestRun(models.Model):
     def _resolve_partner(self, step, records):
         partner_name = step.get("partner_name") or step.get("partner")
         if partner_name:
-            key = "partner_%s" % partner_name.replace(" ", "_")
+            key = f"partner_{partner_name.replace(' ', '_')}"
             partner = records.get(key)
             if not partner:
                 partner = self.env["res.partner"].search([("name", "=", partner_name)], limit=1)
             if partner:
                 return partner
-        raise UserError(self.env._("Partner not found: %s") % partner_name)
+        raise UserError(self.env._("Partner not found: %s", partner_name))
 
     def _resolve_product(self, step, records):
         product_code = step.get("product_code") or step.get("code")
         if product_code:
-            key = "product_%s" % product_code
+            key = f"product_{product_code}"
             product = records.get(key)
             if not product:
                 product = self.env["product.product"].search([("default_code", "=", product_code)], limit=1)
@@ -1406,7 +1398,7 @@ class StockTestRun(models.Model):
             product = self.env["product.product"].search([("name", "=", product_name)], limit=1)
             if product:
                 return product
-        raise UserError(self.env._("Product not found for step: %s") % json.dumps(step))
+        raise UserError(self.env._("Product not found for step: %s", json.dumps(step)))
 
     def _resolve_location(self, location_name, usage="internal"):
         if not location_name:
@@ -1417,5 +1409,5 @@ class StockTestRun(models.Model):
             limit=1,
         )
         if not location:
-            raise UserError(self.env._("Location not found: %s") % location_name)
+            raise UserError(self.env._("Location not found: %s", location_name))
         return location

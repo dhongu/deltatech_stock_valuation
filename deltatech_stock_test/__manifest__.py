@@ -23,7 +23,7 @@
     ],
     "assets": {
         "web.assets_backend": [
-            "deltatech_stock_test/static/src/js/code_editor_patch.js",
+            "deltatech_stock_test/static/src/js/code_editor_patch.esm.js",
         ],
     },
     "license": "LGPL-3",

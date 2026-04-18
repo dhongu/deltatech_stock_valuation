@@ -248,7 +248,7 @@ class ProductValuationHistory(models.Model):
     )
 
     _product_valuation_history_uniq = models.Constraint(
-        'unique (product_id, valuation_area_id, account_id, company_id, month)',
+        "unique (product_id, valuation_area_id, account_id, company_id, month)",
         "Product valuation history must be unique",
     )
 
@@ -321,7 +321,7 @@ class ProductValuationHistory(models.Model):
             ]
             next_valuation = self.search(domain, order="month asc", limit=1)
             if next_valuation:
-                next_valuation.write(
+                next_valuation.update(
                     {
                         "quantity_initial": s.quantity_final,
                         "amount_initial": s.amount_final,

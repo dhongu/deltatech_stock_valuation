@@ -3,7 +3,7 @@
 # See README.rst file on addons root folder for license details
 
 
-from odoo import _, fields, models
+from odoo import fields, models
 from odoo.exceptions import UserError
 
 
@@ -23,6 +23,6 @@ class ResConfigSettings(models.TransientModel):
             return
         # has group system user
         if not self.env.user.has_group("base.group_system"):
-            raise UserError(_("Only System Administrator can do this action!"))
+            raise UserError(self.env._("Only System Administrator can do this action!"))
         self.env["product.valuation.history"]._recompute_all_amount()
         self.env["product.valuation"]._recompute_all_amount()

@@ -1,5 +1,6 @@
 # ©  2024 Deltatech
 # See README.rst file on addons root folder for license details
+
 import base64
 import glob
 import json
@@ -58,7 +59,7 @@ class StockTestScenario(models.Model):
             raw = base64.b64decode(self.import_file).decode("utf-8")
             data = json.loads(raw)
         except Exception as e:
-            raise UserError(self.env._("Invalid JSON file: %s") % e)
+            raise UserError(self.env._("Invalid JSON file: %s", e)) from e
 
         name = data.get("name", self.import_filename or "Imported Scenario")
         mode = data.get("mode", "test")
@@ -91,7 +92,7 @@ class StockTestScenario(models.Model):
                 rec.state = "ready"
                 rec.last_error = False
             except Exception as e:
-                raise UserError(self.env._("Invalid JSON: %s") % e)
+                raise UserError(self.env._("Invalid JSON: %s", e)) from e
 
     def action_execute_selected(self):
         """Run all selected scenarios (from list view action menu)."""
@@ -103,7 +104,7 @@ class StockTestScenario(models.Model):
         try:
             scenario = json.loads(self.json_data)
         except Exception as e:
-            raise UserError(self.env._("Invalid JSON: %s") % e)
+            raise UserError(self.env._("Invalid JSON: %s", e)) from e
         run = self.env["stock.test.run"].create(
             {
                 "scenario_id": self.id,
@@ -160,7 +161,7 @@ class StockTestScenario(models.Model):
                 "state": "ready",
             }
             if xml_id:
-                full_xml_id = "deltatech_stock_test.%s" % xml_id
+                full_xml_id = f"deltatech_stock_test.{xml_id}"
                 existing = self.env.ref(full_xml_id, raise_if_not_found=False)
                 if existing:
                     vals.pop("state")
@@ -198,7 +199,7 @@ class StockTestScenario(models.Model):
         for step in base_data.get("lines", []):
             step = dict(step)
             step_type = step.get("step") or step.get("type")
-            method_name = "_run_step_%s" % step_type.replace("-", "_")
+            method_name = f"_run_step_{step_type.replace('-', '_')}"
             if hasattr(run, method_name):
                 result = getattr(run, method_name)(step, records)
                 if isinstance(result, dict):

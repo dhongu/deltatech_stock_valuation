@@ -46,7 +46,7 @@ class StockTestLog(models.Model):
         for rec in self:
             if rec.document_model and rec.document_id:
                 try:
-                    rec.document_ref = "%s,%d" % (rec.document_model, rec.document_id)
+                    rec.document_ref = f"{rec.document_model},{rec.document_id}"
                 except Exception:
                     rec.document_ref = False
             else:
