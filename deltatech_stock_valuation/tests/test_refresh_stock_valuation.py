@@ -152,7 +152,7 @@ class TestRefreshStockValuation(AccountTestInvoicingCommon):
                 "name": "Normal User",
                 "login": "normal_user_refresh",
                 "email": "normal@example.com",
-                "groups_id": [(6, 0, [self.env.ref("base.group_user").id])],
+                "group_ids": [(6, 0, [self.env.ref("base.group_user").id])],
             }
         )
 
