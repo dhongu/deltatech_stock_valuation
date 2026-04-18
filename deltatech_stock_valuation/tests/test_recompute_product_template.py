@@ -41,7 +41,7 @@ class TestRecomputeProductTemplate(AccountTestInvoicingCommon):
         cls.categ_without_account = cls.env["product.category"].create(
             {
                 "name": "Cat Without Account",
-                "property_valuation": "manual_periodic",
+                "property_valuation": "periodic",
                 "property_cost_method": "standard",
             }
         )

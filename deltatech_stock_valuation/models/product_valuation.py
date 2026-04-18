@@ -571,18 +571,20 @@ class ProductValuationHistory(models.Model):
             """
                 UPDATE product_valuation_history pv
                 SET
-                    amount_initial = svl.total_amount - pv.amount,
-                    quantity_initial = svl.total_quantity - pv.quantity,
-                    amount_final = svl.total_amount,
-                    quantity_final = svl.total_quantity
+                    amount_initial = sm.total_amount - pv.amount,
+                    quantity_initial = sm.total_quantity - pv.quantity,
+                    amount_final = sm.total_amount,
+                    quantity_final = sm.total_quantity
                 FROM (
-                    SELECT svl.product_id,
-                           SUM(svl.value) AS total_amount,
-                           SUM(svl.quantity) AS total_quantity
-                    FROM stock_valuation_layer svl
-                    GROUP BY svl.product_id
-                ) AS svl
-                WHERE pv.product_id = svl.product_id AND
+                    SELECT sm.product_id,
+                           SUM(sm.value) AS total_amount,
+                           SUM(CASE WHEN sm.is_in THEN sm.quantity ELSE -sm.quantity END) AS total_quantity
+                    FROM stock_move sm
+                    WHERE sm.state = 'done'
+                      AND (sm.is_in = true OR sm.is_out = true)
+                    GROUP BY sm.product_id
+                ) AS sm
+                WHERE pv.product_id = sm.product_id AND
                       pv.month = %(max_month)s;
             """,
             params,
