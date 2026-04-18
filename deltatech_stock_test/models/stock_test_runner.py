@@ -44,7 +44,7 @@ class StockTestRun(models.Model):
     def _load_base_data(self):
         """Load and execute 00_base_data.json to populate shared records. Returns records dict."""
         base_path = file_path("deltatech_stock_test/data/scenarios/00_base_data.json", filter_ext=(".json",))
-        with open(base_path, "r", encoding="utf-8") as f:
+        with open(base_path, encoding="utf-8") as f:
             base_data = json.load(f)
         records = {}
         for step in base_data.get("lines", []):
@@ -88,13 +88,14 @@ class StockTestRun(models.Model):
         else:
             records = self._load_base_data()
         log_lines.append(f"    Base data loaded: {len(records)} records available.")
-        self._add_log(records, 0, "load_base_data", "info",
-                      f"Base data loaded: {len(records)} records available.")
+        self._add_log(records, 0, "load_base_data", "info", f"Base data loaded: {len(records)} records available.")
 
         # Snapshot initial stock and account balances
         self._snapshot_initial_stock(records)
         self._snapshot_initial_accounts(records)
-        self._add_log(records, 0, "snapshot_stock", "info", "Initial stock and account snapshot taken for test products.")
+        self._add_log(
+            records, 0, "snapshot_stock", "info", "Initial stock and account snapshot taken for test products."
+        )
 
         # Log initial stock for base data products (and any declared in scenario's base_products)
         self._log_initial_stock(records, scenario)
@@ -118,7 +119,7 @@ class StockTestRun(models.Model):
                     seen_docs = set()
                     for key in new_keys:
                         val = records[key]
-                        if hasattr(val, '_name') and hasattr(val, 'id') and val.id:
+                        if hasattr(val, "_name") and hasattr(val, "id") and val.id:
                             doc_key = (val._name, val.id)
                             if doc_key not in seen_docs:
                                 seen_docs.add(doc_key)
@@ -126,16 +127,17 @@ class StockTestRun(models.Model):
                     if step_docs:
                         for doc in step_docs:
                             log_lines.append(f"    -> {doc._name}: {doc.display_name}")
-                            self._add_log(records, idx + 1, step_type, "ok",
-                                          f"Created: {doc.display_name}", document=doc)
+                            self._add_log(
+                                records, idx + 1, step_type, "ok", f"Created: {doc.display_name}", document=doc
+                            )
                     else:
-                        self._add_log(records, idx + 1, step_type, "ok",
-                                      "Step executed successfully.")
+                        self._add_log(records, idx + 1, step_type, "ok", "Step executed successfully.")
                     # Run inline checks if present
                     if step.get("checks"):
                         checks = step["checks"]
                         if isinstance(checks, str):
                             import ast
+
                             checks = ast.literal_eval(checks)
                         check_log = self._run_checks(checks, records)
                         log_lines.extend(check_log)
@@ -209,9 +211,7 @@ class StockTestRun(models.Model):
 
         # Also add products declared explicitly in scenario's base_products list
         for prod_code in scenario.get("base_products", []):
-            product = self.env["product.product"].search(
-                [("default_code", "=", prod_code)], limit=1
-            )
+            product = self.env["product.product"].search([("default_code", "=", prod_code)], limit=1)
             if product:
                 products_to_log[product.id] = product
 
@@ -233,9 +233,7 @@ class StockTestRun(models.Model):
         locations = self.env["stock.location"].search(
             [("usage", "in", ("internal", "transit")), ("company_id", "=", self.env.company.id)]
         )
-        quants = self.env["stock.quant"].search(
-            [("location_id", "in", locations.ids), ("quantity", "!=", 0)]
-        )
+        quants = self.env["stock.quant"].search([("location_id", "in", locations.ids), ("quantity", "!=", 0)])
         for quant in quants:
             pid = quant.product_id.id
             if pid not in initial:
@@ -258,9 +256,7 @@ class StockTestRun(models.Model):
         if "_initial_accounts" in records:
             return
         initial = {}
-        accounts = self.env["account.account"].search(
-            [("company_ids", "in", self.env.company.id)]
-        )
+        accounts = self.env["account.account"].search([("company_ids", "in", self.env.company.id)])
         for account in accounts:
             lines = self.env["account.move.line"].search(
                 [
@@ -274,9 +270,7 @@ class StockTestRun(models.Model):
                 initial[account.code] = balance
         records["_initial_accounts"] = initial
         # Also snapshot max account.move id to filter legacy checks
-        max_move = self.env["account.move"].search(
-            [("company_id", "=", self.env.company.id)], order="id desc", limit=1
-        )
+        max_move = self.env["account.move"].search([("company_id", "=", self.env.company.id)], order="id desc", limit=1)
         records["_initial_max_move_id"] = max_move.id if max_move else 0
 
     # -------------------------------------------------------------------------
@@ -312,9 +306,7 @@ class StockTestRun(models.Model):
                 limit=1,
             )
             if not account:
-                raise AssertionError(
-                    self.env._("Account with code %s not found") % account_code
-                )
+                raise AssertionError(self.env._("Account with code %s not found") % account_code)
             lines = self.env["account.move.line"].search(
                 [
                     ("account_id", "=", account.id),
@@ -323,9 +315,7 @@ class StockTestRun(models.Model):
                 ]
             )
             if not lines and float(expected_balance) != 0.0:
-                raise AssertionError(
-                    self.env._("No posted entries found for account %s") % account_code
-                )
+                raise AssertionError(self.env._("No posted entries found for account %s") % account_code)
             balance = sum(lines.mapped("balance"))
             # Subtract initial balance to get only the delta from this scenario
             initial_balance = 0.0
@@ -343,14 +333,17 @@ class StockTestRun(models.Model):
                 balance,
                 delta_balance,
             )
-            if (
-                float_compare(delta_balance, float(expected_balance), precision_rounding=0.01)
-                != 0
-            ):
+            if float_compare(delta_balance, float(expected_balance), precision_rounding=0.01) != 0:
                 raise AssertionError(
                     self.env._(
                         "Account %(code)s balance delta expected %(expected)s, got %(actual).2f (initial=%(initial).2f)"
-                    ) % {"code": account_code, "expected": expected_balance, "actual": delta_balance, "initial": initial_balance}
+                    )
+                    % {
+                        "code": account_code,
+                        "expected": expected_balance,
+                        "actual": delta_balance,
+                        "initial": initial_balance,
+                    }
                 )
         return log_lines
 
@@ -365,13 +358,9 @@ class StockTestRun(models.Model):
             # Resolve product
             product = records.get(product_key)
             if not product:
-                product = self.env["product.product"].search(
-                    [("default_code", "=", product_key)], limit=1
-                )
+                product = self.env["product.product"].search([("default_code", "=", product_key)], limit=1)
             if not product:
-                raise AssertionError(
-                    self.env._("Product not found for key: %s") % product_key
-                )
+                raise AssertionError(self.env._("Product not found for key: %s") % product_key)
 
             for vals in check_list:
                 location_key = vals.get("location")
@@ -381,9 +370,7 @@ class StockTestRun(models.Model):
                         limit=1,
                     )
                     if not location:
-                        raise AssertionError(
-                            self.env._("Location not found: %s") % location_key
-                        )
+                        raise AssertionError(self.env._("Location not found: %s") % location_key)
                     quant_domain = [
                         ("product_id", "=", product.id),
                         ("location_id", "=", location.id),
@@ -433,16 +420,12 @@ class StockTestRun(models.Model):
                 )
 
                 if vals.get("qty") is not None:
-                    if (
-                        float_compare(
-                            delta_qty, float(vals["qty"]), precision_rounding=0.001
-                        )
-                        != 0
-                    ):
+                    if float_compare(delta_qty, float(vals["qty"]), precision_rounding=0.001) != 0:
                         raise AssertionError(
                             self.env._(
                                 "Stock qty for %(product)s @ %(location)s: expected %(expected)s, got %(actual).3f (current=%(current).3f, initial=%(initial).3f)"
-                            ) % {
+                            )
+                            % {
                                 "product": product.display_name,
                                 "location": location_key or "all",
                                 "expected": vals["qty"],
@@ -452,16 +435,12 @@ class StockTestRun(models.Model):
                             }
                         )
                 if vals.get("value") is not None:
-                    if (
-                        float_compare(
-                            delta_value, float(vals["value"]), precision_rounding=0.01
-                        )
-                        != 0
-                    ):
+                    if float_compare(delta_value, float(vals["value"]), precision_rounding=0.01) != 0:
                         raise AssertionError(
                             self.env._(
                                 "Stock value for %(product)s @ %(location)s: expected %(expected)s, got %(actual).2f (current=%(current).2f, initial=%(initial).2f)"
-                            ) % {
+                            )
+                            % {
                                 "product": product.display_name,
                                 "location": location_key or "all",
                                 "expected": vals["value"],
@@ -556,9 +535,7 @@ class StockTestRun(models.Model):
         categ_key = step.get("categ_key")
         categ = records.get(categ_key) if categ_key else None
         if not categ and step.get("categ_name"):
-            categ = self.env["product.category"].search(
-                [("name", "=", step["categ_name"])], limit=1
-            )
+            categ = self.env["product.category"].search([("name", "=", step["categ_name"])], limit=1)
 
         vals = {
             "name": step["name"],
@@ -780,30 +757,44 @@ class StockTestRun(models.Model):
 
             line_vals = []
             for src in source_lines:
-                line_vals.append((0, 0, {
-                    "product_id": src.product_id.id,
-                    "quantity": abs_qty,
-                    "price_unit": float(price) if price else src.price_unit,
-                    "account_id": src.account_id.id,
-                    "name": src.name,
-                }))
+                line_vals.append(
+                    (
+                        0,
+                        0,
+                        {
+                            "product_id": src.product_id.id,
+                            "quantity": abs_qty,
+                            "price_unit": float(price) if price else src.price_unit,
+                            "account_id": src.account_id.id,
+                            "name": src.name,
+                        },
+                    )
+                )
 
             if not line_vals and po.order_line:
                 for ol in po.order_line:
-                    line_vals.append((0, 0, {
-                        "product_id": ol.product_id.id,
-                        "quantity": abs_qty,
-                        "price_unit": float(price) if price else ol.price_unit,
-                        "name": ol.name,
-                    }))
+                    line_vals.append(
+                        (
+                            0,
+                            0,
+                            {
+                                "product_id": ol.product_id.id,
+                                "quantity": abs_qty,
+                                "price_unit": float(price) if price else ol.price_unit,
+                                "name": ol.name,
+                            },
+                        )
+                    )
 
-            credit_note = self.env["account.move"].create({
-                "move_type": "in_refund",
-                "partner_id": po.partner_id.id,
-                "invoice_date": fields.Date.context_today(self),
-                "currency_id": po.currency_id.id,
-                "invoice_line_ids": line_vals,
-            })
+            credit_note = self.env["account.move"].create(
+                {
+                    "move_type": "in_refund",
+                    "partner_id": po.partner_id.id,
+                    "invoice_date": fields.Date.context_today(self),
+                    "currency_id": po.currency_id.id,
+                    "invoice_line_ids": line_vals,
+                }
+            )
             credit_note.action_post()
             records[f"vendor_bill_{idx}"] = credit_note
             records["last_vendor_bill"] = credit_note
@@ -820,9 +811,7 @@ class StockTestRun(models.Model):
                 for line_spec in step["products"]:
                     product_code = line_spec.get("product_code") or line_spec.get("product")
                     product = self._resolve_product({"product_code": product_code}, records)
-                    for inv_line in invoice.invoice_line_ids.filtered(
-                        lambda l: l.product_id.id == product.id
-                    ):
+                    for inv_line in invoice.invoice_line_ids.filtered(lambda l: l.product_id.id == product.id):
                         if "qty" in line_spec:
                             inv_line.quantity = float(line_spec["qty"])
                         if "price" in line_spec:
@@ -990,9 +979,7 @@ class StockTestRun(models.Model):
                     if inv_qty is not None or inv_price is not None:
                         product_code = line_spec.get("product_code") or line_spec.get("product")
                         prod = self._resolve_product({"product_code": product_code}, records)
-                        for inv_line in invoice.invoice_line_ids.filtered(
-                            lambda l: l.product_id.id == prod.id
-                        ):
+                        for inv_line in invoice.invoice_line_ids.filtered(lambda l: l.product_id.id == prod.id):
                             if inv_qty is not None:
                                 inv_line.quantity = float(inv_qty)
                             if inv_price is not None:
@@ -1020,17 +1007,21 @@ class StockTestRun(models.Model):
                 limit=1,
             )
         if not location:
-            location = self.env["stock.warehouse"].search(
-                [("company_id", "=", self.env.company.id)], limit=1
-            ).lot_stock_id
+            location = (
+                self.env["stock.warehouse"].search([("company_id", "=", self.env.company.id)], limit=1).lot_stock_id
+            )
 
         qty = float(step.get("qty", 0.0))
-        quant = self.env["stock.quant"].with_context(inventory_mode=True).create(
-            {
-                "product_id": product.id,
-                "location_id": location.id,
-                "inventory_quantity": qty,
-            }
+        quant = (
+            self.env["stock.quant"]
+            .with_context(inventory_mode=True)
+            .create(
+                {
+                    "product_id": product.id,
+                    "location_id": location.id,
+                    "inventory_quantity": qty,
+                }
+            )
         )
         quant.action_apply_inventory()
         idx = step.get("_index", 0)
@@ -1082,9 +1073,7 @@ class StockTestRun(models.Model):
             raise UserError(self.env._("No transit location found for company."))
 
         # Find transit route
-        transit_route = self.env["stock.route"].search(
-            [("name", "ilike", "transit")], limit=1
-        )
+        transit_route = self.env["stock.route"].search([("name", "ilike", "transit")], limit=1)
 
         move_vals = {
             "company_id": self.env.company.id,
@@ -1205,9 +1194,7 @@ class StockTestRun(models.Model):
             product_code = line.get("product_code") or line.get("product")
             product = records.get("product_%s" % product_code)
             if not product:
-                product = self.env["product.product"].search(
-                    [("default_code", "=", product_code)], limit=1
-                )
+                product = self.env["product.product"].search([("default_code", "=", product_code)], limit=1)
             if not product:
                 raise UserError(self.env._("Product not found: %s") % product_code)
             invoice_lines.append(
@@ -1257,18 +1244,14 @@ class StockTestRun(models.Model):
             limit=1,
         )
         if not picking_type:
-            raise UserError(
-                self.env._("No picking type found for code: %s") % picking_type_code
-            )
+            raise UserError(self.env._("No picking type found for code: %s") % picking_type_code)
 
         move_lines = []
         for ml in step.get("move_lines", []):
             product_code = ml.get("product_code")
             product = records.get("product_%s" % product_code)
             if not product:
-                product = self.env["product.product"].search(
-                    [("default_code", "=", product_code)], limit=1
-                )
+                product = self.env["product.product"].search([("default_code", "=", product_code)], limit=1)
             if not product:
                 raise UserError(self.env._("Product not found: %s") % product_code)
             move_lines.append(
@@ -1320,9 +1303,11 @@ class StockTestRun(models.Model):
 
         for expected in expected_moves:
             journal_name = expected.get("journal")
-            journal = self.env["account.journal"].search(
-                [("name", "ilike", journal_name)], limit=1
-            ) if journal_name else self.env["account.journal"]
+            journal = (
+                self.env["account.journal"].search([("name", "ilike", journal_name)], limit=1)
+                if journal_name
+                else self.env["account.journal"]
+            )
 
             for exp_line in expected.get("line_ids", []):
                 account_code = exp_line.get("account")
@@ -1413,9 +1398,7 @@ class StockTestRun(models.Model):
             key = "product_%s" % product_code
             product = records.get(key)
             if not product:
-                product = self.env["product.product"].search(
-                    [("default_code", "=", product_code)], limit=1
-                )
+                product = self.env["product.product"].search([("default_code", "=", product_code)], limit=1)
             if product:
                 return product
         product_name = step.get("product_name") or step.get("name")
@@ -1427,9 +1410,7 @@ class StockTestRun(models.Model):
 
     def _resolve_location(self, location_name, usage="internal"):
         if not location_name:
-            warehouse = self.env["stock.warehouse"].search(
-                [("company_id", "=", self.env.company.id)], limit=1
-            )
+            warehouse = self.env["stock.warehouse"].search([("company_id", "=", self.env.company.id)], limit=1)
             return warehouse.lot_stock_id
         location = self.env["stock.location"].search(
             [("complete_name", "ilike", location_name), ("usage", "=", usage)],

@@ -133,7 +133,7 @@ class StockTestScenario(models.Model):
             if os.path.basename(filepath) == "00_base_data.json":
                 continue
             try:
-                with open(filepath, "r", encoding="utf-8") as f:
+                with open(filepath, encoding="utf-8") as f:
                     data = json.load(f)
             except Exception as e:
                 _logger.warning("Could not load scenario file %s: %s", filepath, e)
@@ -191,7 +191,7 @@ class StockTestScenario(models.Model):
     def _get_base_data_records(self):
         """Load 00_base_data.json and return a records dict with shared partners, products, categories."""
         base_path = file_path("deltatech_stock_test/data/scenarios/00_base_data.json", filter_ext=(".json",))
-        with open(base_path, "r", encoding="utf-8") as f:
+        with open(base_path, encoding="utf-8") as f:
             base_data = json.load(f)
         run = self.env["stock.test.run"].new({})
         records = {}

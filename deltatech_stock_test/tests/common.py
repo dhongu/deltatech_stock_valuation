@@ -150,9 +150,7 @@ class StockTestCommon(AccountTestInvoicingCommon):
         # ------------------------------------------------------------------ #
         # Warehouse & locations
         # ------------------------------------------------------------------ #
-        cls.warehouse = cls.env["stock.warehouse"].search(
-            [("company_id", "=", cls.env.company.id)], limit=1
-        )
+        cls.warehouse = cls.env["stock.warehouse"].search([("company_id", "=", cls.env.company.id)], limit=1)
         cls.location = cls.warehouse.lot_stock_id
 
         cls.location_sub_1 = cls.env["stock.location"].create(

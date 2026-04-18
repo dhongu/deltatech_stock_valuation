@@ -130,7 +130,11 @@ class TestStockScenarios(StockTestCommon):
                     "move_type": "out_invoice",
                     "partner_name": self.customer_1.name,
                     "invoice_lines": [
-                        {"product_code": self.product_fifo.default_code or "TST-INV-01", "quantity": 2, "price_unit": 150.0}
+                        {
+                            "product_code": self.product_fifo.default_code or "TST-INV-01",
+                            "quantity": 2,
+                            "price_unit": 150.0,
+                        }
                     ],
                 },
                 {
@@ -142,9 +146,7 @@ class TestStockScenarios(StockTestCommon):
         }
         run = self._run_scenario(scenario, mode="demo")
         self.assertEqual(run.state, "passed")
-        move = self.env["account.move"].search(
-            [("state", "=", "posted"), ("move_type", "=", "out_invoice")], limit=1
-        )
+        move = self.env["account.move"].search([("state", "=", "posted"), ("move_type", "=", "out_invoice")], limit=1)
         self.assertTrue(move, "Invoice should be posted")
 
     def test_scenario_model_action_execute(self):

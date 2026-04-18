@@ -20,7 +20,6 @@
         "stock_account",
         "purchase_stock",
         "sale_stock",
-
     ],
     "assets": {
         "web.assets_backend": [
