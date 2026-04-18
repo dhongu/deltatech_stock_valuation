@@ -107,56 +107,51 @@ class StockTestRun(models.Model):
             step_type = step.get("step") or step.get("type")
             log_lines.append(f"[{idx + 1}] Running step: {step_type}")
             try:
-                method_name = f"_run_step_{step_type.replace('-', '_')}"
-                if hasattr(self, method_name):
-                    keys_before = set(records.keys())
-                    result = getattr(self, method_name)(step, records)
-                    if isinstance(result, dict):
-                        records.update(result)
-                    # Log only newly added documents (keys added by this step), deduplicated by (model, id)
-                    new_keys = set(records.keys()) - keys_before
-                    step_docs = []
-                    seen_docs = set()
-                    for key in new_keys:
-                        val = records[key]
-                        if hasattr(val, "_name") and hasattr(val, "id") and val.id:
-                            doc_key = (val._name, val.id)
-                            if doc_key not in seen_docs:
-                                seen_docs.add(doc_key)
-                                step_docs.append(val)
-                    if step_docs:
-                        for doc in step_docs:
-                            log_lines.append(f"    -> {doc._name}: {doc.display_name}")
-                            self._add_log(
-                                records, idx + 1, step_type, "ok", f"Created: {doc.display_name}", document=doc
-                            )
-                    else:
-                        self._add_log(records, idx + 1, step_type, "ok", "Step executed successfully.")
-                    # Run inline checks if present
-                    if step.get("checks"):
-                        checks = step["checks"]
-                        if isinstance(checks, str):
-                            import ast
+                with self.env.cr.savepoint():
+                    method_name = f"_run_step_{step_type.replace('-', '_')}"
+                    if hasattr(self, method_name):
+                        keys_before = set(records.keys())
+                        result = getattr(self, method_name)(step, records)
+                        if isinstance(result, dict):
+                            records.update(result)
+                        # Log only newly added documents (keys added by this step), deduplicated by (model, id)
+                        new_keys = set(records.keys()) - keys_before
+                        step_docs = []
+                        seen_docs = set()
+                        for key in new_keys:
+                            val = records[key]
+                            if hasattr(val, "_name") and hasattr(val, "id") and val.id:
+                                doc_key = (val._name, val.id)
+                                if doc_key not in seen_docs:
+                                    seen_docs.add(doc_key)
+                                    step_docs.append(val)
+                        if step_docs:
+                            for doc in step_docs:
+                                log_lines.append(f"    -> {doc._name}: {doc.display_name}")
+                                self._add_log(
+                                    records, idx + 1, step_type, "ok", f"Created: {doc.display_name}", document=doc
+                                )
+                        else:
+                            self._add_log(records, idx + 1, step_type, "ok", "Step executed successfully.")
+                        # Run inline checks if present
+                        if step.get("checks"):
+                            checks = step["checks"]
+                            if isinstance(checks, str):
+                                import ast
 
-                            checks = ast.literal_eval(checks)
-                        check_log = self._run_checks(checks, records)
-                        log_lines.extend(check_log)
-                        for check_line in check_log:
-                            state = "error" if check_line.startswith("FAIL") else "ok"
-                            self._add_log(records, idx + 1, "check", state, check_line)
-                else:
-                    raise UserError(self.env._("Unknown step type: %s", step_type))
+                                checks = ast.literal_eval(checks)
+                            check_log = self._run_checks(checks, records)
+                            log_lines.extend(check_log)
+                            for check_line in check_log:
+                                state = "error" if check_line.startswith("FAIL") else "ok"
+                                self._add_log(records, idx + 1, "check", state, check_line)
+                    else:
+                        raise UserError(self.env._("Unknown step type: %s", step_type))
             except Exception as e:
                 error_msg = str(e)
                 log_lines.append(f"    ERROR: {error_msg}")
+                _logger.error("Step [%d] %s failed: %s", idx + 1, step_type, error_msg)
                 self._add_log(records, idx + 1, step_type, "error", error_msg)
-                self.write(
-                    {
-                        "state": "failed",
-                        "log": "\n".join(log_lines),
-                        "error_message": error_msg,
-                    }
-                )
                 return False
 
         # Final expected_account_moves validation (legacy format)
