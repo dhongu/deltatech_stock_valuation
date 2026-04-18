@@ -145,7 +145,6 @@ class StockMove(models.Model):
 
         return rule
 
-
     def _should_create_account_move(self):
         if not self.product_id.valuation_class_id:
             return super()._should_create_account_move()
@@ -156,7 +155,6 @@ class StockMove(models.Model):
         else:
             should = True
         return should
-
 
     def _get_account_move_line_vals(self):
         if not self.product_id.valuation_class_id:
@@ -170,16 +168,19 @@ class StockMove(models.Model):
         else:
             debit_acc = rule.acc_dest_id
             credit_acc = rule.acc_valuation_id
-        return [{
-            'account_id': credit_acc.id,
-            'name': self.reference,
-            'debit': 0,
-            'credit': self.value,
-            'product_id': self.product_id.id,
-        }, {
-            'account_id': debit_acc.id,
-            'name': self.reference,
-            'debit': self.value,
-            'credit': 0,
-            'product_id': self.product_id.id,
-        }]
+        return [
+            {
+                "account_id": credit_acc.id,
+                "name": self.reference,
+                "debit": 0,
+                "credit": self.value,
+                "product_id": self.product_id.id,
+            },
+            {
+                "account_id": debit_acc.id,
+                "name": self.reference,
+                "debit": self.value,
+                "credit": 0,
+                "product_id": self.product_id.id,
+            },
+        ]
