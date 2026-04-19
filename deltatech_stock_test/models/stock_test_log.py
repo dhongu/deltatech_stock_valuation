@@ -34,6 +34,14 @@ class StockTestLog(models.Model):
     document_model = fields.Char(string="Document Model")
     document_id = fields.Integer(string="Document ID")
     document_name = fields.Char(string="Document")
+    account_move_line_ids = fields.Many2many(
+        "account.move.line",
+        "stock_test_log_move_line_rel",
+        "log_id",
+        "move_line_id",
+        string="Accounting Lines",
+        readonly=True,
+    )
     document_ref = fields.Reference(
         selection=_get_document_selection,
         string="Document",

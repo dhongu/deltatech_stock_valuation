@@ -34,16 +34,31 @@
                                     <field name="document_ref" string="Document"/>
                                     <field name="document_model" string="Model" optional="hide"/>
                                 </list>
+                                <form>
+                                        <field name="account_move_line_ids" readonly="1">
+                                            <list>
+                                                <field name="account_id"/>
+                                                <field name="name"/>
+                                                <field name="debit"/>
+                                                <field name="credit"/>
+                                            </list>
+                                        </field>
+                                </form>
                             </field>
                         </page>
                         <page string="Execution Log">
                             <field name="log" readonly="1"/>
                         </page>
-                        <page string="Validation Result">
-                            <field name="validation_result" readonly="1"/>
-                        </page>
-                        <page string="Error" invisible="not error_message">
-                            <field name="error_message" readonly="1"/>
+                        <page string="Accounting Lines">
+                            <field name="account_move_line_ids" readonly="1">
+                                <list>
+                                    <field name="move_id" string="Entry"/>
+                                    <field name="account_id"/>
+                                    <field name="name"/>
+                                    <field name="debit"/>
+                                    <field name="credit"/>
+                                </list>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>

@@ -36,6 +36,14 @@ class StockTestRun(models.Model):
     error_message = fields.Text(string="Error Message", readonly=True)
     company_id = fields.Many2one("res.company", string="Company", required=True, default=lambda self: self.env.company)
     log_ids = fields.One2many("stock.test.log", "run_id", string="Step Logs", readonly=True)
+    account_move_line_ids = fields.Many2many(
+        "account.move.line",
+        "stock_test_run_move_line_rel",
+        "run_id",
+        "move_line_id",
+        string="Accounting Lines",
+        readonly=True,
+    )
 
     # -------------------------------------------------------------------------
     # Main entry point
@@ -58,7 +66,7 @@ class StockTestRun(models.Model):
         _logger.info("Base data loaded: %d records", len(records))
         return records
 
-    def _add_log(self, records, step_index, step_type, state, message, document=None):
+    def _add_log(self, records, step_index, step_type, state, message, document=None, move_lines=None):
         """Create a stock.test.log entry for this run."""
         vals = {
             "run_id": self.id,
@@ -71,6 +79,8 @@ class StockTestRun(models.Model):
             vals["document_model"] = document._name
             vals["document_id"] = document.id
             vals["document_name"] = document.display_name
+        if move_lines:
+            vals["account_move_line_ids"] = [(6, 0, move_lines.ids)]
         self.env["stock.test.log"].create(vals)
 
     def execute(self, scenario):
@@ -107,51 +117,83 @@ class StockTestRun(models.Model):
             step_type = step.get("step") or step.get("type")
             log_lines.append(f"[{idx + 1}] Running step: {step_type}")
             try:
-                with self.env.cr.savepoint():
-                    method_name = f"_run_step_{step_type.replace('-', '_')}"
-                    if hasattr(self, method_name):
-                        keys_before = set(records.keys())
-                        result = getattr(self, method_name)(step, records)
-                        if isinstance(result, dict):
-                            records.update(result)
-                        # Log only newly added documents (keys added by this step), deduplicated by (model, id)
-                        new_keys = set(records.keys()) - keys_before
-                        step_docs = []
-                        seen_docs = set()
-                        for key in new_keys:
-                            val = records[key]
-                            if hasattr(val, "_name") and hasattr(val, "id") and val.id:
-                                doc_key = (val._name, val.id)
-                                if doc_key not in seen_docs:
-                                    seen_docs.add(doc_key)
-                                    step_docs.append(val)
-                        if step_docs:
-                            for doc in step_docs:
-                                log_lines.append(f"    -> {doc._name}: {doc.display_name}")
-                                self._add_log(
-                                    records, idx + 1, step_type, "ok", f"Created: {doc.display_name}", document=doc
-                                )
-                        else:
-                            self._add_log(records, idx + 1, step_type, "ok", "Step executed successfully.")
-                        # Run inline checks if present
-                        if step.get("checks"):
-                            checks = step["checks"]
-                            if isinstance(checks, str):
-                                import ast
-
-                                checks = ast.literal_eval(checks)
-                            check_log = self._run_checks(checks, records)
-                            log_lines.extend(check_log)
-                            for check_line in check_log:
-                                state = "error" if check_line.startswith("FAIL") else "ok"
-                                self._add_log(records, idx + 1, "check", state, check_line)
+                method_name = f"_run_step_{step_type.replace('-', '_')}"
+                if hasattr(self, method_name):
+                    keys_before = set(records.keys())
+                    result = getattr(self, method_name)(step, records)
+                    if isinstance(result, dict):
+                        records.update(result)
+                    # Log only newly added documents (keys added by this step), deduplicated by (model, id)
+                    new_keys = set(records.keys()) - keys_before
+                    step_docs = []
+                    seen_docs = set()
+                    for key in new_keys:
+                        val = records[key]
+                        if hasattr(val, "_name") and hasattr(val, "id") and val.id:
+                            doc_key = (val._name, val.id)
+                            if doc_key not in seen_docs:
+                                seen_docs.add(doc_key)
+                                step_docs.append(val)
+                    # Detect new account.move records created by this step
+                    step_max_move_id = records.get("_step_max_move_id", records.get("_initial_max_move_id", 0))
+                    new_step_moves = self.env["account.move"].search(
+                        [("id", ">", step_max_move_id), ("company_id", "=", self.env.company.id)]
+                    )
+                    new_step_lines = new_step_moves.mapped("line_ids") if new_step_moves else self.env["account.move.line"]
+                    # Update step max move id for next step
+                    if new_step_moves:
+                        records["_step_max_move_id"] = max(new_step_moves.ids)
+                    if step_docs:
+                        for doc in step_docs:
+                            log_lines.append(f"    -> {doc._name}: {doc.display_name}")
+                            self._add_log(
+                                records, idx + 1, step_type, "ok", f"Created: {doc.display_name}", document=doc
+                            )
                     else:
-                        raise UserError(self.env._("Unknown step type: %s", step_type))
+                        self._add_log(records, idx + 1, step_type, "ok", "Step executed successfully.")
+                    # Log accounting entries generated by this step
+                    if new_step_lines:
+                        for move in new_step_moves:
+                            move_lines = move.line_ids
+                            msg = f"Accounting entry: {move.name or move.ref or '/'} ({move.move_type})"
+                            log_lines.append(f"    -> {msg}")
+                            self._add_log(
+                                records, idx + 1, "account_move", "info", msg,
+                                document=move, move_lines=move_lines
+                            )
+                    # Run inline checks if present
+                    if step.get("checks"):
+                        checks = step["checks"]
+                        if isinstance(checks, str):
+                            import ast
+
+                            checks = ast.literal_eval(checks)
+                        check_log = self._run_checks(checks, records)
+                        log_lines.extend(check_log)
+                        for check_line in check_log:
+                            state = "error" if check_line.startswith("FAIL") else "ok"
+                            self._add_log(records, idx + 1, "check", state, check_line)
+                else:
+                    raise UserError(self.env._("Unknown step type: %s", step_type))
             except Exception as e:
                 error_msg = str(e)
                 log_lines.append(f"    ERROR: {error_msg}")
                 _logger.error("Step [%d] %s failed: %s", idx + 1, step_type, error_msg)
                 self._add_log(records, idx + 1, step_type, "error", error_msg)
+                # Collect account.move records created so far
+                initial_max_move_id = records.get("_initial_max_move_id", 0)
+                new_moves = self.env["account.move"].search(
+                    [("id", ">", initial_max_move_id), ("company_id", "=", self.env.company.id)]
+                )
+                new_move_lines = new_moves.mapped("line_ids") if new_moves else self.env["account.move.line"]
+                self.write(
+                    {
+                        "state": "failed",
+                        "log": "\n".join(log_lines),
+                        "error_message": error_msg,
+                        "account_move_line_ids": [(6, 0, new_move_lines.ids)],
+                    }
+                )
                 return False
 
         # Final expected_account_moves validation (legacy format)
@@ -168,21 +210,34 @@ class StockTestRun(models.Model):
                 self._add_log(records, len(steps) + 1, "validate_account_moves", state, vline)
 
         if validation_error:
+            initial_max_move_id = records.get("_initial_max_move_id", 0)
+            new_moves = self.env["account.move"].search(
+                [("id", ">", initial_max_move_id), ("company_id", "=", self.env.company.id)]
+            )
+            new_move_lines = new_moves.mapped("line_ids") if new_moves else self.env["account.move.line"]
             self.write(
                 {
                     "state": "failed",
                     "log": "\n".join(log_lines),
                     "validation_result": "\n".join(validation_lines),
                     "error_message": validation_error,
+                    "account_move_line_ids": [(6, 0, new_move_lines.ids)],
                 }
             )
             return False
 
+        # Collect all account.move records created during this run (after initial snapshot)
+        initial_max_move_id = records.get("_initial_max_move_id", 0)
+        new_moves = self.env["account.move"].search(
+            [("id", ">", initial_max_move_id), ("company_id", "=", self.env.company.id)]
+        )
+        new_move_lines = new_moves.mapped("line_ids") if new_moves else self.env["account.move.line"]
         self.write(
             {
                 "state": "passed",
                 "log": "\n".join(log_lines),
                 "validation_result": "\n".join(validation_lines) if validation_lines else "OK",
+                "account_move_line_ids": [(6, 0, new_move_lines.ids)],
             }
         )
         return True
