@@ -157,7 +157,9 @@ class StockTestRun(models.Model):
                     new_step_moves = self.env["account.move"].search(
                         [("id", ">", step_max_move_id), ("company_id", "=", self.env.company.id)]
                     )
-                    new_step_lines = new_step_moves.mapped("line_ids") if new_step_moves else self.env["account.move.line"]
+                    new_step_lines = (
+                        new_step_moves.mapped("line_ids") if new_step_moves else self.env["account.move.line"]
+                    )
                     # Update step max move id for next step
                     if new_step_moves:
                         records["_step_max_move_id"] = max(new_step_moves.ids)
@@ -176,8 +178,7 @@ class StockTestRun(models.Model):
                             msg = f"Accounting entry: {move.name or move.ref or '/'} ({move.move_type})"
                             log_lines.append(f"    -> {msg}")
                             self._add_log(
-                                records, idx + 1, "account_move", "info", msg,
-                                document=move, move_lines=move_lines
+                                records, idx + 1, "account_move", "info", msg, document=move, move_lines=move_lines
                             )
                     # Run inline checks if present
                     if step.get("checks"):
@@ -675,7 +676,9 @@ class StockTestRun(models.Model):
         valuation_area_key = step.get("valuation_area_key")
         account_modifier_key = step.get("account_modifier_key")
 
-        valuation_class = records.get(valuation_class_key) if valuation_class_key else self.env["product.valuation.class"]
+        valuation_class = (
+            records.get(valuation_class_key) if valuation_class_key else self.env["product.valuation.class"]
+        )
         valuation_area = records.get(valuation_area_key) if valuation_area_key else self.env["valuation.area"]
         account_modifier = records.get(account_modifier_key) if account_modifier_key else self.env["account.modifier"]
 
@@ -740,9 +743,7 @@ class StockTestRun(models.Model):
         modifier_key = step.get("account_modifier_key")
         modifier = records.get(modifier_key) if modifier_key else None
         if not modifier and step.get("account_modifier_code"):
-            modifier = self.env["account.modifier"].search(
-                [("code", "=", step["account_modifier_code"])], limit=1
-            )
+            modifier = self.env["account.modifier"].search([("code", "=", step["account_modifier_code"])], limit=1)
         picking_type.write({"account_modifier_id": modifier.id if modifier else False})
         return {}
 
@@ -751,9 +752,7 @@ class StockTestRun(models.Model):
         product_key = step.get("product_key")
         product = records.get(product_key) if product_key else None
         if not product and step.get("product_code"):
-            product = self.env["product.product"].search(
-                [("default_code", "=", step["product_code"])], limit=1
-            )
+            product = self.env["product.product"].search([("default_code", "=", step["product_code"])], limit=1)
         valuation_class_key = step.get("valuation_class_key")
         valuation_class = records.get(valuation_class_key) if valuation_class_key else None
         if not valuation_class and step.get("valuation_class_code"):
