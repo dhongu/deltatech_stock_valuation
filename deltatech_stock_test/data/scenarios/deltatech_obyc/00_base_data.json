@@ -71,6 +71,7 @@
       "transaction_key": "stock_valuation",
       "valuation_class_key": "valuation_class_MARF",
       "valuation_area_key": "valuation_area_WH01",
+      "account_modifier_key": "account_modifier_STD",
       "acc_valuation": "371000"
     },
     {
@@ -96,6 +97,7 @@
       "transaction_key": "stock_receipt",
       "valuation_class_key": "valuation_class_MARF",
       "valuation_area_key": "valuation_area_WH01",
+      "account_modifier_key": "account_modifier_STD",
       "acc_src": "408000",
       "acc_valuation": "371000"
     },
@@ -104,6 +106,7 @@
       "transaction_key": "return_to_supplier",
       "valuation_class_key": "valuation_class_MARF",
       "valuation_area_key": "valuation_area_WH01",
+      "account_modifier_key": "account_modifier_STD",
       "acc_dest": "408000",
       "acc_valuation": "371000"
     },
@@ -112,6 +115,7 @@
       "transaction_key": "stock_delivery",
       "valuation_class_key": "valuation_class_MARF",
       "valuation_area_key": "valuation_area_WH01",
+      "account_modifier_key": "account_modifier_STD",
       "acc_dest": "607000",
       "acc_valuation": "371000"
     },
@@ -120,6 +124,7 @@
       "transaction_key": "return_from_customer",
       "valuation_class_key": "valuation_class_MARF",
       "valuation_area_key": "valuation_area_WH01",
+      "account_modifier_key": "account_modifier_STD",
       "acc_src": "607000",
       "acc_valuation": "371000"
     },
@@ -128,6 +133,7 @@
       "transaction_key": "inventory_adjustment_plus",
       "valuation_class_key": "valuation_class_MARF",
       "valuation_area_key": "valuation_area_WH01",
+      "account_modifier_key": "account_modifier_STD",
       "acc_dest": "371000",
       "acc_valuation": "371000"
     },
@@ -136,6 +142,7 @@
       "transaction_key": "inventory_adjustment_minus",
       "valuation_class_key": "valuation_class_MARF",
       "valuation_area_key": "valuation_area_WH01",
+      "account_modifier_key": "account_modifier_STD",
       "acc_src": "371000",
       "acc_valuation": "371000"
     },
@@ -144,6 +151,7 @@
       "transaction_key": "internal_transfer",
       "valuation_class_key": "valuation_class_MARF",
       "valuation_area_key": "valuation_area_WH01",
+      "account_modifier_key": "account_modifier_STD",
       "acc_src": "371000",
       "acc_dest": "371000",
       "acc_valuation": "371000"
