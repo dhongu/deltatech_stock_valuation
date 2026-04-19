@@ -1,0 +1,46 @@
+{
+  "id": "obyc_case_72",
+  "name": "[OBYC] Case 72: Receptie partiala cu factura directa",
+  "description": "Recepție parțială marfă cu factură directă (account_modifier=FAC). PO 10 buc × 100 RON, recepție 6 buc. Nota contabilă: 371000 debit 600, 401000 credit 600.",
+  "mode": "test",
+  "currency": "RON",
+  "base_data_script": "deltatech_obyc/00_base_data.json",
+  "lines": [
+    {
+      "step": "set_picking_type_account_modifier",
+      "picking_type_code": "incoming",
+      "account_modifier_code": "FAC"
+    },
+    {
+      "step": "create_purchase_order",
+      "product": "OBYC-MARF-001",
+      "qty": 10.0,
+      "price": 100.0,
+      "partner": "obyc_supplier",
+      "currency": "RON"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 6.0,
+      "checks": {
+        "stock": {
+          "OBYC-MARF-001": [
+            {
+              "qty": 6,
+              "value": 600
+            }
+          ]
+        },
+        "account": {
+          "371000": 600,
+          "401000": -600
+        }
+      }
+    },
+    {
+      "step": "set_picking_type_account_modifier",
+      "picking_type_code": "incoming",
+      "account_modifier_code": "STD"
+    }
+  ]
+}

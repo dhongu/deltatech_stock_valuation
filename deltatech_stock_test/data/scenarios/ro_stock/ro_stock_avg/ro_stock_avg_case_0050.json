@@ -1,0 +1,69 @@
+{
+  "id": "ro_stock_avg_case_50",
+  "name": "[RO_STOCK_AVG] Case 50: receptie normala transfer intre depozite si consum si retur consum partial",
+  "description": "Flux: Creare comandă de cumpărare — 5.0 buc × 100.0 RON → Recepție marfă — 5.0 buc → Creare factură furnizor — 5.0 buc × 100.0 RON → Recepție marfă — 3.0 buc. Stoc final: 2 buc, valoare 200 RON. Sold 371000: 200 RON. Sold 371001: 200 RON. Sold 607001: 100 RON. Note contabile: 371000: 200 RON, 371001: 200 RON, 607001: 100 RON.",
+  "mode": "test",
+  "currency": "RON",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "product_avg",
+      "qty": 5.0,
+      "price": 100.0,
+      "partner": "supplier_1",
+      "currency": "RON"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 5.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 5.0,
+      "price": 100.0
+    },
+    {
+      "step": "receive_stock",
+      "qty": 3.0,
+      "checks": {
+        "stock": {
+          "product_avg": [
+            {
+              "location": "location",
+              "qty": 2,
+              "value": 200
+            },
+            {
+              "location": "location1",
+              "qty": 2,
+              "value": 200
+            }
+          ]
+        },
+        "account": {
+          "371000": 200,
+          "371001": 200,
+          "607001": 100
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371000",
+          "balance": 200
+        },
+        {
+          "account": "371001",
+          "balance": 200
+        },
+        {
+          "account": "607001",
+          "balance": 100
+        }
+      ]
+    }
+  ]
+}

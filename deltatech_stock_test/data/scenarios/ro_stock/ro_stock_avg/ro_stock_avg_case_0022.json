@@ -1,0 +1,64 @@
+{
+  "id": "ro_stock_avg_case_22",
+  "name": "[RO_STOCK_AVG] Case 22: receptie cu aviz partiala cu diferenta pret in plus, receptie finala, de actualizat in modulul de diferente pret prin landed cost",
+  "description": "Flux: Creare comandă de cumpărare — 5.0 buc × 100.0 RON → Recepție marfă — 2.0 buc → Creare factură furnizor — 2.0 buc × 110.0 RON → Recepție marfă — 3.0 buc → Creare factură furnizor — 3.0 buc × 110.0 RON. Stoc final: 5 buc, valoare 550 RON. Sold 371000: 520 RON. Sold 408100: 30 RON. Note contabile: 371000: 520 RON, 408100: 30 RON.",
+  "mode": "test",
+  "currency": "RON",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "product_avg",
+      "qty": 5.0,
+      "price": 100.0,
+      "partner": "supplier_1",
+      "currency": "RON",
+      "notice": true
+    },
+    {
+      "step": "receive_stock",
+      "qty": 2.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 2.0,
+      "price": 110.0
+    },
+    {
+      "step": "receive_stock",
+      "qty": 3.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 3.0,
+      "price": 110.0,
+      "checks": {
+        "stock": {
+          "product_avg": [
+            {
+              "qty": 5,
+              "value": 550
+            }
+          ]
+        },
+        "account": {
+          "371000": 520,
+          "408100": 30
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371000",
+          "balance": 520
+        },
+        {
+          "account": "408100",
+          "balance": 30
+        }
+      ]
+    }
+  ]
+}

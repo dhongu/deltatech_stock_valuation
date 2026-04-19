@@ -144,12 +144,15 @@ class StockTestScenario(models.Model):
             name = data.get("name", os.path.basename(filepath))
             mode = data.get("mode", "test")
             description = data.get("description", "")
+            json_data_dict = {
+                "name": name,
+                "lines": data.get("lines", []),
+                "expected_account_moves": data.get("expected_account_moves", []),
+            }
+            if data.get("base_data_script"):
+                json_data_dict["base_data_script"] = data["base_data_script"]
             json_data = json.dumps(
-                {
-                    "name": name,
-                    "lines": data.get("lines", []),
-                    "expected_account_moves": data.get("expected_account_moves", []),
-                },
+                json_data_dict,
                 indent=2,
                 ensure_ascii=False,
             )
@@ -189,9 +192,16 @@ class StockTestScenario(models.Model):
         records = self._get_base_data_records()
         _logger.info("Base data loaded: %d records", len(records))
 
-    def _get_base_data_records(self):
-        """Load 00_base_data.json and return a records dict with shared partners, products, categories."""
-        base_path = file_path("deltatech_stock_test/data/scenarios/00_base_data.json", filter_ext=(".json",))
+    def _get_base_data_records(self, base_data_script=None):
+        """Load base data JSON and return a records dict with shared partners, products, categories.
+        If base_data_script is given (e.g. 'deltatech_obyc/00_base_data.json'), it is loaded
+        from data/scenarios/<base_data_script>. Otherwise the default 00_base_data.json is used.
+        """
+        if base_data_script:
+            rel_path = f"deltatech_stock_test/data/scenarios/{base_data_script}"
+        else:
+            rel_path = "deltatech_stock_test/data/scenarios/00_base_data.json"
+        base_path = file_path(rel_path, filter_ext=(".json",))
         with open(base_path, encoding="utf-8") as f:
             base_data = json.load(f)
         run = self.env["stock.test.run"].new({})

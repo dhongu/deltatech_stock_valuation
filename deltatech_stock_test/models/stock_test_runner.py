@@ -18,6 +18,23 @@ class StockTestRun(models.Model):
     _order = "id desc"
 
     scenario_id = fields.Many2one("stock.test.scenario", string="Scenario", required=True, ondelete="cascade")
+
+    def unlink(self):
+        scenarios = self.mapped("scenario_id")
+        res = super().unlink()
+        for scenario in scenarios:
+            remaining = scenario.run_ids
+            if not remaining:
+                scenario.state = "ready"
+            else:
+                last_run = remaining.sorted("id", reverse=True)[0]
+                if last_run.state == "passed":
+                    scenario.state = "executed"
+                elif last_run.state == "failed":
+                    scenario.state = "failed"
+                # dacă e 'running', nu modificăm starea
+        return res
+
     name = fields.Char(related="scenario_id.name", store=True)
     mode = fields.Selection(
         [
@@ -92,9 +109,10 @@ class StockTestRun(models.Model):
         self.log_ids.unlink()
 
         # Load shared base data (products, partners, categories) via scenario method
-        log_lines.append("[0] Loading base data from 00_base_data.json...")
+        base_data_script = scenario.get("base_data_script")
+        log_lines.append(f"[0] Loading base data from {base_data_script or '00_base_data.json'}...")
         if self.scenario_id:
-            records = self.scenario_id._get_base_data_records()
+            records = self.scenario_id._get_base_data_records(base_data_script=base_data_script)
         else:
             records = self._load_base_data()
         log_lines.append(f"    Base data loaded: {len(records)} records available.")
@@ -607,6 +625,145 @@ class StockTestRun(models.Model):
         key = f"product_{code}" if code else f"product_{step['name'].replace(' ', '_')}"
         return {key: product}
 
+    def _run_step_create_valuation_class(self, step, records):
+        Model = self.env["product.valuation.class"]
+        existing = Model.search([("code", "=", step["code"])], limit=1)
+        if existing:
+            key = f"valuation_class_{step['code']}"
+            return {key: existing}
+        obj = Model.create({"name": step["name"], "code": step["code"]})
+        key = f"valuation_class_{step['code']}"
+        return {key: obj}
+
+    def _run_step_create_valuation_area(self, step, records):
+        Model = self.env["valuation.area"]
+        existing = Model.search([("code", "=", step["code"])], limit=1)
+        if existing:
+            key = f"valuation_area_{step['code']}"
+            return {key: existing}
+        vals = {"name": step["name"], "code": step["code"]}
+        if step.get("journal_code"):
+            journal = self.env["account.journal"].search(
+                [("code", "=", step["journal_code"]), ("company_id", "=", self.env.company.id)], limit=1
+            )
+            if journal:
+                vals["stock_journal_id"] = journal.id
+        obj = Model.create(vals)
+        key = f"valuation_area_{step['code']}"
+        return {key: obj}
+
+    def _run_step_create_account_modifier(self, step, records):
+        Model = self.env["account.modifier"]
+        existing = Model.search([("code", "=", step["code"])], limit=1)
+        if existing:
+            key = f"account_modifier_{step['code']}"
+            return {key: existing}
+        obj = Model.create({"name": step["name"], "code": step["code"]})
+        key = f"account_modifier_{step['code']}"
+        return {key: obj}
+
+    def _run_step_create_account_determination(self, step, records):
+        """Create or update a product.account.determination rule."""
+        Model = self.env["product.account.determination"]
+
+        def _get_account(code):
+            return self.env["account.account"].search(
+                [("code", "=", code), ("company_ids", "in", self.env.company.id)], limit=1
+            )
+
+        valuation_class_key = step.get("valuation_class_key")
+        valuation_area_key = step.get("valuation_area_key")
+        account_modifier_key = step.get("account_modifier_key")
+
+        valuation_class = records.get(valuation_class_key) if valuation_class_key else self.env["product.valuation.class"]
+        valuation_area = records.get(valuation_area_key) if valuation_area_key else self.env["valuation.area"]
+        account_modifier = records.get(account_modifier_key) if account_modifier_key else self.env["account.modifier"]
+
+        transaction_key = step["transaction_key"]
+
+        existing = Model.search(
+            [
+                ("transaction_key", "=", transaction_key),
+                ("valuation_class_id", "=", valuation_class.id if valuation_class else False),
+                ("valuation_area_id", "=", valuation_area.id if valuation_area else False),
+                ("account_modifier_id", "=", account_modifier.id if account_modifier else False),
+                ("company_id", "=", self.env.company.id),
+            ],
+            limit=1,
+        )
+
+        vals = {
+            "transaction_key": transaction_key,
+            "valuation_class_id": valuation_class.id if valuation_class else False,
+            "valuation_area_id": valuation_area.id if valuation_area else False,
+            "account_modifier_id": account_modifier.id if account_modifier else False,
+            "company_id": self.env.company.id,
+        }
+        if step.get("acc_src"):
+            acc = _get_account(step["acc_src"])
+            if acc:
+                vals["acc_src_id"] = acc.id
+        if step.get("acc_dest"):
+            acc = _get_account(step["acc_dest"])
+            if acc:
+                vals["acc_dest_id"] = acc.id
+        if step.get("acc_valuation"):
+            acc = _get_account(step["acc_valuation"])
+            if acc:
+                vals["acc_valuation_id"] = acc.id
+
+        if existing:
+            existing.write(vals)
+            return {f"determination_{transaction_key}": existing}
+        obj = Model.create(vals)
+        return {f"determination_{transaction_key}": obj}
+
+    def _run_step_set_company_valuation_area(self, step, records):
+        """Set the valuation area on the current company."""
+        area_key = step.get("valuation_area_key")
+        area = records.get(area_key) if area_key else None
+        if not area and step.get("area_code"):
+            area = self.env["valuation.area"].search([("code", "=", step["area_code"])], limit=1)
+        if area:
+            self.env.company.write({"valuation_area_id": area.id})
+        return {}
+
+    def _run_step_set_picking_type_account_modifier(self, step, records):
+        """Set account_modifier_id on a stock.picking.type identified by code."""
+        picking_type_code = step.get("picking_type_code", "incoming")
+        picking_type = self.env["stock.picking.type"].search(
+            [("code", "=", picking_type_code), ("warehouse_id.company_id", "=", self.env.company.id)],
+            limit=1,
+        )
+        if not picking_type:
+            raise UserError(self.env._("No picking type found for code: %s", picking_type_code))
+        modifier_key = step.get("account_modifier_key")
+        modifier = records.get(modifier_key) if modifier_key else None
+        if not modifier and step.get("account_modifier_code"):
+            modifier = self.env["account.modifier"].search(
+                [("code", "=", step["account_modifier_code"])], limit=1
+            )
+        picking_type.write({"account_modifier_id": modifier.id if modifier else False})
+        return {}
+
+    def _run_step_set_product_valuation_class(self, step, records):
+        """Assign a valuation_class_id to a product."""
+        product_key = step.get("product_key")
+        product = records.get(product_key) if product_key else None
+        if not product and step.get("product_code"):
+            product = self.env["product.product"].search(
+                [("default_code", "=", step["product_code"])], limit=1
+            )
+        valuation_class_key = step.get("valuation_class_key")
+        valuation_class = records.get(valuation_class_key) if valuation_class_key else None
+        if not valuation_class and step.get("valuation_class_code"):
+            valuation_class = self.env["product.valuation.class"].search(
+                [("code", "=", step["valuation_class_code"])], limit=1
+            )
+        if product and valuation_class:
+            product.write({"valuation_class_id": valuation_class.id})
+        return {}
+
     # -------------------------------------------------------------------------
     # Step handlers — purchase
     # -------------------------------------------------------------------------
@@ -701,15 +858,18 @@ class StockTestRun(models.Model):
         return records
 
     def _run_step_return_stock(self, step, records):
-        """Create a return (reverse) picking for the last receipt.
+        """Create a return (reverse) picking for the last receipt or any picking by key.
 
         Optional fields:
         - ``qty``: quantity to return (positive); defaults to all received qty.
         - ``product`` / ``product_code``: return a single product.
+        - ``picking_key``: key in records to use as source picking (e.g. 'last_delivery').
+          Defaults to 'last_receipt'.
         """
-        picking = records.get("last_receipt")
+        picking_key = step.get("picking_key", "last_receipt")
+        picking = records.get(picking_key)
         if not picking:
-            raise UserError(self.env._("No receipt found to return stock for."))
+            raise UserError(self.env._("No picking found for key '%s' to return stock for.", picking_key))
         idx = step.get("_index", 0)
 
         # Use stock.return.picking wizard logic directly

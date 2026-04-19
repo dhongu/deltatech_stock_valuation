@@ -1,0 +1,60 @@
+{
+  "id": "obyc_case_39",
+  "name": "[OBYC] Case 39: Receptie locatie evaluata partiala Receptie locatie evaluata finala cu diferenta pret in minus",
+  "description": "Flux: Creare comandă de cumpărare — 5.0 buc × 100.0 RON → Recepție marfă — 2.0 buc → Creare factură furnizor — 2.0 buc × 100.0 RON → Recepție marfă — 3.0 buc → Creare factură furnizor — 3.0 buc × 90.0 RON. Stoc final: 5 buc, valoare 470 RON. Sold 371001: 470 RON. Note contabile: 371001: 470 RON.",
+  "mode": "test",
+  "currency": "RON",
+  "base_data_script": "deltatech_obyc/00_base_data.json",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "OBYC-MARF-001",
+      "qty": 5.0,
+      "price": 100.0,
+      "partner": "obyc_supplier",
+      "currency": "RON",
+      "location": "location1"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 2.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 2.0,
+      "price": 100.0
+    },
+    {
+      "step": "receive_stock",
+      "qty": 3.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 3.0,
+      "price": 90.0,
+      "checks": {
+        "stock": {
+          "OBYC-MARF-001": [
+            {
+              "qty": 5,
+              "value": 470
+            }
+          ]
+        },
+        "account": {
+          "371001": 470
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371001",
+          "balance": 470
+        }
+      ]
+    }
+  ]
+}

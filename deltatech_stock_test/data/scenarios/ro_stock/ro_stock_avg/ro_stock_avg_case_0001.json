@@ -1,0 +1,44 @@
+{
+  "id": "ro_stock_avg_case_1",
+  "name": "[RO_STOCK_AVG] Case 1: Receptie totala, fara factura",
+  "description": "Flux: Creare comandă de cumpărare — 5.0 buc × 100.0 RON → Recepție marfă — 5.0 buc. Stoc final: 5 buc, valoare 500 RON. Sold 371000: 0 RON. Note contabile: 371000: 0 RON.",
+  "mode": "test",
+  "currency": "RON",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "product_avg",
+      "qty": 5.0,
+      "price": 100.0,
+      "partner": "supplier_1",
+      "currency": "RON"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 5.0,
+      "checks": {
+        "stock": {
+          "product_avg": [
+            {
+              "qty": 5,
+              "value": 500
+            }
+          ]
+        },
+        "account": {
+          "371000": 0
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371000",
+          "balance": 0
+        }
+      ]
+    }
+  ]
+}

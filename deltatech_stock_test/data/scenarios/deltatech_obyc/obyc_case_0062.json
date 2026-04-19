@@ -1,0 +1,70 @@
+{
+  "id": "obyc_case_62",
+  "name": "[OBYC] Case 62: achizitie transfer si inventar plus minus pe location1",
+  "description": "Flux: Creare comandă de cumpărare — 8.0 buc × 100.0 RON → Recepție marfă — 8.0 buc → Creare factură furnizor — 8.0 buc × 100.0 RON → Recepție marfă — 5.0 buc. Stoc final: 4 buc, valoare 400 RON. Sold 371000: 300 RON. Sold 371001: 400 RON. Sold 607001: 100 RON. Note contabile: 371000: 300 RON, 371001: 400 RON, 607001: 100 RON.",
+  "mode": "test",
+  "currency": "RON",
+  "base_data_script": "deltatech_obyc/00_base_data.json",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "OBYC-MARF-001",
+      "qty": 8.0,
+      "price": 100.0,
+      "partner": "obyc_supplier",
+      "currency": "RON"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 8.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 8.0,
+      "price": 100.0
+    },
+    {
+      "step": "receive_stock",
+      "qty": 5.0,
+      "checks": {
+        "stock": {
+          "OBYC-MARF-001": [
+            {
+              "location": "location",
+              "qty": 3,
+              "value": 300
+            },
+            {
+              "location": "location1",
+              "qty": 4,
+              "value": 400
+            }
+          ]
+        },
+        "account": {
+          "371000": 300,
+          "371001": 400,
+          "607001": 100
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371000",
+          "balance": 300
+        },
+        {
+          "account": "371001",
+          "balance": 400
+        },
+        {
+          "account": "607001",
+          "balance": 100
+        }
+      ]
+    }
+  ]
+}

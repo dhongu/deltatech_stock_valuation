@@ -1,0 +1,51 @@
+{
+  "id": "obyc_case_24",
+  "name": "[OBYC] Case 24: Receptie locatie evaluata totala, fara factura (cu aviz 408)",
+  "description": "Flux: Creare comanda de cumparare — 5.0 buc x 100.0 RON -> Receptie marfa cu aviz la locatie evaluata — 5.0 buc. Stoc final: 5 buc, valoare 500 RON. Nota contabila: 371001 debit 500 RON / 408000 credit 500 RON.",
+  "mode": "test",
+  "currency": "RON",
+  "base_data_script": "deltatech_obyc/00_base_data.json",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "OBYC-MARF-001",
+      "qty": 5.0,
+      "price": 100.0,
+      "partner": "obyc_supplier",
+      "currency": "RON",
+      "location": "location1"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 5.0,
+      "checks": {
+        "stock": {
+          "OBYC-MARF-001": [
+            {
+              "qty": 5,
+              "value": 500
+            }
+          ]
+        },
+        "account": {
+          "371001": 500,
+          "408000": -500
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371001",
+          "balance": 500
+        },
+        {
+          "account": "408000",
+          "balance": -500
+        }
+      ]
+    }
+  ]
+}

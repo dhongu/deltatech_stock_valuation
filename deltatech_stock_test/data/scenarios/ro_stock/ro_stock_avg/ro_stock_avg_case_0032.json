@@ -1,0 +1,59 @@
+{
+  "id": "ro_stock_avg_case_32",
+  "name": "[RO_STOCK_AVG] Case 32: Receptie locatie evaluata totala cu factura, retur 3 buc si factura storno 3 buc",
+  "description": "Flux: Creare comandă de cumpărare — 5.0 buc × 100.0 RON → Recepție marfă — 5.0 buc → Creare factură furnizor — 5.0 buc × 100.0 RON → Retur marfă la furnizor — 3.0 buc → Creare factură furnizor — -3.0 buc × 100.0 RON. Stoc final: 2 buc, valoare 200 RON. Sold 371001: 200 RON. Note contabile: 371001: 200 RON.",
+  "mode": "test",
+  "currency": "RON",
+  "lines": [
+    {
+      "step": "create_purchase_order",
+      "product": "product_avg",
+      "qty": 5.0,
+      "price": 100.0,
+      "partner": "supplier_1",
+      "currency": "RON",
+      "location": "location1"
+    },
+    {
+      "step": "receive_stock",
+      "qty": 5.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": 5.0,
+      "price": 100.0
+    },
+    {
+      "step": "return_stock",
+      "qty": 3.0
+    },
+    {
+      "step": "create_vendor_bill",
+      "qty": -3.0,
+      "price": 100.0,
+      "checks": {
+        "stock": {
+          "product_avg": [
+            {
+              "qty": 2,
+              "value": 200
+            }
+          ]
+        },
+        "account": {
+          "371001": 200
+        }
+      }
+    }
+  ],
+  "expected_account_moves": [
+    {
+      "line_ids": [
+        {
+          "account": "371001",
+          "balance": 200
+        }
+      ]
+    }
+  ]
+}
