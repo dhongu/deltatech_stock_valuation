@@ -43,47 +43,57 @@ class StockTestScenario(models.Model):
     last_error = fields.Text(readonly=True)
     run_ids = fields.One2many("stock.test.run", "scenario_id", string="Runs")
     run_count = fields.Integer(compute="_compute_run_count")
-    import_file = fields.Binary(string="Import JSON File", attachment=False, store=False)
-    import_filename = fields.Char(string="Filename", store=False)
 
     def _compute_run_count(self):
         for rec in self:
             rec.run_count = len(rec.run_ids)
 
-    def action_import_json(self):
-        """Import scenario from uploaded JSON file."""
-        self.ensure_one()
-        if not self.import_file:
-            raise UserError(self.env._("Please upload a JSON file first."))
-        try:
-            raw = base64.b64decode(self.import_file).decode("utf-8")
-            data = json.loads(raw)
-        except Exception as e:
-            raise UserError(self.env._("Invalid JSON file: %s", e)) from e
 
-        name = data.get("name", self.import_filename or "Imported Scenario")
-        mode = data.get("mode", "test")
-        description = data.get("description", "")
-        json_data = json.dumps(
+    def action_open_import_wizard(self):
+        """Open the multi-file import wizard."""
+        return {
+            "type": "ir.actions.act_window",
+            "name": self.env._("Import Scenarios"),
+            "res_model": "stock.test.scenario.import.wizard",
+            "view_mode": "form",
+            "target": "new",
+        }
+
+    def action_export_json(self):
+        """Export current scenario as a downloadable JSON file."""
+        self.ensure_one()
+        try:
+            data = json.loads(self.json_data)
+        except Exception as e:
+            raise UserError(self.env._("Invalid JSON: %s", e)) from e
+
+        export_data = {
+            "name": self.name,
+            "mode": self.mode,
+            "description": self.description or "",
+        }
+        export_data.update(data)
+
+        raw = json.dumps(export_data, indent=2, ensure_ascii=False).encode("utf-8")
+        encoded = base64.b64encode(raw).decode("utf-8")
+        filename = (self.name or "scenario").replace(" ", "_") + ".json"
+
+        attachment = self.env["ir.attachment"].create(
             {
-                "name": name,
-                "lines": data.get("lines", []),
-                "expected_account_moves": data.get("expected_account_moves", []),
-            },
-            indent=2,
-            ensure_ascii=False,
-        )
-        self.write(
-            {
-                "name": name,
-                "mode": mode,
-                "description": description,
-                "json_data": json_data,
-                "state": "ready",
-                "import_file": False,
-                "import_filename": False,
+                "name": filename,
+                "type": "binary",
+                "datas": encoded,
+                "mimetype": "application/json",
+                "res_model": self._name,
+                "res_id": self.id,
             }
         )
+        return {
+            "type": "ir.actions.act_url",
+            "url": f"/web/content/{attachment.id}?download=true",
+            "target": "self",
+        }
+
 
     def action_set_ready(self):
         for rec in self:

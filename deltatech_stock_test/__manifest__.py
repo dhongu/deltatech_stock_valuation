@@ -9,10 +9,10 @@
     "website": "https://www.terrabit.ro",
     "data": [
         "security/ir.model.access.csv",
+        "wizards/stock_test_scenario_import_views.xml",
         "views/stock_test_scenario_views.xml",
         "views/stock_test_run_views.xml",
         "views/menu_views.xml",
-        # "data/load_demo_scenarios.xml",
     ],
     "depends": [
         "account",
@@ -26,7 +26,7 @@
             "deltatech_stock_test/static/src/js/code_editor_patch.esm.js",
         ],
     },
-    "demo": ["data/demo_scenarios.xml"],
+    "demo": ["demo/load_demo_scenarios.xml"],
     "license": "LGPL-3",
     "development_status": "Beta",
     "maintainers": ["dhongu"],
