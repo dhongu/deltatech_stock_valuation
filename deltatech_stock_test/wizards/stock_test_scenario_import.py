@@ -113,5 +113,6 @@ class StockTestScenarioImportWizard(models.TransientModel):
                 "message": self.env._("%d scenario(s) loaded.", loaded),
                 "type": "success",
                 "sticky": False,
+                "next": {"type": "ir.actions.act_window_close"},
             },
         }

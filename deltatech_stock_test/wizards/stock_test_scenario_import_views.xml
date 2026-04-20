@@ -5,7 +5,7 @@
         <field name="model">stock.test.scenario.import.wizard</field>
         <field name="arch" type="xml">
             <form string="Import JSON Scenarios">
-                <field name="attachment_ids" widget="many2many_binary"/>
+                <field name="attachment_ids" widget="many2many_binary" options="{'accepted_file_extensions': '.json'}"/>
                 <footer>
                     <button name="action_import" string="Import" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>

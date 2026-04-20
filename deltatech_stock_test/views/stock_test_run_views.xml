@@ -26,24 +26,18 @@
                             <field name="log_ids" readonly="1">
                                 <list decoration-danger="state == 'error'"
                                       decoration-success="state == 'ok'"
-                                      decoration-info="state == 'info'">
+                                      decoration-info="state == 'info'"
+                                      open_form_view="False">
                                     <field name="step_index" string="#"/>
                                     <field name="step_type"/>
                                     <field name="state"/>
                                     <field name="message"/>
                                     <field name="document_ref" string="Document"/>
                                     <field name="document_model" string="Model" optional="hide"/>
+                                    <button name="action_open_document" string="Open" type="object"
+                                            icon="fa-external-link"
+                                            invisible="not document_id"/>
                                 </list>
-                                <form>
-                                        <field name="account_move_line_ids" readonly="1">
-                                            <list>
-                                                <field name="account_id"/>
-                                                <field name="name"/>
-                                                <field name="debit"/>
-                                                <field name="credit"/>
-                                            </list>
-                                        </field>
-                                </form>
                             </field>
                         </page>
                         <page string="Execution Log">

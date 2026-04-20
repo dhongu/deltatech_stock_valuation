@@ -14,8 +14,6 @@
                     <button name="action_execute" string="Re-run Scenario" type="object"
                             invisible="state != 'executed'"/>
 
-                    <button name="action_open_import_wizard" string="Import Scenarios" type="object"
-                            class="btn-secondary"/>
                     <button name="action_export_json" string="Export JSON" type="object"
                             class="btn-secondary"/>
                     <field name="state" widget="statusbar"
@@ -66,6 +64,8 @@
                 <header>
                     <button name="action_execute_selected" string="Run Selected" type="object"
                             class="btn-primary"/>
+                    <button name="action_open_import_wizard" string="Import Scenarios" type="object"
+                            class="btn-secondary" display="always"/>
                 </header>
                 <field name="name"/>
                 <field name="mode"/>

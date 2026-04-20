@@ -15,7 +15,8 @@ The module supports two modes of operation:
 - Define complete business processes as structured JSON, including steps (actions) and expected accounting/stock entries.
 - Steps are divided into two categories:
   - **Master data steps** — create or resolve reference data (accounts, partners, product categories, products).
-  - **Transactional steps** — execute business operations (purchase orders, stock receipts, vendor bills, sale orders, invoices, stock pickings).
+  - **Transactional steps** — execute business operations (purchase orders, stock receipts, vendor bills, sale orders, invoices, stock pickings, journal entries, payments).
+- Each step can include a `_comment` field; if present, its value is used as the log message instead of the auto-generated one.
 
 ### Accounting & Stock Validation
 - After executing all steps, the runner compares the generated `account.move.line` entries against the `expected_account_moves` section of the JSON.
@@ -24,8 +25,10 @@ The module supports two modes of operation:
 - Reports mismatches clearly in the run log.
 
 ### UI Integration
-- **Scenario form** — view, edit, and manage JSON scenarios directly in Odoo; import JSON files via the **Import JSON** button in the form header.
+- **Scenario list** — view and manage JSON scenarios; import JSON files via the **Import Scenarios** button (always visible, no selection required).
+- **Scenario form** — view, edit, and export a scenario as JSON via the **Export JSON** button.
 - **Run history** — each execution is recorded as a `stock.test.run` record with full execution log and validation result.
+- **Log navigation** — clicking a log line with a document reference opens the related document (invoice, picking, payment, etc.) directly.
 - **Buttons** — "Set Ready", "Execute Scenario", "Re-run Scenario", "View Runs" available from the scenario form.
 - Menu: **Management Accounting Tests → Scenarios** and **Runs**.
 
@@ -103,13 +106,15 @@ Creates a chart of accounts entry.
 
 ### `create_partner`
 
-Creates a customer or supplier partner.
+Creates or updates a customer or supplier partner. If a partner with the same `vat` or `name` already exists, it is updated with the values from the step.
 
 ```json
 {
   "step": "create_partner",
   "name": "Furnizor Test SRL",
   "ref": "supplier_1",
+  "vat": "RO12345678",
+  "country": "RO",
   "supplier_rank": 1,
   "customer_rank": 0
 }
@@ -119,6 +124,8 @@ Creates a customer or supplier partner.
 |---|---|---|
 | `name` | ✅ | Partner name |
 | `ref` | ✅ | Internal reference — used to resolve the partner in transactional steps (e.g. `"supplier_1"`) |
+| `vat` | — | VAT / CIF number (e.g. `"RO12345678"`); used as primary lookup key if present |
+| `country` | — | ISO country code (e.g. `"RO"`, `"DE"`); also accepted as `country_id` |
 | `supplier_rank` | — | Set to `1` for suppliers |
 | `customer_rank` | — | Set to `1` for customers |
 
@@ -126,14 +133,17 @@ Creates a customer or supplier partner.
 
 ### `create_product_category`
 
-Creates a product category with cost method and valuation properties.
+Creates or updates a product category with cost method, valuation properties, and accounting accounts. If a category with the same name already exists, it is updated.
 
 ```json
 {
   "step": "create_product_category",
-  "name": "RO Stock AVG",
+  "name": "Servicii",
   "property_cost_method": "average",
-  "property_valuation": "real_time"
+  "property_valuation": "real_time",
+  "property_account_income_categ_id": "704",
+  "property_account_expense_categ_id": "604",
+  "property_stock_valuation_account_id": "371"
 }
 ```
 
@@ -142,6 +152,9 @@ Creates a product category with cost method and valuation properties.
 | `name` | ✅ | Category name |
 | `property_cost_method` | — | `"standard"`, `"average"`, or `"fifo"` (default: `"standard"`) |
 | `property_valuation` | — | `"real_time"` (perpetual/automatic) or `"periodic"` (manual) |
+| `property_account_income_categ_id` | — | Account code for income (e.g. `"704"`) |
+| `property_account_expense_categ_id` | — | Account code for expense (e.g. `"604"`) |
+| `property_stock_valuation_account_id` | — | Account code for stock valuation (e.g. `"371"`) |
 
 The category is stored in records with key `categ_<name_normalized>` (spaces replaced by `_`).
 
@@ -404,20 +417,101 @@ Creates a customer or vendor invoice manually (not linked to a PO/SO).
 | `qty` | ✅ (single) | Quantity |
 | `price` | ✅ (single) | Unit price |
 | `products` | ✅ (multi) | List of `{product, qty, price}` objects |
+| `invoice_date` | — | Invoice date (ISO format, e.g. `"2026-04-01"`) |
+| `date` | — | Alias for `invoice_date` (lower priority) |
+| `ref` | — | Invoice reference / number (e.g. `"F.1/01.04.2026"`) |
+| `key` | — | Explicit key to store the invoice in the execution context (auto-generated if omitted as `invoice_{move_type}_{safe_ref}`) |
+
+The created invoice is stored in the execution context under the auto-generated key `invoice_{move_type}_{safe_ref}` (characters `/`, `.`, ` ` replaced with `_`) and also as `last_invoice`.
 
 ---
 
 ### `post_invoice`
 
-Validates (posts) the last created invoice.
+Validates (posts) an invoice. Resolves the invoice in the following order:
+1. By explicit `key` in the execution context.
+2. By `ref` in the execution context (auto-generated key `invoice_{move_type}_{safe_ref}`).
+3. By `ref` field in the database (draft invoices).
+4. By `last_invoice` in the execution context.
 
 ```json
 {
-  "step": "post_invoice"
+  "step": "post_invoice",
+  "ref": "F.1/01.04.2026",
+  "move_type": "out_invoice"
 }
 ```
 
-No additional fields required.
+| Field | Required | Description |
+|---|---|---|
+| `key` | — | Explicit context key of the invoice to post |
+| `ref` | — | Invoice reference to look up (combined with `move_type` to build the auto-key) |
+| `move_type` | — | Invoice type used together with `ref` to build the auto-key (default: `"out_invoice"`) |
+| `invoice_date` | — | If the invoice has no date, sets it before posting |
+
+---
+
+### `create_journal_entry`
+
+Creates and posts a manual journal entry (nota contabilă) with explicit debit/credit lines.
+
+```json
+{
+  "step": "create_journal_entry",
+  "date": "2026-04-30",
+  "ref": "Salarii aprilie 2026",
+  "journal": "general",
+  "lines": [
+    {"account": "641", "debit": 10000.0, "credit": 0.0, "name": "Cheltuieli salarii"},
+    {"account": "421", "debit": 0.0, "credit": 7500.0, "name": "Personal - salarii datorate"},
+    {"account": "444", "debit": 0.0, "credit": 2500.0, "name": "Impozit pe salarii"}
+  ]
+}
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `date` | — | Journal entry date (ISO format); defaults to today |
+| `ref` | — | Reference / description of the journal entry |
+| `journal` | — | Journal type: `"general"` (default), `"sale"`, `"purchase"`, `"cash"`, `"bank"` |
+| `lines` | ✅ | List of journal lines with `account` (code), `debit`, `credit`, and optional `name` |
+
+The posted journal entry is stored as `last_journal_entry` in the execution context.
+
+---
+
+### `create_payment`
+
+Creates and posts a payment (cash or bank), with optional reconciliation against an existing invoice.
+
+```json
+{
+  "step": "create_payment",
+  "date": "2026-04-15",
+  "amount": 600.0,
+  "currency": "RON",
+  "partner": "supplier_1",
+  "payment_type": "outbound",
+  "journal": "cash",
+  "ref": "Plata partiala Elycontab",
+  "invoice_ref": "F.5/04.04.2026",
+  "invoice_move_type": "in_invoice"
+}
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `amount` | ✅ | Payment amount |
+| `currency` | — | ISO currency code (e.g. `"RON"`, `"EUR"`); defaults to company currency |
+| `partner` | ✅ | Partner `ref` or name |
+| `payment_type` | — | `"outbound"` (pay supplier / default for `in_invoice`) or `"inbound"` (receive from customer) |
+| `journal` | — | Journal type: `"cash"` or `"bank"` (default: `"cash"`) |
+| `date` | — | Payment date (ISO format); defaults to today |
+| `ref` | — | Payment reference / memo |
+| `invoice_ref` | — | Reference of the invoice to reconcile with (optional) |
+| `invoice_move_type` | — | Invoice type used together with `invoice_ref` to find the invoice (default: `"in_invoice"`) |
+
+The posted payment is stored as `last_payment` in the execution context.
 
 ---
 

@@ -59,3 +59,15 @@ class StockTestLog(models.Model):
                     rec.document_ref = False
             else:
                 rec.document_ref = False
+
+    def action_open_document(self):
+        self.ensure_one()
+        if not self.document_model or not self.document_id:
+            return False
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": self.document_model,
+            "res_id": self.document_id,
+            "view_mode": "form",
+            "target": "current",
+        }
