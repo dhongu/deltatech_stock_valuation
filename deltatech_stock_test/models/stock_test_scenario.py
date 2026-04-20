@@ -48,7 +48,6 @@ class StockTestScenario(models.Model):
         for rec in self:
             rec.run_count = len(rec.run_ids)
 
-
     def action_open_import_wizard(self):
         """Open the multi-file import wizard."""
         return {
@@ -93,7 +92,6 @@ class StockTestScenario(models.Model):
             "url": f"/web/content/{attachment.id}?download=true",
             "target": "self",
         }
-
 
     def action_set_ready(self):
         for rec in self:
