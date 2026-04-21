@@ -72,6 +72,7 @@ class StockTestRun(models.Model):
                 root = etree.fromstring(f"<div>{html}</div>")
                 for table in root.iter("table"):
                     table.set("style", "border-collapse:collapse;width:100%;margin:8px 0;font-size:13px;")
+                    table.set("class", "table table-sm table-bordered")
                 for th in root.iter("th"):
                     th.set("style", "border:1px solid rgba(128,128,128,0.4);padding:6px 10px;background:rgba(128,128,128,0.15);font-weight:600;text-align:left;")
                 for i, tr in enumerate(root.iter("tr")):
@@ -84,6 +85,8 @@ class StockTestRun(models.Model):
                         except ValueError:
                             align = ""
                         td.set("style", f"border:1px solid rgba(128,128,128,0.3);padding:6px 10px;{bg}{align}")
+                        if align:
+                            td.set("class", "text-right")
                 return etree.tostring(root, encoding="unicode")[5:-6]  # strip <div>...</div>
             except Exception:
                 return html
@@ -137,6 +140,67 @@ class StockTestRun(models.Model):
         if move_lines:
             vals["account_move_line_ids"] = [(6, 0, move_lines.ids)]
         self.env["stock.test.log"].create(vals)
+
+    def action_download_md(self):
+        self.ensure_one()
+        import base64
+
+        filename = f"{self.name or 'report'}.md"
+        content = base64.b64encode(self.log.encode("utf-8"))
+        attachment = self.env["ir.attachment"].create(
+            {
+                "name": filename,
+                "datas": content,
+                "type": "binary",
+                "mimetype": "text/markdown",
+            }
+        )
+        return {
+            "type": "ir.actions.act_url",
+            "url": f"/web/content/{attachment.id}?download=true",
+            "target": "self",
+        }
+
+    def action_download_html(self):
+        self.ensure_one()
+        import base64
+
+        filename = f"{self.name or 'report'}.html"
+        html_content = f"""
+        <html>
+            <head>
+                <meta charset="utf-8">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+                <style>
+                    body {{ font-family: sans-serif; padding: 20px; }}
+                    table {{ border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }}
+                    th {{ border: 1px solid rgba(128,128,128,0.4); padding: 6px 10px; background: rgba(128,128,128,0.15); font-weight: 600; text-align: left; }}
+                    td {{ border: 1px solid rgba(128,128,128,0.3); padding: 6px 10px; }}
+                    tr:nth-child(even) {{ background: rgba(128,128,128,0.07); }}
+                    .text-right {{ text-align: right; }}
+                </style>
+            </head>
+            <body>
+                <div class="container-fluid">
+                    {self.log_html}
+                </div>
+            </body>
+        </html>
+        """
+        content = base64.b64encode(html_content.encode("utf-8"))
+        attachment = self.env["ir.attachment"].create(
+            {
+                "name": filename,
+                "datas": content,
+                "type": "binary",
+                "mimetype": "text/html",
+            }
+        )
+        return {
+            "type": "ir.actions.act_url",
+            "url": f"/web/content/{attachment.id}?download=true",
+            "target": "self",
+        }
 
     def execute(self, scenario):
         """Execute a scenario dict. Called from stock.test.scenario.action_execute."""
