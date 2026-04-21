@@ -117,12 +117,12 @@ class TestStockScenarios(StockTestCommon):
         self.assertTrue(product)
         self.assertAlmostEqual(product.list_price, 80.0)
 
-    def test_create_and_post_invoice(self):
-        """Steps create_invoice + post_invoice create and post an account.move.
+    def test_create_invoice_auto_post(self):
+        """create_invoice automatically posts the invoice (no separate post_invoice step needed).
         Uses pre-created customer_1 and product_fifo from StockTestCommon.
         """
         scenario = {
-            "name": "Test invoice flow",
+            "name": "Test invoice auto-post flow",
             "lines": [
                 {
                     "step": "create_invoice",
@@ -137,17 +137,42 @@ class TestStockScenarios(StockTestCommon):
                         }
                     ],
                 },
-                {
-                    "step": "post_invoice",
-                    "key": "invoice",
-                },
             ],
             "expected_account_moves": [],
         }
         run = self._run_scenario(scenario, mode="demo")
         self.assertEqual(run.state, "passed")
         move = self.env["account.move"].search([("state", "=", "posted"), ("move_type", "=", "out_invoice")], limit=1)
-        self.assertTrue(move, "Invoice should be posted")
+        self.assertTrue(move, "Invoice should be posted automatically")
+
+    def test_create_invoice_create_only(self):
+        """create_invoice with create_only=true leaves the invoice in draft state."""
+        scenario = {
+            "name": "Test invoice create_only",
+            "lines": [
+                {
+                    "step": "create_invoice",
+                    "key": "invoice",
+                    "move_type": "out_invoice",
+                    "create_only": True,
+                    "partner_name": self.customer_1.name,
+                    "invoice_lines": [
+                        {
+                            "product_code": self.product_fifo.default_code or "TST-INV-01",
+                            "quantity": 1,
+                            "price_unit": 100.0,
+                        }
+                    ],
+                },
+            ],
+            "expected_account_moves": [],
+        }
+        run = self._run_scenario(scenario, mode="demo")
+        self.assertEqual(run.state, "passed")
+        move = self.env["account.move"].search(
+            [("state", "=", "draft"), ("move_type", "=", "out_invoice")], limit=1
+        )
+        self.assertTrue(move, "Invoice should remain in draft when create_only=True")
 
     def test_scenario_model_action_execute(self):
         """action_execute on stock.test.scenario runs the scenario and sets state=executed."""

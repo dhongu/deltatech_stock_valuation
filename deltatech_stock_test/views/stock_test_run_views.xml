@@ -41,7 +41,7 @@
                             </field>
                         </page>
                         <page string="Execution Log">
-                            <field name="log" readonly="1"/>
+                            <field name="log_html" readonly="1" widget="html" options="{'css_read_only': 'o_markdown_style'}"/>
                         </page>
                         <page string="Accounting Lines">
                             <field name="account_move_line_ids" readonly="1">

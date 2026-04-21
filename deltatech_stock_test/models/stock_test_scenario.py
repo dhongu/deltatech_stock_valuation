@@ -202,16 +202,43 @@ class StockTestScenario(models.Model):
 
     def _get_base_data_records(self, base_data_script=None):
         """Load base data JSON and return a records dict with shared partners, products, categories.
-        If base_data_script is given (e.g. 'deltatech_obyc/00_base_data.json'), it is loaded
-        from data/scenarios/<base_data_script>. Otherwise the default 00_base_data.json is used.
+        If base_data_script is given, it is first looked up as an Odoo scenario by external ID
+        (deltatech_stock_test.<base_data_script>). If found, its json_data lines are executed.
+        Otherwise it is loaded from data/scenarios/<base_data_script>.json (local file fallback).
+        If no base_data_script is given, the default 00_base_data.json is used.
         """
+        base_data = None
+
         if base_data_script:
-            rel_path = f"deltatech_stock_test/data/scenarios/{base_data_script}"
+            # 1. Caută scenariul în Odoo după external ID
+            full_xml_id = f"deltatech_stock_test.{base_data_script}"
+            base_scenario = self.env.ref(full_xml_id, raise_if_not_found=False)
+            if base_scenario:
+                try:
+                    base_data = json.loads(base_scenario.json_data)
+                    _logger.info("Base data script '%s' loaded from Odoo scenario.", base_data_script)
+                except Exception as e:
+                    _logger.warning("Could not parse json_data for base scenario '%s': %s", base_data_script, e)
+
+            if base_data is None:
+                # 2. Fallback: fișier local
+                # Încearcă cu extensie .json dacă nu e deja inclusă
+                rel_name = base_data_script if base_data_script.endswith(".json") else f"{base_data_script}.json"
+                rel_path = f"deltatech_stock_test/data/scenarios/{rel_name}"
+                try:
+                    base_path = file_path(rel_path, filter_ext=(".json",))
+                    with open(base_path, encoding="utf-8") as f:
+                        base_data = json.load(f)
+                    _logger.info("Base data script '%s' loaded from local file.", base_data_script)
+                except Exception as e:
+                    _logger.warning("Could not load base data script '%s' from file: %s", base_data_script, e)
+                    base_data = {}
         else:
             rel_path = "deltatech_stock_test/data/scenarios/00_base_data.json"
-        base_path = file_path(rel_path, filter_ext=(".json",))
-        with open(base_path, encoding="utf-8") as f:
-            base_data = json.load(f)
+            base_path = file_path(rel_path, filter_ext=(".json",))
+            with open(base_path, encoding="utf-8") as f:
+                base_data = json.load(f)
+
         run = self.env["stock.test.run"].new({})
         records = {}
         for step in base_data.get("lines", []):

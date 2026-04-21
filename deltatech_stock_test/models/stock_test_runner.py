@@ -4,7 +4,7 @@
 import json
 import logging
 
-from odoo import fields, models
+from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools import float_compare
 from odoo.tools.misc import file_path
@@ -49,6 +49,7 @@ class StockTestRun(models.Model):
         default="running",
     )
     log = fields.Text(string="Execution Log", readonly=True)
+    log_html = fields.Html(string="Execution Log (HTML)", compute="_compute_log_html", readonly=True)
     validation_result = fields.Text(string="Validation Result", readonly=True)
     error_message = fields.Text(string="Error Message", readonly=True)
     company_id = fields.Many2one("res.company", string="Company", required=True, default=lambda self: self.env.company)
@@ -61,6 +62,43 @@ class StockTestRun(models.Model):
         string="Accounting Lines",
         readonly=True,
     )
+
+    @api.depends("log")
+    def _compute_log_html(self):
+        def _style_tables(html):
+            """Apply inline styles to table elements so Odoo's HTML sanitizer doesn't strip them."""
+            try:
+                from lxml import etree
+                root = etree.fromstring(f"<div>{html}</div>")
+                for table in root.iter("table"):
+                    table.set("style", "border-collapse:collapse;width:100%;margin:8px 0;font-size:13px;")
+                for th in root.iter("th"):
+                    th.set("style", "border:1px solid rgba(128,128,128,0.4);padding:6px 10px;background:rgba(128,128,128,0.15);font-weight:600;text-align:left;")
+                for i, tr in enumerate(root.iter("tr")):
+                    bg = "background:rgba(128,128,128,0.07);" if i % 2 == 0 else ""
+                    for td in tr.iter("td"):
+                        text = (td.text or "").strip().replace(",", ".").replace("%", "").replace(" ", "")
+                        try:
+                            float(text)
+                            align = "text-align:right;"
+                        except ValueError:
+                            align = ""
+                        td.set("style", f"border:1px solid rgba(128,128,128,0.3);padding:6px 10px;{bg}{align}")
+                return etree.tostring(root, encoding="unicode")[5:-6]  # strip <div>...</div>
+            except Exception:
+                return html
+
+        try:
+            import markdown
+            for rec in self:
+                if rec.log:
+                    html_body = markdown.markdown(rec.log, extensions=["tables", "fenced_code", "sane_lists"])
+                    rec.log_html = _style_tables(html_body)
+                else:
+                    rec.log_html = ""
+        except ImportError:
+            for rec in self:
+                rec.log_html = f"<pre>{rec.log or ''}</pre>"
 
     # -------------------------------------------------------------------------
     # Main entry point
@@ -105,17 +143,25 @@ class StockTestRun(models.Model):
         self.ensure_one()
         log_lines = []
 
+        # Markdown header
+        scenario_name = scenario.get("name") or scenario.get("description") or "Scenariu test"
+        log_lines.append(f"# {scenario_name}")
+        log_lines.append("")
+
         # Remove old log entries for this run (re-run case)
         self.log_ids.unlink()
 
         # Load shared base data (products, partners, categories) via scenario method
         base_data_script = scenario.get("base_data_script")
-        log_lines.append(f"[0] Loading base data from {base_data_script or '00_base_data.json'}...")
+        log_lines.append(f"## Date de bază")
+        log_lines.append(f"Fișier: `{base_data_script or '00_base_data.json'}`")
+        log_lines.append("")
         if self.scenario_id:
             records = self.scenario_id._get_base_data_records(base_data_script=base_data_script)
         else:
             records = self._load_base_data()
-        log_lines.append(f"    Base data loaded: {len(records)} records available.")
+        log_lines.append(f"Date încărcate: **{len(records)}** înregistrări disponibile.")
+        log_lines.append("")
         self._add_log(records, 0, "load_base_data", "info", f"Base data loaded: {len(records)} records available.")
 
         # Snapshot initial stock and account balances
@@ -129,11 +175,15 @@ class StockTestRun(models.Model):
         self._log_initial_stock(records, scenario)
 
         steps = scenario.get("lines", [])
+        log_lines.append("## Pași executați")
+        log_lines.append("")
         for idx, step in enumerate(steps):
             step = dict(step)
             step["_index"] = idx + 1
             step_type = step.get("step") or step.get("type")
-            log_lines.append(f"[{idx + 1}] Running step: {step_type}")
+            step_label = step.get("_comment") or step.get("description") or step_type
+            log_lines.append(f"### Pasul {idx + 1}: {step_label}")
+            log_lines.append("")
             try:
                 method_name = f"_run_step_{step_type.replace('-', '_')}"
                 if hasattr(self, method_name):
@@ -166,20 +216,24 @@ class StockTestRun(models.Model):
                     step_comment = step.get("_comment", "")
                     if step_docs:
                         for doc in step_docs:
-                            log_lines.append(f"    -> {doc._name}: {doc.display_name}")
+                            log_lines.append(self._format_document_md(doc))
+                            log_lines.append("")
                             msg = step_comment or f"Created: {doc.display_name}"
                             self._add_log(
                                 records, idx + 1, step_type, "ok", msg, document=doc
                             )
                     else:
                         msg = step_comment or "Step executed successfully."
+                        log_lines.append(f"✅ {msg}")
+                        log_lines.append("")
                         self._add_log(records, idx + 1, step_type, "ok", msg)
                     # Log accounting entries generated by this step
                     if new_step_lines:
                         for move in new_step_moves:
                             move_lines = move.line_ids
                             msg = f"Accounting entry: {move.name or move.ref or '/'} ({move.move_type})"
-                            log_lines.append(f"    -> {msg}")
+                            log_lines.append(self._format_document_md(move))
+                            log_lines.append("")
                             self._add_log(
                                 records, idx + 1, "account_move", "info", msg, document=move, move_lines=move_lines
                             )
@@ -191,15 +245,18 @@ class StockTestRun(models.Model):
 
                             checks = ast.literal_eval(checks)
                         check_log = self._run_checks(checks, records)
-                        log_lines.extend(check_log)
                         for check_line in check_log:
+                            icon = "❌" if check_line.startswith("FAIL") else "✅"
+                            log_lines.append(f"{icon} {check_line}")
                             state = "error" if check_line.startswith("FAIL") else "ok"
                             self._add_log(records, idx + 1, "check", state, check_line)
+                        log_lines.append("")
                 else:
                     raise UserError(self.env._("Unknown step type: %s", step_type))
             except Exception as e:
                 error_msg = str(e)
-                log_lines.append(f"    ERROR: {error_msg}")
+                log_lines.append(f"❌ **EROARE:** {error_msg}")
+                log_lines.append("")
                 _logger.error("Step [%d] %s failed: %s", idx + 1, step_type, error_msg)
                 self._add_log(records, idx + 1, step_type, "error", error_msg)
                 # Collect account.move records created so far
@@ -254,6 +311,15 @@ class StockTestRun(models.Model):
             [("id", ">", initial_max_move_id), ("company_id", "=", self.env.company.id)]
         )
         new_move_lines = new_moves.mapped("line_ids") if new_moves else self.env["account.move.line"]
+
+        # Markdown summary
+        log_lines.append("## Sumar execuție")
+        log_lines.append("")
+        log_lines.append(f"- **Pași executați:** {len(steps)}")
+        log_lines.append(f"- **Note contabile generate:** {len(new_moves)}")
+        log_lines.append(f"- **Rezultat:** ✅ PASSED")
+        log_lines.append("")
+
         self.write(
             {
                 "state": "passed",
@@ -598,6 +664,8 @@ class StockTestRun(models.Model):
         result = {f"partner_{step['name'].replace(' ', '_')}": partner}
         if ref:
             result[f"partner_{ref}"] = partner
+        if step.get("id"):
+            self._register_external_id(step["id"], partner)
         return result
 
     def _run_step_create_product_category(self, step, records):
@@ -643,6 +711,8 @@ class StockTestRun(models.Model):
                     vals[acc_field] = acc.id
         categ = Categ.create(vals)
         key = f"categ_{name.replace(' ', '_')}"
+        if step.get("id"):
+            self._register_external_id(step["id"], categ)
         return {key: categ}
 
     def _run_step_create_product(self, step, records):
@@ -701,6 +771,8 @@ class StockTestRun(models.Model):
 
         product = Product.create(vals)
         key = f"product_{code}" if code else f"product_{step['name'].replace(' ', '_')}"
+        if step.get("id"):
+            self._register_external_id(step["id"], product)
         return {key: product}
 
     def _run_step_create_valuation_class(self, step, records):
@@ -867,9 +939,10 @@ class StockTestRun(models.Model):
             order_lines.append((0, 0, {"product_id": prod.id, "product_qty": qty, "price_unit": price}))
 
         warehouse = self.env["stock.warehouse"].search([("company_id", "=", self.env.company.id)], limit=1)
+        currency = self._resolve_currency(step)
         po_vals = {
             "partner_id": partner.id,
-            "currency_id": self.env.company.currency_id.id,
+            "currency_id": currency.id,
             "order_line": order_lines,
         }
         if warehouse:
@@ -1444,12 +1517,11 @@ class StockTestRun(models.Model):
 
     def _run_step_create_invoice(self, step, records):
         partner_name = step.get("partner_name") or step.get("partner")
-        partner = None
-        if partner_name:
+        partner = self._resolve_ref(partner_name, "res.partner", records, key_prefix="partner")
+        if not partner and partner_name and not partner_name.startswith("ref:"):
             partner = self.env["res.partner"].search([("name", "=", partner_name)], limit=1)
-        if not partner:
-            partner_key = f"partner_{(partner_name or '').replace(' ', '_')}"
-            partner = records.get(partner_key)
+            if not partner:
+                partner = self.env["res.partner"].search([("ref", "=", partner_name)], limit=1)
         if not partner:
             raise UserError(self.env._("Partner not found: %s", partner_name))
 
@@ -1470,8 +1542,8 @@ class StockTestRun(models.Model):
         invoice_lines = []
         for line in line_specs:
             product_code = line.get("product_code") or line.get("product")
-            product = records.get(f"product_{product_code}")
-            if not product:
+            product = self._resolve_ref(product_code, "product.product", records, key_prefix="product")
+            if not product and product_code and not product_code.startswith("ref:"):
                 product = self.env["product.product"].search([("default_code", "=", product_code)], limit=1)
             if not product:
                 raise UserError(self.env._("Product not found: %s", product_code))
@@ -1527,6 +1599,10 @@ class StockTestRun(models.Model):
                 key = f"invoice_{move_type}_{safe_ref}"
             else:
                 key = f"invoice_{move_type}_{step.get('_index', 0)}"
+        if not step.get("create_only"):
+            if not invoice.invoice_date:
+                invoice.invoice_date = fields.Date.context_today(self)
+            invoice.action_post()
         return {key: invoice, "last_invoice": invoice}
 
     def _run_step_post_invoice(self, step, records):
@@ -1790,11 +1866,8 @@ class StockTestRun(models.Model):
             }
         """
         partner_ref = step.get("partner_name") or step.get("partner")
-        partner = None
-        if partner_ref:
-            partner_key = f"partner_{partner_ref}"
-            partner = records.get(partner_key)
-        if not partner and partner_ref:
+        partner = self._resolve_ref(partner_ref, "res.partner", records, key_prefix="partner")
+        if not partner and partner_ref and not partner_ref.startswith("ref:"):
             partner = self.env["res.partner"].search([("name", "=", partner_ref)], limit=1)
             if not partner:
                 partner = self.env["res.partner"].search([("ref", "=", partner_ref)], limit=1)
@@ -1847,8 +1920,9 @@ class StockTestRun(models.Model):
         if step.get("memo"):
             payment_vals["memo"] = step["memo"]
 
-        payment = self.env["account.payment"].create(payment_vals)
+        payment = self.env["account.payment"].with_context(force_payment_move=True).create(payment_vals)
         payment.action_post()
+        payment.action_validate()
 
         # Optional: reconcile with invoice
         invoice_key = step.get("invoice_key")
@@ -1945,6 +2019,205 @@ class StockTestRun(models.Model):
     # Helpers
     # -------------------------------------------------------------------------
 
+    def _resolve_ref(self, value, model, records, key_prefix=None):
+        """Resolve a value that may be:
+        - a 'ref:module.xml_id' string → looked up via env.ref()
+        - a key in records dict (using key_prefix, e.g. 'partner_elycontab')
+        - a plain name/code searched in the given model
+
+        Returns a recordset or None.
+        """
+        if not value:
+            return None
+        if isinstance(value, str) and value.startswith("ref:"):
+            xml_id = value[4:].strip()
+            # dacă nu conține punct, adaugă modulul implicit
+            if "." not in xml_id:
+                xml_id = f"deltatech_stock_test.{xml_id}"
+            return self.env.ref(xml_id, raise_if_not_found=False)
+        if key_prefix:
+            record = records.get(f"{key_prefix}_{value.replace(' ', '_')}")
+            if record:
+                return record
+        return None
+
+    def _register_external_id(self, xml_id, record):
+        """Register or update an external ID (ir.model.data) for a record.
+
+        xml_id should be a simple name (without module prefix).
+        The record is registered under module 'deltatech_stock_test'.
+        """
+        if not xml_id or not record or not record.id:
+            return
+        IrModelData = self.env["ir.model.data"]
+        existing = IrModelData.search(
+            [("name", "=", xml_id), ("module", "=", "deltatech_stock_test")], limit=1
+        )
+        if existing:
+            if existing.res_id != record.id or existing.model != record._name:
+                existing.write({"res_id": record.id, "model": record._name})
+        else:
+            IrModelData.create(
+                {
+                    "name": xml_id,
+                    "module": "deltatech_stock_test",
+                    "model": record._name,
+                    "res_id": record.id,
+                    "noupdate": True,
+                }
+            )
+
+    def _format_journal_lines_md(self, move):
+        """Generate Markdown table rows for journal entry lines (debit/credit)."""
+        lines = []
+        lines.append("| Cont | Partener | Descriere | Debit | Credit |")
+        lines.append("|------|----------|-----------|------:|-------:|")
+        for jl in move.line_ids:
+            account_code = jl.account_id.code if jl.account_id else "/"
+            account_name = jl.account_id.name if jl.account_id else "/"
+            partner_name = jl.partner_id.name if jl.partner_id else ""
+            label = jl.name or ""
+            lines.append(
+                f"| {account_code} {account_name} "
+                f"| {partner_name} "
+                f"| {label} "
+                f"| {jl.debit:.2f} "
+                f"| {jl.credit:.2f} |"
+            )
+        total_debit = sum(move.line_ids.mapped("debit"))
+        total_credit = sum(move.line_ids.mapped("credit"))
+        lines.append("")
+        lines.append(f"**Total Debit:** {total_debit:.2f} | **Total Credit:** {total_credit:.2f}")
+        return lines
+
+    def _format_account_move_md(self, doc):
+        """Generate Markdown section for account.move (invoice or journal entry)."""
+        lines = []
+        move_type_label = {
+            "out_invoice": "Factură client",
+            "in_invoice": "Factură furnizor",
+            "out_refund": "Storno client",
+            "in_refund": "Storno furnizor",
+            "entry": "Notă contabilă",
+        }.get(doc.move_type, doc.move_type)
+        lines.append(f"#### {move_type_label}: {doc.name or '/'}")
+        lines.append(f"- **Dată:** {doc.invoice_date or doc.date or '/'}")
+        lines.append(f"- **Partener:** {doc.partner_id.name if doc.partner_id else '/'}")
+        if doc.ref:
+            lines.append(f"- **Referință:** {doc.ref}")
+        inv_lines = doc.invoice_line_ids.filtered(lambda l: l.display_type == "product")
+        if inv_lines and doc.move_type != "entry":
+            lines.append("")
+            lines.append("| Produs | Cant. | Preț unitar | TVA | Total fără TVA | Total TVA | Total |")
+            lines.append("|--------|------:|------------:|-----|---------------:|----------:|------:|")
+            for il in inv_lines:
+                tax_names = ", ".join(il.tax_ids.mapped("name")) if il.tax_ids else "-"
+                tax_amount = il.price_total - il.price_subtotal
+                lines.append(
+                    f"| {il.product_id.name or il.name} "
+                    f"| {il.quantity:.2f} "
+                    f"| {il.price_unit:.2f} "
+                    f"| {tax_names} "
+                    f"| {il.price_subtotal:.2f} "
+                    f"| {tax_amount:.2f} "
+                    f"| {il.price_total:.2f} |"
+                )
+            lines.append("")
+            lines.append(f"**Total fără TVA:** {doc.amount_untaxed:.2f} | **Total TVA:** {doc.amount_tax:.2f} | **Total:** {doc.amount_total:.2f}")
+        if inv_lines and doc.line_ids:
+            lines.append("")
+            lines.append("**Linii contabile:**")
+            lines.append("")
+            lines.extend(self._format_journal_lines_md(doc))
+        elif doc.move_type == "entry" and doc.line_ids:
+            lines.append("")
+            lines.extend(self._format_journal_lines_md(doc))
+        return lines
+
+    def _format_payment_md(self, doc):
+        """Generate Markdown section for account.payment."""
+        lines = []
+        ptype = {"outbound": "Plată", "inbound": "Încasare"}.get(doc.payment_type, doc.payment_type)
+        lines.append(f"#### {ptype}: {doc.name or '/'}")
+        lines.append(f"- **Dată:** {doc.date or '/'}")
+        lines.append(f"- **Partener:** {doc.partner_id.name if doc.partner_id else '/'}")
+        lines.append(f"- **Jurnal:** {doc.journal_id.name if doc.journal_id else '/'}")
+        lines.append(f"- **Sumă:** {doc.amount:.2f} {doc.currency_id.name if doc.currency_id else ''}")
+        if doc.memo:
+            lines.append(f"- **Memo:** {doc.memo}")
+        move = doc.move_id if hasattr(doc, "move_id") and doc.move_id else None
+        if not move:
+            move = doc.reconciled_bill_ids[:1] if hasattr(doc, "reconciled_bill_ids") and doc.reconciled_bill_ids else None
+        if move and move.line_ids:
+            lines.append("")
+            lines.append(f"**Notă contabilă:** {move.name or '/'}")
+            lines.append("")
+            lines.extend(self._format_journal_lines_md(move))
+        return lines
+
+    def _format_purchase_order_md(self, doc):
+        """Generate Markdown section for purchase.order."""
+        lines = []
+        lines.append(f"#### Comandă achiziție: {doc.name or '/'}")
+        lines.append(f"- **Dată:** {doc.date_order or '/'}")
+        lines.append(f"- **Furnizor:** {doc.partner_id.name if doc.partner_id else '/'}")
+        if doc.order_line:
+            lines.append("")
+            lines.append("| Produs | Cant. | Preț unitar | Total |")
+            lines.append("|--------|------:|------------:|------:|")
+            for ol in doc.order_line:
+                lines.append(
+                    f"| {ol.product_id.name or ol.name} "
+                    f"| {ol.product_qty:.2f} "
+                    f"| {ol.price_unit:.2f} "
+                    f"| {ol.price_subtotal:.2f} |"
+                )
+            lines.append("")
+            lines.append(f"**Total:** {doc.amount_total:.2f}")
+        return lines
+
+    def _format_stock_picking_md(self, doc):
+        """Generate Markdown section for stock.picking."""
+        lines = []
+        lines.append(f"#### Transfer: {doc.name or '/'}")
+        lines.append(f"- **Dată:** {doc.date_done or doc.scheduled_date or '/'}")
+        lines.append(f"- **Partener:** {doc.partner_id.name if doc.partner_id else '/'}")
+        lines.append(f"- **Tip operație:** {doc.picking_type_id.name if doc.picking_type_id else '/'}")
+        if doc.move_ids:
+            lines.append("")
+            lines.append("| Produs | Cant. |")
+            lines.append("|--------|------:|")
+            for mv in doc.move_ids:
+                lines.append(f"| {mv.product_id.name} | {mv.quantity:.2f} |")
+        account_moves = self.env["account.move"]
+        if doc.move_ids and "stock_move_id" in self.env["account.move.line"]._fields:
+            move_lines = self.env["account.move.line"].search(
+                [("stock_move_id", "in", doc.move_ids.ids)]
+            )
+            account_moves = move_lines.mapped("move_id").filtered(lambda m: m.state == "posted")
+        for amove in account_moves:
+            if amove.line_ids:
+                lines.append("")
+                lines.append(f"**Notă contabilă:** {amove.name or '/'}")
+                lines.append("")
+                lines.extend(self._format_journal_lines_md(amove))
+        return lines
+
+    def _format_document_md(self, doc):
+        """Generate a Markdown section with details for a document (invoice, payment, purchase order, etc.)."""
+        model = doc._name
+        if model == "account.move":
+            lines = self._format_account_move_md(doc)
+        elif model == "account.payment":
+            lines = self._format_payment_md(doc)
+        elif model == "purchase.order":
+            lines = self._format_purchase_order_md(doc)
+        elif model == "stock.picking":
+            lines = self._format_stock_picking_md(doc)
+        else:
+            lines = [f"#### {model}: {doc.display_name}"]
+        return "\n".join(lines)
+
     def _find_account(self, code):
         """Find an account by code. Searches exact match first, then prefix match with trailing zeros."""
         code = str(code).strip()
@@ -1969,6 +2242,15 @@ class StockTestRun(models.Model):
             if partner:
                 return partner
         raise UserError(self.env._("Partner not found: %s", partner_name))
+
+    def _resolve_currency(self, step):
+        """Resolve currency from step['currency'] code; fallback to company currency."""
+        currency_code = step.get("currency")
+        if currency_code:
+            currency = self.env["res.currency"].search([("name", "=", currency_code)], limit=1)
+            if currency:
+                return currency
+        return self.env.company.currency_id
 
     def _resolve_product(self, step, records):
         product_code = step.get("product_code") or step.get("code")
