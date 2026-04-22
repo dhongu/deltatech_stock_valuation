@@ -109,7 +109,7 @@ class StockTestRun(models.Model):
 
     def _load_base_data(self):
         """Load and execute 00_base_data.json to populate shared records. Returns records dict."""
-        base_path = file_path("deltatech_stock_test/data/scenarios/00_base_data.json", filter_ext=(".json",))
+        base_path = file_path("deltatech_account_scenario/data/scenarios/00_base_data.json", filter_ext=(".json",))
         with open(base_path, encoding="utf-8") as f:
             base_data = json.load(f)
         records = {}
@@ -2100,7 +2100,7 @@ class StockTestRun(models.Model):
             xml_id = value[4:].strip()
             # dacă nu conține punct, adaugă modulul implicit
             if "." not in xml_id:
-                xml_id = f"deltatech_stock_test.{xml_id}"
+                xml_id = f"deltatech_account_scenario.{xml_id}"
             return self.env.ref(xml_id, raise_if_not_found=False)
         if key_prefix:
             record = records.get(f"{key_prefix}_{value.replace(' ', '_')}")
@@ -2112,13 +2112,13 @@ class StockTestRun(models.Model):
         """Register or update an external ID (ir.model.data) for a record.
 
         xml_id should be a simple name (without module prefix).
-        The record is registered under module 'deltatech_stock_test'.
+        The record is registered under module 'deltatech_account_scenario'.
         """
         if not xml_id or not record or not record.id:
             return
         IrModelData = self.env["ir.model.data"]
         existing = IrModelData.search(
-            [("name", "=", xml_id), ("module", "=", "deltatech_stock_test")], limit=1
+            [("name", "=", xml_id), ("module", "=", "deltatech_account_scenario")], limit=1
         )
         if existing:
             if existing.res_id != record.id or existing.model != record._name:
@@ -2127,7 +2127,7 @@ class StockTestRun(models.Model):
             IrModelData.create(
                 {
                     "name": xml_id,
-                    "module": "deltatech_stock_test",
+                    "module": "deltatech_account_scenario",
                     "model": record._name,
                     "res_id": record.id,
                     "noupdate": True,

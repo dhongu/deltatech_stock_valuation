@@ -1,4 +1,4 @@
-# deltatech_stock_test
+# deltatech_account_scenario
 
 **Stock Test — Management Accounting Test Framework**
 
@@ -244,7 +244,7 @@ After any step, add a `"checks"` key to verify state immediately:
 ## Installation
 
 ```bash
-./odoo/odoo-bin -c odoo18.conf -d mydb -i deltatech_stock_test --stop-after-init
+./odoo/odoo-bin -c odoo18.conf -d mydb -i deltatech_account_scenario --stop-after-init
 ```
 
 ---
@@ -253,8 +253,8 @@ After any step, add a `"checks"` key to verify state immediately:
 
 ```bash
 ./odoo/odoo-bin -c odoo18.conf -d o19_test \
-  -u deltatech_stock_test \
-  --test-tags=deltatech_stock_test \
+  -u deltatech_account_scenario \
+  --test-tags=deltatech_account_scenario \
   --stop-after-init
 ```
 
@@ -262,7 +262,7 @@ After any step, add a `"checks"` key to verify state immediately:
 
 ## Comparison with `l10n_ro_stock_account`
 
-| Feature                    | `l10n_ro_stock_account`  | `deltatech_stock_test`        |
+| Feature                    | `l10n_ro_stock_account`  | `deltatech_account_scenario`        |
 | -------------------------- | ------------------------ | ----------------------------- |
 | Step execution engine      | Python `TransactionCase` | Odoo model (`stock.test.run`) |
 | Scenario storage           | Hardcoded in test files  | JSON in database              |

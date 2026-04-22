@@ -135,7 +135,7 @@ class StockTestScenario(models.Model):
     @api.model
     def load_demo_scenarios(self):
         """Load all JSON scenario files from data/scenarios/. Called from demo XML."""
-        scenarios_dir = file_path("deltatech_stock_test/data/scenarios")
+        scenarios_dir = file_path("deltatech_account_scenario/data/scenarios")
         json_files = sorted(glob.glob(os.path.join(scenarios_dir, "**", "*.json"), recursive=True))
         for filepath in json_files:
             # Skip base_data — it is not a scenario, it is loaded automatically by the runner
@@ -172,7 +172,7 @@ class StockTestScenario(models.Model):
                 "state": "ready",
             }
             if xml_id:
-                full_xml_id = f"deltatech_stock_test.{xml_id}"
+                full_xml_id = f"deltatech_account_scenario.{xml_id}"
                 existing = self.env.ref(full_xml_id, raise_if_not_found=False)
                 if existing:
                     vals.pop("state")
@@ -183,7 +183,7 @@ class StockTestScenario(models.Model):
                     self.env["ir.model.data"].create(
                         {
                             "name": xml_id,
-                            "module": "deltatech_stock_test",
+                            "module": "deltatech_account_scenario",
                             "model": "stock.test.scenario",
                             "res_id": record.id,
                             "noupdate": True,
@@ -203,7 +203,7 @@ class StockTestScenario(models.Model):
     def _get_base_data_records(self, base_data_script=None):
         """Load base data JSON and return a records dict with shared partners, products, categories.
         If base_data_script is given, it is first looked up as an Odoo scenario by external ID
-        (deltatech_stock_test.<base_data_script>). If found, its json_data lines are executed.
+        (deltatech_account_scenario.<base_data_script>). If found, its json_data lines are executed.
         Otherwise it is loaded from data/scenarios/<base_data_script>.json (local file fallback).
         If no base_data_script is given, the default 00_base_data.json is used.
         """
@@ -211,7 +211,7 @@ class StockTestScenario(models.Model):
 
         if base_data_script:
             # 1. Caută scenariul în Odoo după external ID
-            full_xml_id = f"deltatech_stock_test.{base_data_script}"
+            full_xml_id = f"deltatech_account_scenario.{base_data_script}"
             base_scenario = self.env.ref(full_xml_id, raise_if_not_found=False)
             if base_scenario:
                 try:
@@ -224,7 +224,7 @@ class StockTestScenario(models.Model):
                 # 2. Fallback: fișier local
                 # Încearcă cu extensie .json dacă nu e deja inclusă
                 rel_name = base_data_script if base_data_script.endswith(".json") else f"{base_data_script}.json"
-                rel_path = f"deltatech_stock_test/data/scenarios/{rel_name}"
+                rel_path = f"deltatech_account_scenario/data/scenarios/{rel_name}"
                 try:
                     base_path = file_path(rel_path, filter_ext=(".json",))
                     with open(base_path, encoding="utf-8") as f:
@@ -234,7 +234,7 @@ class StockTestScenario(models.Model):
                     _logger.warning("Could not load base data script '%s' from file: %s", base_data_script, e)
                     base_data = {}
         else:
-            rel_path = "deltatech_stock_test/data/scenarios/00_base_data.json"
+            rel_path = "deltatech_account_scenario/data/scenarios/00_base_data.json"
             base_path = file_path(rel_path, filter_ext=(".json",))
             with open(base_path, encoding="utf-8") as f:
                 base_data = json.load(f)

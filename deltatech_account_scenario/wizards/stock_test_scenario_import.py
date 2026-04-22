@@ -47,7 +47,7 @@ class StockTestScenarioImportWizard(models.TransientModel):
             "state": "ready",
         }
         if xml_id:
-            full_xml_id = f"deltatech_stock_test.{xml_id}"
+            full_xml_id = f"deltatech_account_scenario.{xml_id}"
             existing = self.env.ref(full_xml_id, raise_if_not_found=False)
             if existing:
                 vals.pop("state")
@@ -58,7 +58,7 @@ class StockTestScenarioImportWizard(models.TransientModel):
                 self.env["ir.model.data"].create(
                     {
                         "name": xml_id,
-                        "module": "deltatech_stock_test",
+                        "module": "deltatech_account_scenario",
                         "model": "stock.test.scenario",
                         "res_id": record.id,
                         "noupdate": True,

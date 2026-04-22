@@ -1,7 +1,7 @@
 
 ## Overview
 
-`deltatech_stock_test` is an Odoo 19 module that provides a **JSON-driven framework** for testing stock management accounting scenarios. It allows developers and accountants to define business processes (stock receipts, invoices, deliveries, etc.) as JSON scenarios, execute them against a live Odoo database, and automatically validate the resulting accounting entries and stock valuations.
+`deltatech_account_scenario` is an Odoo 19 module that provides a **JSON-driven framework** for testing stock management accounting scenarios. It allows developers and accountants to define business processes (stock receipts, invoices, deliveries, etc.) as JSON scenarios, execute them against a live Odoo database, and automatically validate the resulting accounting entries and stock valuations.
 
 The module supports two modes of operation:
 - **Test mode** — executes a scenario and validates that the generated account moves and stock values match the expected entries defined in the JSON.
@@ -701,7 +701,7 @@ A positive `balance` means net debit; a negative `balance` means net credit.
 ## Installation
 
 ```bash
-./odoo/odoo-bin -c odoo.conf -d your_db -i deltatech_stock_test --stop-after-init
+./odoo/odoo-bin -c odoo.conf -d your_db -i deltatech_account_scenario --stop-after-init
 ```
 
 ---
@@ -709,8 +709,8 @@ A positive `balance` means net debit; a negative `balance` means net credit.
 ## Running Tests
 
 ```bash
-./odoo/odoo-bin -c odoo.conf -d o19_test -u deltatech_stock_test \
-  --test-tags=deltatech_stock_test --stop-after-init
+./odoo/odoo-bin -c odoo.conf -d o19_test -u deltatech_account_scenario \
+  --test-tags=deltatech_account_scenario --stop-after-init
 ```
 
 ---

@@ -1,9 +1,9 @@
 # ©  2024 Deltatech
 # See README.rst file on addons root folder for license details
 {
-    "name": "Deltatech Stock Test - Management Accounting Test Framework",
+    "name": "Deltatech Account Scenario - Accounting Scenario Framework",
     "version": "19.0.1.0.0",
-    "summary": "Framework for testing stock management accounting via JSON scenarios",
+    "summary": "Framework for running and validating accounting scenarios via JSON",
     "category": "Accounting/Accounting",
     "author": "Terrabit, Dorin Hongu",
     "website": "https://www.terrabit.ro",
@@ -23,7 +23,7 @@
     ],
     "assets": {
         "web.assets_backend": [
-            "deltatech_stock_test/static/src/js/code_editor_patch.esm.js",
+            "deltatech_account_scenario/static/src/js/code_editor_patch.esm.js",
         ],
     },
     "demo": ["demo/load_demo_scenarios.xml"],
