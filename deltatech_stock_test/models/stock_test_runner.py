@@ -296,7 +296,7 @@ class StockTestRun(models.Model):
                         for move in new_step_moves:
                             move_lines = move.line_ids
                             msg = f"Accounting entry: {move.name or move.ref or '/'} ({move.move_type})"
-                            log_lines.append(self._format_document_md(move))
+                            log_lines.append(self._format_account_move_entry_md(move))
                             log_lines.append("")
                             self._add_log(
                                 records, idx + 1, "account_move", "info", msg, document=move, move_lines=move_lines
@@ -1576,7 +1576,7 @@ class StockTestRun(models.Model):
         return {f"{oper_type}_{idx}": picking}
 
     # -------------------------------------------------------------------------
-    # Step handlers — invoice (legacy format)
+    # Step handlers — invoice
     # -------------------------------------------------------------------------
 
     def _run_step_create_invoice(self, step, records):
@@ -1777,7 +1777,7 @@ class StockTestRun(models.Model):
         return {key: asset}
 
     # -------------------------------------------------------------------------
-    # Step handlers — stock picking (legacy format)
+    # Step handlers — stock picking
     # -------------------------------------------------------------------------
 
     def _run_step_create_stock_picking(self, step, records):
@@ -1966,7 +1966,7 @@ class StockTestRun(models.Model):
 
         payment_type = step.get("payment_type", "outbound")
         # În Odoo 17+, payment_method_line_id este obligatoriu
-        payment_method_line = journal.inbound_payment_method_line_ids[:1] if payment_type == "inbound" else journal.outbound_payment_method_line_ids[:1]
+        payment_method_line = journal.inbound_payment_method_line_ids[0] if payment_type == "inbound" else journal.outbound_payment_method_line_ids[0]
 
         payment_vals = {
             "payment_type": payment_type,
@@ -1984,7 +1984,10 @@ class StockTestRun(models.Model):
         if step.get("memo"):
             payment_vals["memo"] = step["memo"]
 
-        payment = self.env["account.payment"].with_context(force_payment_move=True).create(payment_vals)
+        if step.get("force_payment_move"):
+            payment = self.env["account.payment"].with_context(force_payment_move=True).create(payment_vals)
+        else:
+            payment = self.env["account.payment"].create(payment_vals)
         payment.action_post()
         payment.action_validate()
 
@@ -2154,6 +2157,20 @@ class StockTestRun(models.Model):
         lines.append(f"**Total Debit:** {total_debit:.2f} | **Total Credit:** {total_credit:.2f}")
         return lines
 
+    def _format_account_move_entry_md(self, doc):
+        """Generate Markdown section for account.move of type 'entry' (journal entry)."""
+        lines = []
+        lines.append(f"#### Notă contabilă: {doc.name or '/'}")
+        lines.append(f"- **Dată:** {doc.date or '/'}")
+        if doc.partner_id:
+            lines.append(f"- **Partener:** {doc.partner_id.name}")
+        if doc.ref:
+            lines.append(f"- **Referință:** {doc.ref}")
+        if doc.line_ids:
+            lines.append("")
+            lines.extend(self._format_journal_lines_md(doc))
+        return "\n".join(lines)
+
     def _format_account_move_md(self, doc):
         """Generate Markdown section for account.move (invoice or journal entry)."""
         lines = []
@@ -2188,14 +2205,14 @@ class StockTestRun(models.Model):
                 )
             lines.append("")
             lines.append(f"**Total fără TVA:** {doc.amount_untaxed:.2f} | **Total TVA:** {doc.amount_tax:.2f} | **Total:** {doc.amount_total:.2f}")
-        if inv_lines and doc.line_ids:
-            lines.append("")
-            lines.append("**Linii contabile:**")
-            lines.append("")
-            lines.extend(self._format_journal_lines_md(doc))
-        elif doc.move_type == "entry" and doc.line_ids:
-            lines.append("")
-            lines.extend(self._format_journal_lines_md(doc))
+        # if inv_lines and doc.line_ids:
+        #     lines.append("")
+        #     lines.append("**Linii contabile:**")
+        #     lines.append("")
+        #     lines.extend(self._format_journal_lines_md(doc))
+        # elif doc.move_type == "entry" and doc.line_ids:
+        #     lines.append("")
+        #     lines.extend(self._format_journal_lines_md(doc))
         return lines
 
     def _format_payment_md(self, doc):
@@ -2209,14 +2226,14 @@ class StockTestRun(models.Model):
         lines.append(f"- **Sumă:** {doc.amount:.2f} {doc.currency_id.name if doc.currency_id else ''}")
         if doc.memo:
             lines.append(f"- **Memo:** {doc.memo}")
-        move = doc.move_id if hasattr(doc, "move_id") and doc.move_id else None
-        if not move:
-            move = doc.reconciled_bill_ids[:1] if hasattr(doc, "reconciled_bill_ids") and doc.reconciled_bill_ids else None
-        if move and move.line_ids:
-            lines.append("")
-            lines.append(f"**Notă contabilă:** {move.name or '/'}")
-            lines.append("")
-            lines.extend(self._format_journal_lines_md(move))
+        # move = doc.move_id if hasattr(doc, "move_id") and doc.move_id else None
+        # if not move:
+        #     move = doc.reconciled_bill_ids[:1] if hasattr(doc, "reconciled_bill_ids") and doc.reconciled_bill_ids else None
+        # if move and move.line_ids:
+        #     lines.append("")
+        #     lines.append(f"**Notă contabilă:** {move.name or '/'}")
+        #     lines.append("")
+        #     lines.extend(self._format_journal_lines_md(move))
         return lines
 
     def _format_purchase_order_md(self, doc):
