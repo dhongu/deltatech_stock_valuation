@@ -12,12 +12,12 @@ from odoo.tools.misc import file_path
 _logger = logging.getLogger(__name__)
 
 
-class StockTestRun(models.Model):
-    _name = "stock.test.run"
+class AccountTestRun(models.Model):
+    _name = "account.test.run"
     _description = "Stock Test Run"
     _order = "id desc"
 
-    scenario_id = fields.Many2one("stock.test.scenario", string="Scenario", required=True, ondelete="cascade")
+    scenario_id = fields.Many2one("account.scenario", string="Scenario", required=True, ondelete="cascade")
 
     def unlink(self):
         scenarios = self.mapped("scenario_id")
@@ -53,10 +53,10 @@ class StockTestRun(models.Model):
     validation_result = fields.Text(string="Validation Result", readonly=True)
     error_message = fields.Text(string="Error Message", readonly=True)
     company_id = fields.Many2one("res.company", string="Company", required=True, default=lambda self: self.env.company)
-    log_ids = fields.One2many("stock.test.log", "run_id", string="Step Logs", readonly=True)
+    log_ids = fields.One2many("account.test.log", "run_id", string="Step Logs", readonly=True)
     account_move_line_ids = fields.Many2many(
         "account.move.line",
-        "stock_test_run_move_line_rel",
+        "account_test_run_move_line_rel",
         "run_id",
         "move_line_id",
         string="Accounting Lines",
@@ -125,7 +125,7 @@ class StockTestRun(models.Model):
         return records
 
     def _add_log(self, records, step_index, step_type, state, message, document=None, move_lines=None):
-        """Create a stock.test.log entry for this run."""
+        """Create a account.test.log entry for this run."""
         vals = {
             "run_id": self.id,
             "step_index": step_index,
@@ -139,7 +139,7 @@ class StockTestRun(models.Model):
             vals["document_name"] = document.display_name
         if move_lines:
             vals["account_move_line_ids"] = [(6, 0, move_lines.ids)]
-        self.env["stock.test.log"].create(vals)
+        self.env["account.test.log"].create(vals)
 
     def action_download_md(self):
         self.ensure_one()
@@ -203,7 +203,7 @@ class StockTestRun(models.Model):
         }
 
     def execute(self, scenario):
-        """Execute a scenario dict. Called from stock.test.scenario.action_execute."""
+        """Execute a scenario dict. Called from account.scenario.action_execute."""
         self.ensure_one()
         log_lines = []
 

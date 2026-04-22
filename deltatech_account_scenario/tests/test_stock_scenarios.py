@@ -4,11 +4,11 @@ import json
 
 from odoo.tests import tagged
 
-from .common import StockTestCommon
+from .common import AccountScenarioCommon
 
 
 @tagged("post_install", "-at_install")
-class TestStockScenarios(StockTestCommon):
+class TestStockScenarios(AccountScenarioCommon):
     """Tests for the stock management accounting test framework."""
 
     @classmethod
@@ -20,7 +20,7 @@ class TestStockScenarios(StockTestCommon):
     # -------------------------------------------------------------------------
 
     def _make_scenario(self, json_data, mode="test"):
-        return self.env["stock.test.scenario"].create(
+        return self.env["account.scenario"].create(
             {
                 "name": json_data.get("name", "Test"),
                 "json_data": json.dumps(json_data),
@@ -30,7 +30,7 @@ class TestStockScenarios(StockTestCommon):
 
     def _run_scenario(self, scenario_dict, mode="test"):
         scenario = self._make_scenario(scenario_dict, mode=mode)
-        run = self.env["stock.test.run"].create(
+        run = self.env["account.test.run"].create(
             {
                 "scenario_id": scenario.id,
                 "name": scenario.name,
@@ -81,7 +81,7 @@ class TestStockScenarios(StockTestCommon):
         self.assertTrue(partner)
 
     def test_common_fixtures(self):
-        """Verify that common fixtures from StockTestCommon are available."""
+        """Verify that common fixtures from AccountScenarioCommon are available."""
         self.assertTrue(self.product_fifo, "product_fifo should be set")
         self.assertTrue(self.product_avg, "product_avg should be set")
         self.assertTrue(self.product_service, "product_service should be set")
@@ -119,7 +119,7 @@ class TestStockScenarios(StockTestCommon):
 
     def test_create_invoice_auto_post(self):
         """create_invoice automatically posts the invoice (no separate post_invoice step needed).
-        Uses pre-created customer_1 and product_fifo from StockTestCommon.
+        Uses pre-created customer_1 and product_fifo from AccountScenarioCommon.
         """
         scenario = {
             "name": "Test invoice auto-post flow",
@@ -175,7 +175,7 @@ class TestStockScenarios(StockTestCommon):
         self.assertTrue(move, "Invoice should remain in draft when create_only=True")
 
     def test_scenario_model_action_execute(self):
-        """action_execute on stock.test.scenario runs the scenario and sets state=executed."""
+        """action_execute on account.scenario runs the scenario and sets state=executed."""
         scenario_dict = {
             "name": "Action Execute Test",
             "lines": [
@@ -198,7 +198,7 @@ class TestStockScenarios(StockTestCommon):
             "lines": [{"step": "nonexistent_step"}],
             "expected_account_moves": [],
         }
-        run = self.env["stock.test.run"].create(
+        run = self.env["account.test.run"].create(
             {
                 "scenario_id": self._make_scenario(scenario_dict, mode="demo").id,
                 "name": "Unknown step test",

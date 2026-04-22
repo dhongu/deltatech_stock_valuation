@@ -1,7 +1,7 @@
 # ©  2024 Deltatech
 # See README.rst file on addons root folder for license details
 {
-    "name": "Deltatech Account Scenario - Accounting Scenario Framework",
+    "name": "Accounting Scenario Framework",
     "version": "19.0.1.0.0",
     "summary": "Framework for running and validating accounting scenarios via JSON",
     "category": "Accounting/Accounting",
@@ -9,9 +9,9 @@
     "website": "https://www.terrabit.ro",
     "data": [
         "security/ir.model.access.csv",
-        "wizards/stock_test_scenario_import_views.xml",
-        "views/stock_test_scenario_views.xml",
-        "views/stock_test_run_views.xml",
+        "wizards/account_scenario_import_views.xml",
+        "views/account_scenario_views.xml",
+        "views/account_test_run_views.xml",
         "views/menu_views.xml",
     ],
     "depends": [

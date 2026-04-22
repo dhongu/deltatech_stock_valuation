@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_stock_test_run_form" model="ir.ui.view">
-        <field name="name">stock.test.run.form</field>
-        <field name="model">stock.test.run</field>
+    <record id="view_account_test_run_form" model="ir.ui.view">
+        <field name="name">account.test.run.form</field>
+        <field name="model">account.test.run</field>
         <field name="arch" type="xml">
             <form>
                 <header>
@@ -63,9 +63,9 @@
             </form>
         </field>
     </record>
-    <record id="view_stock_test_run_list" model="ir.ui.view">
-        <field name="name">stock.test.run.list</field>
-        <field name="model">stock.test.run</field>
+    <record id="view_account_test_run_list" model="ir.ui.view">
+        <field name="name">account.test.run.list</field>
+        <field name="model">account.test.run</field>
         <field name="arch" type="xml">
             <list decoration-success="state == 'passed'"
                   decoration-danger="state == 'failed'"
@@ -79,9 +79,9 @@
             </list>
         </field>
     </record>
-    <record id="action_stock_test_run" model="ir.actions.act_window">
+    <record id="action_account_test_run" model="ir.actions.act_window">
         <field name="name">Test Runs</field>
-        <field name="res_model">stock.test.run</field>
+        <field name="res_model">account.test.run</field>
         <field name="view_mode">list,form</field>
     </record>
 </odoo>

@@ -1,5 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_stock_test_scenario,stock.test.scenario,model_stock_test_scenario,,1,1,1,1
-access_stock_test_run,stock.test.run,model_stock_test_run,,1,1,1,1
-access_stock_test_log,stock.test.log,model_stock_test_log,,1,1,1,1
-access_stock_test_scenario_import_wizard,stock.test.scenario.import.wizard,model_stock_test_scenario_import_wizard,,1,1,1,1
+access_account_scenario,account.scenario,model_account_scenario,,1,1,1,1
+access_account_test_run,account.test.run,model_account_test_run,,1,1,1,1
+access_account_test_log,account.test.log,model_account_test_log,,1,1,1,1
+access_account_scenario_import_wizard,account.scenario.import.wizard,model_account_scenario_import_wizard,,1,1,1,1

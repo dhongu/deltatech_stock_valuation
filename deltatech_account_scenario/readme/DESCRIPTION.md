@@ -1,7 +1,7 @@
 
 ## Overview
 
-`deltatech_account_scenario` is an Odoo 19 module that provides a **JSON-driven framework** for testing stock management accounting scenarios. It allows developers and accountants to define business processes (stock receipts, invoices, deliveries, etc.) as JSON scenarios, execute them against a live Odoo database, and automatically validate the resulting accounting entries and stock valuations.
+`deltatech_account_scenario` is an Odoo 19 module that provides a **JSON-driven framework** for running and validating complete accounting scenarios. It allows developers and accountants to define business processes (invoices, payments, journal entries, fixed assets, stock receipts, deliveries, etc.) as JSON scenarios, execute them against a live Odoo database, and automatically validate the resulting accounting entries and stock valuations.
 
 The module supports two modes of operation:
 - **Test mode** — executes a scenario and validates that the generated account moves and stock values match the expected entries defined in the JSON.
@@ -27,10 +27,10 @@ The module supports two modes of operation:
 ### UI Integration
 - **Scenario list** — view and manage JSON scenarios; import JSON files via the **Import Scenarios** button (always visible, no selection required).
 - **Scenario form** — view, edit, and export a scenario as JSON via the **Export JSON** button.
-- **Run history** — each execution is recorded as a `stock.test.run` record with full execution log and validation result.
+- **Run history** — each execution is recorded as a `account.test.run` record with full execution log and validation result.
 - **Log navigation** — clicking a log line with a document reference opens the related document (invoice, picking, payment, etc.) directly.
 - **Buttons** — "Set Ready", "Execute Scenario", "Re-run Scenario", "View Runs" available from the scenario form.
-- Menu: **Management Accounting Tests → Scenarios** and **Runs**.
+- Menu: **Accounting → Account Scenarios → Test Scenarios** and **Test Runs** (accessible via the Accounting main menu).
 
 ### Built-in Scenario Library
 - Ships with base data (`00_base_data.json`) defining shared product categories, partners, and products used across all scenarios.
@@ -40,7 +40,7 @@ The module supports two modes of operation:
   - **70 Average cost scenarios** (`ro_stock_avg_case_XXXX.json`) — covering weighted average cost method edge cases.
 
 ### Automated Tests
-- Includes `TransactionCase` tests under `tests/test_stock_scenarios.py` covering:
+- Includes `TransactionCase` tests under `tests/test_stock_scenarios.py` and `tests/common.py` covering:
   - Product category creation step
   - Partner creation step
   - Product creation step
@@ -684,7 +684,7 @@ A positive `balance` means net debit; a negative `balance` means net credit.
 | Model | Description |
 |---|---|
 | `stock.test.scenario` | Stores the JSON scenario definition, mode, and state |
-| `stock.test.run` | Records each execution with log, result, and link to scenario |
+| `account.test.run` | Records each execution with log, result, and link to scenario |
 | `stock.test.log` | Individual log lines for each step: step number, type, state (`ok`/`error`/`info`), message, and document reference |
 
 ---

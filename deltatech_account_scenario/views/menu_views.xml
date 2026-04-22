@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_stock_test_root"
-              name="Stock Accounting Tests"
-              parent="stock.menu_stock_root"
+    <menuitem id="menu_account_scenario_root"
+              name="Account Scenarios"
+              parent="account.menu_finance_entries"
               sequence="90"/>
-    <menuitem id="menu_stock_test_scenario"
+    <menuitem id="menu_account_scenario"
               name="Test Scenarios"
-              parent="menu_stock_test_root"
-              action="action_stock_test_scenario"
+              parent="menu_account_scenario_root"
+              action="action_account_scenario"
               sequence="10"/>
-    <menuitem id="menu_stock_test_run"
+    <menuitem id="menu_account_test_run"
               name="Test Runs"
-              parent="menu_stock_test_root"
-              action="action_stock_test_run"
+              parent="menu_account_scenario_root"
+              action="action_account_test_run"
               sequence="20"/>
 </odoo>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_stock_test_scenario_form" model="ir.ui.view">
-        <field name="name">stock.test.scenario.form</field>
-        <field name="model">stock.test.scenario</field>
+    <record id="view_account_scenario_form" model="ir.ui.view">
+        <field name="name">account.scenario.form</field>
+        <field name="model">account.scenario</field>
         <field name="arch" type="xml">
             <form>
                 <header>
@@ -53,9 +53,9 @@
             </form>
         </field>
     </record>
-    <record id="view_stock_test_scenario_list" model="ir.ui.view">
-        <field name="name">stock.test.scenario.list</field>
-        <field name="model">stock.test.scenario</field>
+    <record id="view_account_scenario_list" model="ir.ui.view">
+        <field name="name">account.scenario.list</field>
+        <field name="model">account.scenario</field>
         <field name="arch" type="xml">
             <list decoration-success="state == 'executed'"
                   decoration-danger="state == 'failed'"
@@ -76,16 +76,16 @@
         </field>
     </record>
 
-    <record id="action_stock_test_scenario" model="ir.actions.act_window">
+    <record id="action_account_scenario" model="ir.actions.act_window">
         <field name="name">Test Scenarios</field>
-        <field name="res_model">stock.test.scenario</field>
+        <field name="res_model">account.scenario</field>
         <field name="view_mode">list,form</field>
     </record>
 
     <record id="action_server_reload_demo_scenarios" model="ir.actions.server">
         <field name="name">Reload Demo Scenarios</field>
-        <field name="model_id" ref="model_stock_test_scenario"/>
-        <field name="binding_model_id" ref="model_stock_test_scenario"/>
+        <field name="model_id" ref="model_account_scenario"/>
+        <field name="binding_model_id" ref="model_account_scenario"/>
         <field name="binding_view_types">list,form</field>
         <field name="state">code</field>
         <field name="code">model.load_demo_scenarios()</field>

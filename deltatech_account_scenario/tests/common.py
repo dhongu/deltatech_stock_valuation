@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 
 
 @tagged("post_install", "-at_install")
-class StockTestCommon(AccountTestInvoicingCommon):
+class AccountScenarioCommon(AccountTestInvoicingCommon):
     """Base class for stock management accounting tests.
 
     Provides pre-created common fixtures:

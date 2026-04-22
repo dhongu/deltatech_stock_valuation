@@ -14,8 +14,8 @@ from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 
-class StockTestScenarioImportWizard(models.TransientModel):
-    _name = "stock.test.scenario.import.wizard"
+class AccountScenarioImportWizard(models.TransientModel):
+    _name = "account.scenario.import.wizard"
     _description = "Import Multiple JSON Scenarios"
 
     attachment_ids = fields.Many2many(
@@ -54,19 +54,19 @@ class StockTestScenarioImportWizard(models.TransientModel):
                 existing.write(vals)
                 _logger.info("Updated scenario: %s", name)
             else:
-                record = self.env["stock.test.scenario"].create(vals)
+                record = self.env["account.scenario"].create(vals)
                 self.env["ir.model.data"].create(
                     {
                         "name": xml_id,
                         "module": "deltatech_account_scenario",
-                        "model": "stock.test.scenario",
+                        "model": "account.scenario",
                         "res_id": record.id,
                         "noupdate": True,
                     }
                 )
                 _logger.info("Created scenario: %s", name)
         else:
-            self.env["stock.test.scenario"].create(vals)
+            self.env["account.scenario"].create(vals)
             _logger.info("Created scenario (no id): %s", name)
         return True
 

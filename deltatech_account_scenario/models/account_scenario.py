@@ -14,8 +14,8 @@ from odoo.tools.misc import file_path
 _logger = logging.getLogger(__name__)
 
 
-class StockTestScenario(models.Model):
-    _name = "stock.test.scenario"
+class AccountScenario(models.Model):
+    _name = "account.scenario"
     _description = "Test Scenario for Management Accounting"
 
     name = fields.Char(required=True)
@@ -41,7 +41,7 @@ class StockTestScenario(models.Model):
     )
     company_id = fields.Many2one("res.company", string="Company", required=True, default=lambda self: self.env.company)
     last_error = fields.Text(readonly=True)
-    run_ids = fields.One2many("stock.test.run", "scenario_id", string="Runs")
+    run_ids = fields.One2many("account.test.run", "scenario_id", string="Runs")
     run_count = fields.Integer(compute="_compute_run_count")
 
     def _compute_run_count(self):
@@ -53,7 +53,7 @@ class StockTestScenario(models.Model):
         return {
             "type": "ir.actions.act_window",
             "name": self.env._("Import Scenarios"),
-            "res_model": "stock.test.scenario.import.wizard",
+            "res_model": "account.scenario.import.wizard",
             "view_mode": "form",
             "target": "new",
         }
@@ -113,7 +113,7 @@ class StockTestScenario(models.Model):
             scenario = json.loads(self.json_data)
         except Exception as e:
             raise UserError(self.env._("Invalid JSON: %s", e)) from e
-        run = self.env["stock.test.run"].create(
+        run = self.env["account.test.run"].create(
             {
                 "scenario_id": self.id,
             }
@@ -179,19 +179,19 @@ class StockTestScenario(models.Model):
                     existing.write(vals)
                     _logger.info("Updated demo scenario: %s", name)
                 else:
-                    record = self.env["stock.test.scenario"].create(vals)
+                    record = self.env["account.scenario"].create(vals)
                     self.env["ir.model.data"].create(
                         {
                             "name": xml_id,
                             "module": "deltatech_account_scenario",
-                            "model": "stock.test.scenario",
+                            "model": "account.scenario",
                             "res_id": record.id,
                             "noupdate": True,
                         }
                     )
                     _logger.info("Created demo scenario: %s", name)
             else:
-                self.env["stock.test.scenario"].create(vals)
+                self.env["account.scenario"].create(vals)
                 _logger.info("Created demo scenario (no id): %s", name)
 
     @api.model
@@ -239,7 +239,7 @@ class StockTestScenario(models.Model):
             with open(base_path, encoding="utf-8") as f:
                 base_data = json.load(f)
 
-        run = self.env["stock.test.run"].new({})
+        run = self.env["account.test.run"].new({})
         records = {}
         for step in base_data.get("lines", []):
             step = dict(step)
@@ -256,7 +256,7 @@ class StockTestScenario(models.Model):
         return {
             "type": "ir.actions.act_window",
             "name": "Runs",
-            "res_model": "stock.test.run",
+            "res_model": "account.test.run",
             "view_mode": "list,form",
             "domain": [("scenario_id", "=", self.id)],
         }

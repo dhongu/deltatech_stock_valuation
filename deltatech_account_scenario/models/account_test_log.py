@@ -13,12 +13,12 @@ def _get_document_selection(self):
     ]
 
 
-class StockTestLog(models.Model):
-    _name = "stock.test.log"
+class AccountTestLog(models.Model):
+    _name = "account.test.log"
     _description = "Stock Test Log Entry"
     _order = "run_id, step_index"
 
-    run_id = fields.Many2one("stock.test.run", string="Run", required=True, ondelete="cascade")
+    run_id = fields.Many2one("account.test.run", string="Run", required=True, ondelete="cascade")
     step_index = fields.Integer(string="Step #")
     step_type = fields.Char(string="Step Type")
     state = fields.Selection(
@@ -36,7 +36,7 @@ class StockTestLog(models.Model):
     document_name = fields.Char(string="Document")
     account_move_line_ids = fields.Many2many(
         "account.move.line",
-        "stock_test_log_move_line_rel",
+        "account_test_log_move_line_rel",
         "log_id",
         "move_line_id",
         string="Accounting Lines",
