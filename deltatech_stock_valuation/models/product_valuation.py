@@ -324,7 +324,7 @@ class ProductValuationHistory(models.Model):
             ]
             next_valuation = self.search(domain, order="month asc", limit=1)
             if next_valuation:
-                next_valuation.write(
+                next_valuation.update(
                     {
                         "quantity_initial": s.quantity_final,
                         "amount_initial": s.amount_final,
