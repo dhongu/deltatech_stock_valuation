@@ -111,11 +111,8 @@ class ProductValuation(models.Model):
         sql = f"""
           UPDATE product_valuation AS pv
           SET quantity = sub.quantity,
-                quantity_in = sub.quantity_in,
-                quantity_out = sub.quantity_out,
-                debit = sub.debit,
-                credit = sub.credit,
-                amount = sub.debit - sub.credit
+                amount = sub.debit - sub.credit,
+                price = CASE WHEN sub.quantity != 0 THEN (sub.debit - sub.credit) / sub.quantity ELSE 0 END
             FROM ( {self._get_sql_select(all_records=False)} ) as sub
             WHERE
                 pv.product_id = sub.product_id AND
@@ -217,9 +214,10 @@ class ProductValuation(models.Model):
         sql = """
         INSERT INTO product_valuation
                 (product_id, valuation_area_id, account_id, company_id,
-                quantity,  amount)
+                quantity,  amount, price)
            SELECT product_id, valuation_area_id, account_id, company_id,
-                         quantity_final as quantity, amount_final as amount
+                         quantity_final as quantity, amount_final as amount,
+                         CASE WHEN quantity_final != 0 THEN amount_final / quantity_final ELSE 0 END as price
             FROM product_valuation_history as pv
 
             WHERE month = %(max_month)s
@@ -325,7 +323,7 @@ class ProductValuationHistory(models.Model):
             ]
             next_valuation = self.search(domain, order="month asc", limit=1)
             if next_valuation:
-                next_valuation.update(
+                next_valuation.write(
                     {
                         "quantity_initial": s.quantity_final,
                         "amount_initial": s.amount_final,
@@ -520,7 +518,7 @@ class ProductValuationHistory(models.Model):
         params["min_date"] = datetime.strptime(params["min_month"], "%Y%m")
         params["max_date"] = datetime.strptime(params["max_month"], "%Y%m")
 
-        compute_all = False
+        compute_all = True
 
         if compute_all:
             _logger.info("Adaugare linii lipsa")
