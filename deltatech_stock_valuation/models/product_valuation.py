@@ -181,6 +181,7 @@ class ProductValuation(models.Model):
                 WHERE
                     account_id in %(account_ids)s
                     AND m.state = 'posted'
+                    AND l.product_id IS NOT NULL
 
         """
         if not all_records:
@@ -417,6 +418,7 @@ class ProductValuationHistory(models.Model):
                 WHERE
                     account_id in %(account_ids)s
                     AND m.state = 'posted'
+                    AND l.product_id IS NOT NULL
         """
         if not all_records:
             sql += """
