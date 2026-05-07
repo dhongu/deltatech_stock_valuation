@@ -655,8 +655,11 @@ class ProductValuationHistory(models.Model):
         :return: None
         """
 
-        self.env.company.set_stock_valuation_at_company_level()
+        # pylint: disable=invalid-commit
 
+        execute_step = [1, 2, 3, 4, 5, 6]  # 1,2,3,4,5,6
+        self.env.company.set_stock_valuation_at_company_level()
+        self.env.cr.commit()
         valuation_area = self.env.company.valuation_area_id
 
         params = {
@@ -666,25 +669,30 @@ class ProductValuationHistory(models.Model):
             "currency_id": self.env.company.currency_id.id,
         }
 
-        _logger.info("Stergere linii istoric")
-        self.env.cr.execute(
+        if 1 in execute_step:
+            _logger.info("Stergere linii istoric")
+            self.env.cr.execute(
+                """
+                DELETE FROM product_valuation_history WHERE valuation_area_id = %(valuation_area_id)s;
+            """,
+                params,
+            )
+            self.env.cr.commit()
+
+        if 2 in execute_step:
+            _logger.info("Calculare linii istoric miscari lunare")
+
+            sql = f"""
+                INSERT INTO product_valuation_history
+                    (product_id, valuation_area_id, account_id, company_id, currency_id,  month,
+                    quantity, quantity_in, quantity_out, debit, credit, amount)
+                SELECT product_id, valuation_area_id, account_id, company_id, currency_id,  month,
+                            quantity, quantity_in, quantity_out, debit, credit, debit-credit as amount
+                FROM ( {self._get_sql_select()} ) as a
             """
-            DELETE FROM product_valuation_history WHERE valuation_area_id = %(valuation_area_id)s;
-        """,
-            params,
-        )
-        _logger.info("Calculare linii istoric miscari lunare")
 
-        sql = f"""
-            INSERT INTO product_valuation_history
-                (product_id, valuation_area_id, account_id, company_id, currency_id,  month,
-                quantity, quantity_in, quantity_out, debit, credit, amount)
-            SELECT product_id, valuation_area_id, account_id, company_id, currency_id,  month,
-                        quantity, quantity_in, quantity_out, debit, credit, debit-credit as amount
-            FROM ( {self._get_sql_select()} ) as a
-        """
-
-        self.env.cr.execute(sql, params)
+            self.env.cr.execute(sql, params)
+            self.env.cr.commit()
 
         # optinere data minima si maxima
         self.env.cr.execute(
@@ -697,14 +705,18 @@ class ProductValuationHistory(models.Model):
         )
         res = self.env.cr.dictfetchone()
 
-        params["max_month"] = res.get("max_month", "202401")
-        params["min_month"] = res.get("min_month", "202401")
+        params["max_month"] = res.get("max_month", fields.Date.today().strftime("%Y%m"))
+        params["min_month"] = res.get("min_month", fields.Date.today().strftime("%Y%m"))
         params["min_date"] = datetime.strptime(params["min_month"], "%Y%m")
         params["max_date"] = datetime.strptime(params["max_month"], "%Y%m")
 
-        compute_all = True
+        # Asigurăm că max_date este cel puțin luna curentă pentru a avea istoric la zi
+        today_month_date = datetime.today().replace(day=1)
+        if params["max_date"] < today_month_date:
+            params["max_date"] = today_month_date
+            params["max_month"] = today_month_date.strftime("%Y%m")
 
-        if compute_all:
+        if 3 in execute_step:
             _logger.info("Adaugare linii lipsa")
             self.env.cr.execute(
                 """
@@ -722,9 +734,9 @@ class ProductValuationHistory(models.Model):
                     quantity_in, quantity_out, debit, credit
                 )
                 SELECT
-                    p.product_id,
+                    pa.product_id,
                     %(valuation_area_id)s as valuation_area_id,
-                    a.account_id,
+                    pa.account_id,
                     %(company_id)s as company_id,
                     %(currency_id)s as currency_id,
 
@@ -743,8 +755,7 @@ class ProductValuationHistory(models.Model):
 
                 FROM
                     calendar_temporal c
-                CROSS JOIN (SELECT DISTINCT product_id FROM product_valuation_history) p
-                CROSS JOIN (SELECT DISTINCT account_id FROM product_valuation_history) a
+                CROSS JOIN (SELECT DISTINCT product_id, account_id FROM product_valuation_history) pa
                 ON CONFLICT (product_id, valuation_area_id, account_id, company_id, month) DO NOTHING
 
 
@@ -753,46 +764,49 @@ class ProductValuationHistory(models.Model):
             )
             _logger.info("Liniile lipsa au fost adaugate")
 
-        _logger.info("Calculare sold initial si final pentru ultima luna din note contabile")
-        self.env.cr.execute(
-            """
-                UPDATE product_valuation_history pv
-                SET
-                    amount_initial = aml.total_amount - pv.amount,
-                    quantity_initial = aml.total_quantity - pv.quantity,
-                    amount_final = aml.total_amount,
-                    quantity_final = aml.total_quantity
-                FROM (
-                    SELECT l.product_id,
-                           l.valuation_area_id,
-                           l.account_id,
-                           m.company_id,
-                           SUM(l.debit - l.credit) AS total_amount,
-                           SUM(
-                               l.quantity / NULLIF(COALESCE(uom_line.factor, 1) / COALESCE(uom_template.factor, 1), 0.0)
-                               * (CASE WHEN move_type IN ('out_invoice','in_refund') THEN -1 ELSE 1 END)
-                           ) AS total_quantity
-                    FROM account_move_line l
-                        LEFT JOIN account_move m ON l.move_id = m.id
-                        LEFT JOIN product_product product ON product.id = l.product_id
-                        LEFT JOIN product_template template ON template.id = product.product_tmpl_id
-                        LEFT JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
-                        LEFT JOIN uom_uom uom_template ON uom_template.id = template.uom_id
-                    WHERE l.account_id IN %(account_ids)s
-                        AND m.state = 'posted'
-                        AND l.product_id IS NOT NULL
-                    GROUP BY l.product_id, l.valuation_area_id, l.account_id, m.company_id
-                ) AS aml
-                WHERE pv.product_id = aml.product_id
-                    AND pv.valuation_area_id = aml.valuation_area_id
-                    AND pv.account_id = aml.account_id
-                    AND pv.company_id = aml.company_id
-                    AND pv.month = %(max_month)s;
-            """,
-            params,
-        )
+            self.env.cr.commit()
+        if 2 in execute_step:
+            _logger.info("Calculare sold initial si final pentru ultima luna din note contabile")
+            self.env.cr.execute(
+                """
+                    UPDATE product_valuation_history pv
+                    SET
+                        amount_initial = aml.total_amount - pv.amount,
+                        quantity_initial = aml.total_quantity - pv.quantity,
+                        amount_final = aml.total_amount,
+                        quantity_final = aml.total_quantity
+                    FROM (
+                        SELECT l.product_id,
+                               l.valuation_area_id,
+                               l.account_id,
+                               m.company_id,
+                               SUM(l.debit - l.credit) AS total_amount,
+                               SUM(
+                                   l.quantity / NULLIF(COALESCE(uom_line.factor, 1) / COALESCE(uom_template.factor, 1), 0.0)
+                                   * (CASE WHEN move_type IN ('out_invoice','in_refund') THEN -1 ELSE 1 END)
+                               ) AS total_quantity
+                        FROM account_move_line l
+                            LEFT JOIN account_move m ON l.move_id = m.id
+                            LEFT JOIN product_product product ON product.id = l.product_id
+                            LEFT JOIN product_template template ON template.id = product.product_tmpl_id
+                            LEFT JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
+                            LEFT JOIN uom_uom uom_template ON uom_template.id = template.uom_id
+                        WHERE l.account_id IN %(account_ids)s
+                            AND m.state = 'posted'
+                            AND l.product_id IS NOT NULL
+                        GROUP BY l.product_id, l.valuation_area_id, l.account_id, m.company_id
+                    ) AS aml
+                    WHERE pv.product_id = aml.product_id
+                        AND pv.valuation_area_id = aml.valuation_area_id
+                        AND pv.account_id = aml.account_id
+                        AND pv.company_id = aml.company_id
+                        AND pv.month = %(max_month)s;
+                """,
+                params,
+            )
+            self.env.cr.commit()
 
-        if compute_all:
+        if 5 in execute_step:
             _logger.info("Calculare sold initial si final")
             self.env.cr.execute(
                 """
@@ -821,10 +835,10 @@ class ProductValuationHistory(models.Model):
                 )
                 UPDATE product_valuation_history pv
                 SET
-                    amount_initial = fv.cumulative_amount - fv.amount,
-                    quantity_initial = fv.cumulative_quantity - fv.quantity,
-                    amount_final = fv.cumulative_amount,
-                    quantity_final = fv.cumulative_quantity
+                    amount_initial = fv.cumulative_amount,
+                    quantity_initial = fv.cumulative_quantity,
+                    amount_final = fv.cumulative_amount + pv.amount,
+                    quantity_final = fv.cumulative_quantity + pv.quantity
                 FROM final_values fv
                 WHERE
                     pv.product_id = fv.product_id AND
@@ -834,26 +848,30 @@ class ProductValuationHistory(models.Model):
                     pv.month = fv.month AND
                     pv.month < %(max_month)s
 
-                """
+                """,
+                params,
             )
+            self.env.cr.commit()
 
         _logger.info("FINALIZARE CALCULARE ISTORIC VALORI")
         #
-        #
-        _logger.info("Sterge linii goale ")
-        self.env.cr.execute(
-            """
-            DELETE FROM product_valuation_history
-            WHERE  valuation_area_id = %(valuation_area_id)s
-                and (quantity_initial is null or quantity_initial = 0)
-                and (quantity_final is null or quantity_final = 0)
-                and (quantity is null or quantity = 0)
-                and (amount_initial is null or amount_initial = 0)
-                and (amount is null or amount = 0)
-                and (amount_final is null or amount_final = 0) ;
-            """,
-            params,
-        )
+
+        if 6 in execute_step:
+            _logger.info("Sterge linii goale ")
+            self.env.cr.execute(
+                """
+                DELETE FROM product_valuation_history
+                WHERE  valuation_area_id = %(valuation_area_id)s
+                    and (quantity_initial is null or quantity_initial = 0)
+                    and (quantity_final is null or quantity_final = 0)
+                    and (quantity is null or quantity = 0)
+                    and (amount_initial is null or amount_initial = 0)
+                    and (amount is null or amount = 0)
+                    and (amount_final is null or amount_final = 0) ;
+                """,
+                params,
+            )
+            self.env.cr.commit()
 
         _logger.info("Calculare sold initial si final varianta Python")
         # # domain = [("valuation_area_id", "=", valuation_area.id), ("month", "=", res["max_month"])]
