@@ -679,11 +679,12 @@ class ProductValuationHistory(models.Model):
             """
             SELECT COUNT(*) as cnt, SUM(ABS(l.debit - l.credit)) as valoare
             FROM account_move_line l
-            LEFT JOIN account_move m ON l.move_id = m.id
+            INNER JOIN account_move m ON l.move_id = m.id
             LEFT JOIN product_product p ON p.id = l.product_id
             LEFT JOIN product_template t ON t.id = p.product_tmpl_id
             WHERE l.account_id IN %(account_ids)s
               AND m.state = 'posted'
+              AND m.company_id = %(company_id)s
               AND l.product_id IS NOT NULL
               AND (l.product_uom_id IS NULL OR t.uom_id IS NULL)
         """,
@@ -694,7 +695,7 @@ class ProductValuationHistory(models.Model):
             _logger.warning(
                 "deltatech_stock_valuation: %d linii contabile excluse din evaluare " "(UoM lipsă), valoare totală: %s",
                 row["cnt"],
-                row["valoare"],
+                row["valoare"] or 0,
             )
 
         if 1 in execute_step:
