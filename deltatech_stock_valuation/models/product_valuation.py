@@ -64,7 +64,7 @@ class ProductValuation(models.Model):
             ("account_id", "=", account_id),
             ("company_id", "=", company_id),
         ]
-        valuation = self.search(domain, limit=1)
+        valuation = self.with_context(active_test=False).search(domain, limit=1)
         if not valuation:
             valuation = self.create(
                 {
@@ -769,7 +769,7 @@ class ProductValuationHistory(models.Model):
 
             if commit:
                 self.env.cr.commit()
-        if 2 in execute_step:
+        if 4 in execute_step:
             _logger.info("Calculare sold initial si final pentru ultima luna din note contabile")
             self.env.cr.execute(
                 """

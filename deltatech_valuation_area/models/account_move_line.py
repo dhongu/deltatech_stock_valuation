@@ -16,15 +16,18 @@ class AccountMoveLine(models.Model):
         readonly=False,
     )
 
-    # _sql_constraints = [
-    #     ('valuation_area_id_required',
-    #      'CHECK(valuation_area_id IS NOT NULL OR product_id IS NULL)',
-    #      'Valuation Area is required for stockable products. If the product is not stockable, you can leave it empty.')
-    # ]
-    @api.constrains("product_id", "valuation_area_id")
+    @api.constrains("product_id", "valuation_area_id", "account_id")
     def _check_valuation_area(self):
+        if not self.env.registry.ready:
+            return
         for line in self:
-            if line.product_id and line.product_id.is_storable and not line.valuation_area_id:
+            if (
+                line.product_id
+                and line.product_id.is_storable
+                and "is_for_stock_valuation" in line.account_id._fields
+                and line.account_id.is_for_stock_valuation
+                and not line.valuation_area_id
+            ):
                 raise UserError(
                     _(
                         "Valuation Area is required for stockable products. If the product is not stockable, you can leave it empty."
