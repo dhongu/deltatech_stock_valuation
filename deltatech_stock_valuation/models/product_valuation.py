@@ -233,13 +233,13 @@ class ProductValuation(models.Model):
         sql = """
                 SELECT product_id, valuation_area_id, account_id, m.company_id,
                     debit, credit, move_type,
-                    l.quantity / NULLIF(COALESCE(uom_line.factor, 1) / COALESCE(uom_template.factor, 1), 0.0) as quantity
+                    l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
                 FROM account_move_line as l
                     LEFT JOIN account_move as m ON l.move_id=m.id
                     LEFT JOIN product_product product ON product.id = l.product_id
                     LEFT JOIN product_template template ON template.id = product.product_tmpl_id
-                    LEFT JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
-                    LEFT JOIN uom_uom uom_template ON uom_template.id = template.uom_id
+                    INNER JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
+                    INNER JOIN uom_uom uom_template ON uom_template.id = template.uom_id
                 WHERE
                     account_id in %(account_ids)s
                     AND m.state = 'posted'
@@ -543,13 +543,13 @@ class ProductValuationHistory(models.Model):
                     debit, credit, move_type,
                     to_char(m.date, 'YYYYMM')  as month,
 
-                    l.quantity / NULLIF(COALESCE(uom_line.factor, 1) / COALESCE(uom_template.factor, 1), 0.0) as quantity
+                    l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
                 FROM account_move_line as l
                     LEFT JOIN account_move as m ON l.move_id=m.id
                     LEFT JOIN product_product product ON product.id = l.product_id
                     LEFT JOIN product_template template ON template.id = product.product_tmpl_id
-                    LEFT JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
-                    LEFT JOIN uom_uom uom_template ON uom_template.id = template.uom_id
+                    INNER JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
+                    INNER JOIN uom_uom uom_template ON uom_template.id = template.uom_id
                 WHERE
                     account_id in %(account_ids)s
                     AND m.state = 'posted'
@@ -674,6 +674,29 @@ class ProductValuationHistory(models.Model):
             "currency_id": self.env.company.currency_id.id,
         }
 
+        # Verificare linii fără UoM care vor fi excluse
+        self.env.cr.execute(
+            """
+            SELECT COUNT(*) as cnt, SUM(ABS(l.debit - l.credit)) as valoare
+            FROM account_move_line l
+            LEFT JOIN account_move m ON l.move_id = m.id
+            LEFT JOIN product_product p ON p.id = l.product_id
+            LEFT JOIN product_template t ON t.id = p.product_tmpl_id
+            WHERE l.account_id IN %(account_ids)s
+              AND m.state = 'posted'
+              AND l.product_id IS NOT NULL
+              AND (l.product_uom_id IS NULL OR t.uom_id IS NULL)
+        """,
+            params,
+        )
+        row = self.env.cr.dictfetchone()
+        if row and row["cnt"]:
+            _logger.warning(
+                "deltatech_stock_valuation: %d linii contabile excluse din evaluare " "(UoM lipsă), valoare totală: %s",
+                row["cnt"],
+                row["valoare"],
+            )
+
         if 1 in execute_step:
             _logger.info("Stergere linii istoric")
             self.env.cr.execute(
@@ -790,15 +813,15 @@ class ProductValuationHistory(models.Model):
                                m.company_id,
                                SUM(l.debit - l.credit) AS total_amount,
                                SUM(
-                                   l.quantity / NULLIF(COALESCE(uom_line.factor, 1) / COALESCE(uom_template.factor, 1), 0.0)
+                                   l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0)
                                    * (CASE WHEN move_type IN ('out_invoice','in_refund') THEN -1 ELSE 1 END)
                                ) AS total_quantity
                         FROM account_move_line l
                             LEFT JOIN account_move m ON l.move_id = m.id
                             LEFT JOIN product_product product ON product.id = l.product_id
                             LEFT JOIN product_template template ON template.id = product.product_tmpl_id
-                            LEFT JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
-                            LEFT JOIN uom_uom uom_template ON uom_template.id = template.uom_id
+                            INNER JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
+                            INNER JOIN uom_uom uom_template ON uom_template.id = template.uom_id
                         WHERE l.account_id IN %(account_ids)s
                             AND m.state = 'posted'
                             AND l.product_id IS NOT NULL
