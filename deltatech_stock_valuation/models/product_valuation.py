@@ -409,6 +409,8 @@ class ProductValuationHistory(models.Model):
 
         :return: None
         """
+        if self.env.context.get("skip_compute_final"):
+            return
         for s in self:
             s.quantity_final = s.quantity_initial + s.quantity
             s.amount_final = s.amount_initial + s.amount
@@ -608,7 +610,7 @@ class ProductValuationHistory(models.Model):
         self.env.cr.execute(sql, params)
         # invalidate chashed fields
         self._invalidate_cache()
-        self._compute_final()
+        self.with_context(skip_compute_final=True)._compute_final()
 
     def _recompute_all_amount(self, commit=False):
         """
@@ -658,6 +660,8 @@ class ProductValuationHistory(models.Model):
         # pylint: disable=invalid-commit
 
         execute_step = [1, 2, 3, 4, 5, 6]  # 1,2,3,4,5,6
+        if not self.env.registry.ready:
+            return
         self.env.company.set_stock_valuation_at_company_level()
         if commit:
             self.env.cr.commit()
