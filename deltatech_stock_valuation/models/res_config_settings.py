@@ -24,5 +24,6 @@ class ResConfigSettings(models.TransientModel):
         # has group system user
         if not self.env.user.has_group("base.group_system"):
             raise UserError(_("Only System Administrator can do this action!"))
-        self.env["product.valuation.history"]._recompute_all_amount()
+        with_commit = self.env.context.get("with_commit", False)
+        self.env["product.valuation.history"]._recompute_all_amount(commit=with_commit)
         self.env["product.valuation"]._recompute_all_amount()

@@ -610,7 +610,7 @@ class ProductValuationHistory(models.Model):
         self._invalidate_cache()
         self._compute_final()
 
-    def _recompute_all_amount(self):
+    def _recompute_all_amount(self, commit=False):
         """
         Recalculare completă a istoricului valorilor de stoc pe luni, bazată exclusiv pe notele contabile.
 
@@ -659,7 +659,8 @@ class ProductValuationHistory(models.Model):
 
         execute_step = [1, 2, 3, 4, 5, 6]  # 1,2,3,4,5,6
         self.env.company.set_stock_valuation_at_company_level()
-        self.env.cr.commit()
+        if commit:
+            self.env.cr.commit()
         valuation_area = self.env.company.valuation_area_id
 
         params = {
@@ -677,7 +678,8 @@ class ProductValuationHistory(models.Model):
             """,
                 params,
             )
-            self.env.cr.commit()
+            if commit:
+                self.env.cr.commit()
 
         if 2 in execute_step:
             _logger.info("Calculare linii istoric miscari lunare")
@@ -692,7 +694,8 @@ class ProductValuationHistory(models.Model):
             """
 
             self.env.cr.execute(sql, params)
-            self.env.cr.commit()
+            if commit:
+                self.env.cr.commit()
 
         # optinere data minima si maxima
         self.env.cr.execute(
@@ -764,7 +767,8 @@ class ProductValuationHistory(models.Model):
             )
             _logger.info("Liniile lipsa au fost adaugate")
 
-            self.env.cr.commit()
+            if commit:
+                self.env.cr.commit()
         if 2 in execute_step:
             _logger.info("Calculare sold initial si final pentru ultima luna din note contabile")
             self.env.cr.execute(
@@ -804,7 +808,8 @@ class ProductValuationHistory(models.Model):
                 """,
                 params,
             )
-            self.env.cr.commit()
+            if commit:
+                self.env.cr.commit()
 
         if 5 in execute_step:
             _logger.info("Calculare sold initial si final")
@@ -851,7 +856,8 @@ class ProductValuationHistory(models.Model):
                 """,
                 params,
             )
-            self.env.cr.commit()
+            if commit:
+                self.env.cr.commit()
 
         _logger.info("FINALIZARE CALCULARE ISTORIC VALORI")
         #
@@ -871,7 +877,8 @@ class ProductValuationHistory(models.Model):
                 """,
                 params,
             )
-            self.env.cr.commit()
+            if commit:
+                self.env.cr.commit()
 
         _logger.info("Calculare sold initial si final varianta Python")
         # # domain = [("valuation_area_id", "=", valuation_area.id), ("month", "=", res["max_month"])]
