@@ -242,7 +242,7 @@ class TestOBYCAccountDetermination(TestCommon):
             valuation_area=self.valuation_area,
             account_modifier=self.account_modifier,
         )
-        accounts = product_template.get_product_accounts()
+        accounts = product_template._get_product_accounts()
 
         self.assertTrue(accounts["stock_valuation"])
         self.assertTrue(accounts["income"])
