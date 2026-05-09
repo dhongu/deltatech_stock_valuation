@@ -46,7 +46,7 @@ class ResCompany(models.Model):
         self.env.cr.execute(
             """
                 UPDATE account_move_line SET valuation_area_id = %(valuation_area_id)s
-                where account_id in %(account_ids)s;
+                where account_id in %(account_ids)s and valuation_area_id != %(valuation_area_id)s
             """,
             params,
         )
