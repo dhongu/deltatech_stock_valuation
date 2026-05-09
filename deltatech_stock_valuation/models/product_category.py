@@ -2,7 +2,7 @@
 #              Dorin Hongu <dhongu(@)gmail(.)com
 # See README.rst file on addons root folder for license details
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
 
@@ -21,7 +21,7 @@ class ProductCategory(models.Model):
         for categ in self:
             if categ.use_valuation_area_price and categ.property_cost_method == "fifo":
                 raise ValidationError(
-                    _(
+                    self.env._(
                         "Category '%s': Use Valuation Area Price is not compatible "
                         "with FIFO costing method. Please use AVCO.",
                         categ.name,

@@ -13,7 +13,7 @@ class AccountMove(models.Model):
         for move in self:
             for line in move.line_ids:
                 if line.product_id and line.account_id.is_for_stock_valuation:
-                    line.valuation_area_id = line._get_valuation_area()
+                    line.valuation_area_id = line._get_valuation_area(raise_if_not_found=False)
 
         self.flush_model()
         self._invalidate_cache()

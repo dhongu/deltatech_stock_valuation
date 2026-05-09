@@ -16,23 +16,36 @@ class AccountMoveLine(models.Model):
         readonly=False,
     )
 
-    _valuation_area_id_required = models.Constraint(
-        "CHECK(valuation_area_id IS NOT NULL OR product_id IS NULL)",
-        "Valuation Area is required for stockable products. If the product is not stockable, you can leave it empty.",
-    )
+    # _valuation_area_id_required = models.Constraint(
+    #     "CHECK(valuation_area_id IS NOT NULL OR product_id IS NULL)",
+    #     "Valuation Area is required for stockable products. If the product is not stockable, you can leave it empty.",
+    # )
 
-    @api.constrains("product_id")
+    @api.constrains("product_id", "valuation_area_id", "account_id")
     def _check_valuation_area(self):
+        if not self.env.registry.ready:
+            return
+
         for line in self:
-            if line.product_id and line.product_id.is_storable and not line.valuation_area_id:
+            if not line.company_id.use_valuation_area:
+                continue
+            if line._is_valuation_area_required():
                 raise UserError(
                     self.env._(
                         "Valuation Area is required for stockable products. If the product is not stockable, you can leave it empty."
                     )
                 )
 
+    def _is_valuation_area_required(self):
+        self.ensure_one()
+        if self.product_id and self.product_id.is_storable and not self.valuation_area_id:
+            return True
+        return False
+
     def _get_valuation_area(self, raise_if_not_found=True):
         self.ensure_one()
+        if not self.company_id.use_valuation_area:
+            return self.env["valuation.area"]
         valuation_area = self.valuation_area_id
         if not valuation_area:
             valuation_area = self.company_id.valuation_area_id
@@ -54,9 +67,11 @@ class AccountMoveLine(models.Model):
 
     @api.depends("product_id")
     def _compute_valuation_area(self):
+        if not self.env.registry.ready:
+            return False
         for line in self:
-            if line.product_id:
-                valuation_area = line._get_valuation_area(raise_if_not_found=False)
+            if line.product_id and line.company_id.use_valuation_area:
+                valuation_area = line._get_valuation_area(raise_if_not_found=True)
             else:
                 valuation_area = False
             line.valuation_area_id = valuation_area

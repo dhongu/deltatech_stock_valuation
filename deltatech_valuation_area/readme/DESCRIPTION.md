@@ -5,19 +5,20 @@ de **Valuation Area** (nivel de evaluare per depozit sau locație).
 
 ### Funcționalități principale
 
+- **Activare per companie** — funcționalitatea poate fi activată sau dezactivată individual pentru fiecare companie
 - **Definire arii de evaluare** cu cod scurt, nume și jurnal contabil dedicat
 - **Asociere la nivel de companie, depozit sau locație** — flexibilitate maximă în organizarea evaluării
 - **Propagare automată** a ariei de evaluare pe liniile contabile (`account.move.line`) generate din mișcările de stoc
-- **Arie obligatorie** pentru produse stocabile — constrângere SQL și validare Python
+- **Arie obligatorie** pentru produse stocabile (dacă este activată pe companie) — validare prin metodă extensibilă
 - **Editare manuală** permisă pe linia contabilă (pentru corecții excepționale)
 
 ### Modele extinse
 
 - `valuation.area` — modelul principal: cod, nume, companie, jurnal stoc
-- `res.company` — câmp `valuation_area_id` (arie implicită la nivel de companie)
+- `res.company` — câmpuri `use_valuation_area` (activare) și `valuation_area_id` (arie implicită)
 - `stock.warehouse` — câmp `valuation_area_id` (arie per depozit)
 - `stock.location` — câmp `valuation_area_id` (arie per locație, prioritate maximă)
-- `account.move.line` — câmp `valuation_area_id` (stocat, calculat automat din mișcările de stoc)
+- `account.move.line` — câmp `valuation_area_id` (stocat, calculat automat din mișcările de stoc) și metodă de validare `_is_valuation_area_required`
 
 ### Logica de determinare a ariei (prioritate)
 
