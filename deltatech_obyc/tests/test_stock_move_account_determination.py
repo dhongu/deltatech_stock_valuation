@@ -91,7 +91,6 @@ class TestStockMoveAccountDetermination(TestCommon):
         # Add move line
         move_in = self.env["stock.move"].create(
             {
-                "name": "Test Receipt",
                 "picking_id": picking_in.id,
                 "product_id": self.product.id,
                 "product_uom_qty": 10.0,
@@ -121,7 +120,6 @@ class TestStockMoveAccountDetermination(TestCommon):
         # Add move line
         move_out = self.env["stock.move"].create(
             {
-                "name": "Test Delivery",
                 "picking_id": picking_out.id,
                 "product_id": self.product.id,
                 "product_uom_qty": 5.0,
@@ -160,7 +158,6 @@ class TestStockMoveAccountDetermination(TestCommon):
         # Add move line
         move_internal = self.env["stock.move"].create(
             {
-                "name": "Test Internal Transfer",
                 "picking_id": picking_internal.id,
                 "product_id": self.product.id,
                 "product_uom_qty": 3.0,
@@ -187,7 +184,6 @@ class TestStockMoveAccountDetermination(TestCommon):
         # Add move line
         move_in = self.env["stock.move"].create(
             {
-                "name": "Test Receipt",
                 "picking_id": picking_in.id,
                 "product_id": self.product.id,
                 "product_uom_qty": 10.0,
@@ -209,7 +205,6 @@ class TestStockMoveAccountDetermination(TestCommon):
         """Test _account_entry_move with valid data."""
         stock_move = self.env["stock.move"].create(
             {
-                "name": "Test move",
                 "product_id": self.product.id,
                 "location_id": self.supplier_location.id,
                 "location_dest_id": self.stock_location.id,
