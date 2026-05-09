@@ -1,13 +1,21 @@
 ![Licence](https://img.shields.io/badge/licence-OPL--1-blue.svg)
-[![codecov](https://codecov.io/gh/dhongu/deltatech_valuation_area/branch/19.0/graph/badge.svg)](https://codecov.io/gh/dhongu/deltatech_valuation_area/tree/19.0)
+[![codecov](https://codecov.io/gh/dhongu/deltatech_stock_valuation/branch/19.0/graph/badge.svg)](https://codecov.io/gh/dhongu/deltatech_stock_valuation/tree/19.0)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 
 
 
-Deltatech
+Deltatech Stock Valuation
 =========================
 
-This repository hosts official terrabit modules.
+This repository contains a collection of modules for managing stock valuation in Odoo. These modules extend Odoo's stock
+management capabilities by adding features for product valuation, valuation areas, and OBYC-style account mapping.
+
+The modules provide:
+
+- Advanced stock valuation methods and reporting
+- Valuation area management for better organization
+- OBYC-style account mapping for stock transactions
+- Enhanced stock accounting integration
 
 List of Modules
 ---------------
@@ -15,22 +23,11 @@ List of Modules
 
 Available addons
 ----------------
-addon | version | maintainers | summary
---- | --- | --- | ---
-[deltatech_account](deltatech_account/) | 19.0.2.0.0 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Deltatech Account
-[deltatech_business_process](deltatech_business_process/) | 19.0.1.4.2 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Business process
-[deltatech_contact](deltatech_contact/) | 19.0.1.4.7 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | New fields in partner
-[deltatech_delivery_status](deltatech_delivery_status/) | 19.0.2.1.3 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Carrier status on picking
-[deltatech_invoice_product_filter](deltatech_invoice_product_filter/) | 19.0.1.0.0 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Searching invoice using product
-[deltatech_no_quick_create](deltatech_no_quick_create/) | 19.0.2.0.0 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Disable quick_create
-[deltatech_partner_generic](deltatech_partner_generic/) | 19.0.1.0.0 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Gneric partner
-[deltatech_product_code](deltatech_product_code/) | 19.0.1.0.4 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Product codification internal
-[deltatech_product_list](deltatech_product_list/) | 19.0.1.0.1 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Define products lists
-[deltatech_product_trade_markup](deltatech_product_trade_markup/) | 19.0.1.0.1 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Product trade markup
-[deltatech_purchase_price](deltatech_purchase_price/) | 19.0.1.2.5 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Update vendor price after reception
-[deltatech_record_type](deltatech_record_type/) | 19.0.1.1.11 | <a href='https://github.com/VoicuStefan2001'><img src='https://github.com/VoicuStefan2001.png' width='32' height='32' style='border-radius:50%;' alt='VoicuStefan2001'/></a> | Manage multiple record types
-[deltatech_sms](deltatech_sms/) | 19.0.1.0.1 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Send SMS to custom endpoint
-[deltatech_test_system](deltatech_test_system/) | 19.0.0.0.7 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Set system status: test or production
+ addon                                                   | version    | maintainers                                                                     | summary
+---------------------------------------------------------|------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------
+ [deltatech_obyc](deltatech_obyc/)                       | 18.0.1.0.0 | [![dhongu](https://github.com/dhongu.png?size=30px)](https://github.com/dhongu) | Implementation of OBYC-style account mapping for stock transactions with advanced configuration options
+ [deltatech_stock_valuation](deltatech_stock_valuation/) | 18.0.0.0.1 | [![dhongu](https://github.com/dhongu.png?size=30px)](https://github.com/dhongu) | Enhanced product stock valuation with detailed reporting and analysis tools
+ [deltatech_valuation_area](deltatech_valuation_area/)   | 18.0.1.0.0 | [![dhongu](https://github.com/dhongu.png?size=30px)](https://github.com/dhongu) | Comprehensive stock valuation area management with multi-warehouse support
 
 [//]: # (end addons)
 
