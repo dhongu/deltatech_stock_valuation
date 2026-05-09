@@ -285,11 +285,16 @@ class ProductValuation(models.Model):
         )
         res = self.env.cr.dictfetchone()
 
-        params["min_month"] = res.get("min_month", "202401")
-        params["max_month"] = res.get("max_month", "202401")
-
-        params["min_date"] = datetime.strptime(params["min_month"], "%Y%m")
-        params["max_date"] = datetime.strptime(params["max_month"], "%Y%m")
+        if res and res.get("min_month") and res.get("max_month"):
+            params["max_month"] = res.get("max_month")
+            params["min_month"] = res.get("min_month")
+            params["min_date"] = datetime.strptime(params["min_month"], "%Y%m")
+            params["max_date"] = datetime.strptime(params["max_month"], "%Y%m")
+        else:
+            params["max_month"] = fields.Date.today().strftime("%Y%m")
+            params["min_month"] = fields.Date.today().strftime("%Y%m")
+            params["min_date"] = datetime.today().replace(day=1)
+            params["max_date"] = datetime.today().replace(day=1)
 
         sql = """
         INSERT INTO product_valuation
@@ -727,16 +732,20 @@ class ProductValuationHistory(models.Model):
             """
             SELECT min(month) as min_month, max(month) as max_month
             FROM product_valuation_history
-            WHERE valuation_area_id = %(valuation_area_id)s
             """,
             params,
         )
         res = self.env.cr.dictfetchone()
-
-        params["max_month"] = res.get("max_month", fields.Date.today().strftime("%Y%m"))
-        params["min_month"] = res.get("min_month", fields.Date.today().strftime("%Y%m"))
-        params["min_date"] = datetime.strptime(params["min_month"], "%Y%m")
-        params["max_date"] = datetime.strptime(params["max_month"], "%Y%m")
+        if res and res.get("min_month") and res.get("max_month"):
+            params["max_month"] = res.get("max_month")
+            params["min_month"] = res.get("min_month")
+            params["min_date"] = datetime.strptime(params["min_month"], "%Y%m")
+            params["max_date"] = datetime.strptime(params["max_month"], "%Y%m")
+        else:
+            params["max_month"] = fields.Date.today().strftime("%Y%m")
+            params["min_month"] = fields.Date.today().strftime("%Y%m")
+            params["min_date"] = datetime.today().replace(day=1)
+            params["max_date"] = datetime.today().replace(day=1)
 
         # Asigurăm că max_date este cel puțin luna curentă pentru a avea istoric la zi
         today_month_date = datetime.today().replace(day=1)
