@@ -21,9 +21,7 @@ class ProductTemplate(models.Model):
                 res[key] = self.env["account.account"]
             transaction_key = self.env.context.get("transaction_key")
             if not self.env.context.get("transaction_key"):
-                # raise UserError(self.env._("Transaction key is not defined. Please set it in the context."))
-                raise Exception("Transaction Key not set")
-
+                raise UserError(self.env._("Transaction key is not defined. Please set it in the context."))
             if transaction_key == "skip":
                 return res
             if self.env.context.get("transaction_key"):
