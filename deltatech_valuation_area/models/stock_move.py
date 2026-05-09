@@ -11,6 +11,8 @@ class StockMove(models.Model):
 
     def _get_valuation_area(self, raise_if_not_found=True):
         self.ensure_one()
+        if not self.company_id.use_valuation_area:
+            return self.env["valuation.area"]
         valuation_area = self.company_id.valuation_area_id
         if self.warehouse_id.valuation_area_id:
             valuation_area = self.warehouse_id.valuation_area_id
@@ -29,6 +31,8 @@ class StockMove(models.Model):
 
     def _prepare_account_move_line(self, qty, cost, credit_account_id, debit_account_id, svl_id, description):
         res = super()._prepare_account_move_line(qty, cost, credit_account_id, debit_account_id, svl_id, description)
+        if not self.company_id.use_valuation_area:
+            return res
         valuation_area = self._get_valuation_area()
         for line in res:
             product_id = line[2].get("product_id")

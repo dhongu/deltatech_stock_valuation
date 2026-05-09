@@ -7,7 +7,16 @@
         <field name="arch" type="xml">
             <xpath expr="//block[@name='valuation_setting_container']" position="inside">
                 <setting id="valuation_area" title="Set valuation area for the company.">
-                    <field name="valuation_area_id" />
+                    <field name="use_valuation_area" />
+                    <div class="text-muted">
+                        Use valuation area for this company.
+                    </div>
+                    <div class="content-group" invisible="not use_valuation_area">
+                        <div class="mt16">
+                            <label for="valuation_area_id" class="o_light_label" />
+                            <field name="valuation_area_id" class="oe_inline" />
+                        </div>
+                    </div>
                 </setting>
             </xpath>
         </field>
