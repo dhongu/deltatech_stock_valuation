@@ -15,6 +15,12 @@ _logger = logging.getLogger(__name__)
 
 @tagged("post_install", "-at_install", "deltatech_stock_valuation")
 class TestRefreshStockValuation(AccountTestInvoicingCommon):
+    """
+    Testări pentru funcționalitatea "Refresh Stock Valuation" din configurări.
+    Verifică reconstrucția istoricului și a evaluării curente pornind de la
+    notele contabile postate.
+    """
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -69,6 +75,11 @@ class TestRefreshStockValuation(AccountTestInvoicingCommon):
         return s if with_user is None else s.with_user(with_user)
 
     def test_refresh_stock_valuation_creates_product_valuation(self):
+        """
+        Verifică dacă execuția refresh-ului generează corect înregistrările în `product.valuation`.
+        Testul simulează postarea unei note contabile, forțează actualizarea zonei de evaluare
+        și apelează recalcularea completă pentru a verifica rezultatul final.
+        """
         # Seed real accounting data so product.valuation.history recompute has a period window
         journal = self.env["account.journal"].create({"name": "Misc JV", "type": "general", "code": "JVSV"})
         move = self.env["account.move"].create(
@@ -158,6 +169,11 @@ class TestRefreshStockValuation(AccountTestInvoicingCommon):
         self.assertEqual(pv.amount, h_latest.amount_final)
 
     def test_refresh_requires_system_user(self):
+        """
+        Verifică restricțiile de securitate pentru acțiunea de refresh.
+        Doar utilizatorii din grupul "System Administrator" ar trebui să poată
+        declanșa recalcularea istoricului de evaluare.
+        """
         # Ensure preconditions so the method does not early-return
         self.env.company.valuation_area_level = "company"
         self._make_history("202501", qty_delta=3.0, amt_delta=30.0)
@@ -176,6 +192,10 @@ class TestRefreshStockValuation(AccountTestInvoicingCommon):
             self._new_settings(with_user=user).refresh_stock_valuation()
 
     def test_refresh_noop_when_not_company_level(self):
+        """
+        Verifică comportamentul refresh-ului atunci când nivelul zonei de evaluare
+        nu este setat pe "Company". Metoda ar trebui să se oprească fără a face modificări.
+        """
         # Switch to warehouse-level so the method returns early
         self.env.company.valuation_area_level = "warehouse"
         # Prepare history
