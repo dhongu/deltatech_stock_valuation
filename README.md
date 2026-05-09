@@ -23,11 +23,11 @@ List of Modules
 
 Available addons
 ----------------
- addon                                                   | version    | maintainers                                                                     | summary
----------------------------------------------------------|------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------
- [deltatech_obyc](deltatech_obyc/)                       | 18.0.1.0.0 | [![dhongu](https://github.com/dhongu.png?size=30px)](https://github.com/dhongu) | Implementation of OBYC-style account mapping for stock transactions with advanced configuration options
- [deltatech_stock_valuation](deltatech_stock_valuation/) | 18.0.0.0.1 | [![dhongu](https://github.com/dhongu.png?size=30px)](https://github.com/dhongu) | Enhanced product stock valuation with detailed reporting and analysis tools
- [deltatech_valuation_area](deltatech_valuation_area/)   | 18.0.1.0.0 | [![dhongu](https://github.com/dhongu.png?size=30px)](https://github.com/dhongu) | Comprehensive stock valuation area management with multi-warehouse support
+addon | version | maintainers | summary
+--- | --- | --- | ---
+[deltatech_obyc](deltatech_obyc/) | 19.0.1.0.0 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Implementare OBYC-style account mapping pentru tranzacții de stoc
+[deltatech_stock_valuation](deltatech_stock_valuation/) | 19.0.0.0.3 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Product Stock Valuation
+[deltatech_valuation_area](deltatech_valuation_area/) | 19.0.1.0.0 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Stock Valuation Area Management
 
 [//]: # (end addons)
 

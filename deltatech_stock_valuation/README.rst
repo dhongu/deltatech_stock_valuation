@@ -14,24 +14,127 @@ Product Valuation
     :target: https://odoo-community.org/page/development-status
     :alt: Alpha
 .. |badge2| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github
-    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/18.0/deltatech_stock_valuation
+    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_stock_valuation
     :alt: dhongu/deltatech_stock_valuation
 
 |badge1| |badge2|
 
-Features:
+Product Stock Valuation
+-----------------------
 
-- caclul cost mediu ponderat pe aria de evaluare si cont pentru fiecare
-  produs
-- caclulul evaluarii unui produs se face din notele contabile
-- se definiesc care sunt conturile utilizte la evaluarea produselor
+Modul pentru calculul și urmărirea evaluării stocului de produse pe arie
+de evaluare și cont contabil, inspirat din conceptul SAP Material
+Valuation (MBEW & MBEWH).
 
-pentru inializare e necesar o actiune server cu urmatorul cod
+|img.png|
+
+Funcționalități principale
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Cost mediu ponderat** calculat per produs, arie de evaluare și cont
+  contabil
+- **Evaluare din note contabile** — valorile sunt determinate direct din
+  înregistrările contabile, nu din mișcările de stoc
+- **Istoric lunar** al evaluărilor (``product.valuation.history``)
+  pentru urmărirea evoluției în timp
+- **Conturi contabile dedicate** — se marchează conturile utilizate la
+  evaluarea stocului (``is_for_stock_valuation``)
+- **Validare inteligentă** — aria de evaluare devine obligatorie pe
+  liniile contabile doar pentru conturile marcate pentru evaluare stoc
+- **Configurare nivel arie de evaluare** per companie (ex. nivel
+  companie)
+- **Recalculare manuală** a evaluărilor din interfața de configurare
+  (doar pentru administratori de sistem)
+
+Modele introduse
+~~~~~~~~~~~~~~~~
+
+- ``product.valuation`` — evaluarea curentă a unui produs pe arie de
+  evaluare, cont și companie (preț, cantitate, valoare)
+- ``product.valuation.history`` — istoricul lunar al evaluărilor
+  (cantitate inițială, intrări, ieșiri, finală și valori aferente)
+
+Modele extinse
+~~~~~~~~~~~~~~
+
+- ``account.account`` — adăugat câmpul ``is_for_stock_valuation`` pentru
+  a marca conturile ce participă la evaluare
+- ``account.move.line`` — extinsă metoda ``_is_valuation_area_required``
+  pentru a impune aria de evaluare doar pe conturile de stoc marcate
+
+Inițializare
+~~~~~~~~~~~~
+
+La prima instalare sau după import de date, este necesară recalcularea
+completă a evaluărilor printr-o acțiune server:
 
 .. code:: python
 
    env["product.valuation"].recompute_all_amount()
    env["product.valuation.history"].recompute_all_amount()
+
+Evaluare în paralel cu Odoo standard
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Modulul nu înlocuiește mecanismul standard Odoo (``stock_account``), ci
+adaugă un strat suplimentar de raportare **garantat consistent cu
+balanța contabilă**, util în contexte cu ajustări contabile manuale sau
+cerințe de raportare pe centre de cost/depozite.
+
++----------------+---------------------------+------------------+---------------------------+
+| Aspect         | Standard Odoo (≤18)       | Standard Odoo 19 | deltatech_stock_valuation |
++================+===========================+==================+===========================+
+| Sursă date     | ``stock.valuation.layer`` | ``stock.move``   | ``account.move.line``     |
++----------------+---------------------------+------------------+---------------------------+
+| Granularitate  | Per produs                | Per produs       | Per produs + arie + cont  |
++----------------+---------------------------+------------------+---------------------------+
+| Sincronizare   | Parțială                  | Parțială         | Completă (prin definiție) |
+| cu             |                           |                  |                           |
+| contabilitatea |                           |                  |                           |
++----------------+---------------------------+------------------+---------------------------+
+| Istoric        | Per tranzacție            | Per mișcare stoc | Lunar agregat             |
++----------------+---------------------------+------------------+---------------------------+
+
+..
+
+   **Notă Odoo 19:** Modelul ``stock.valuation.layer`` a fost eliminat
+   în Odoo 19. Evaluarea stocului standard se bazează acum direct pe
+   ``stock.move``. Modulul ``deltatech_stock_valuation`` rămâne
+   independent de această schimbare, deoarece folosește
+   ``account.move.line`` ca sursă de adevăr.
+
+Limitări
+~~~~~~~~
+
+   ⚠️ **Limitare:** Modulul suportă exclusiv metoda de evaluare **AVCO
+   (cost mediu ponderat)**. Nu este compatibil cu produsele configurate
+   cu metoda **FIFO**. Utilizarea cu produse FIFO va produce rezultate
+   incorecte.
+
+Metoda FIFO necesită urmărirea fiecărui strat de cost individual (ce
+unități au intrat când și la ce preț), informație care se pierde prin
+agregarea contabilă folosită de acest modul.
+
++-------------------------------+--------------------+------------------------+
+| Aspect                        | AVCO               | FIFO                   |
++===============================+====================+========================+
+| Sursă necesară                | Agregate contabile | Straturi individuale   |
+|                               |                    | per intrare            |
++-------------------------------+--------------------+------------------------+
+| Compatibil cu                 | ✅ Da              | ❌ Nu                  |
+| ``account.move.line`` agregat |                    |                        |
++-------------------------------+--------------------+------------------------+
+| Compatibil cu                 | ✅ Da              | ❌ Nu                  |
+| ``deltatech_stock_valuation`` |                    |                        |
++-------------------------------+--------------------+------------------------+
+
+Dependențe
+~~~~~~~~~~
+
+- ``stock_account`` — evaluare stoc standard Odoo
+- ``deltatech_valuation_area`` — definirea ariilor de evaluare
+
+.. |https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_valuation/img.png| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_valuation/img.png
 
 .. IMPORTANT::
    This is an alpha version, the data model and design can change at any time without warning.
@@ -71,6 +174,6 @@ Current maintainer:
 
 |maintainer-dhongu| 
 
-This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/18.0/deltatech_stock_valuation>`_ project on GitHub.
+This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_stock_valuation>`_ project on GitHub.
 
 You are welcome to contribute.
