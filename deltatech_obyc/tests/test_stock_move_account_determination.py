@@ -194,34 +194,11 @@ class TestStockMoveAccountDetermination(TestCommon):
         )
 
         # Get account determination rule
-        journal_id, acc_src, acc_dest, acc_valuation = move_in._get_accounting_data_for_valuation()
+        rule = move_in._get_rule_account()
 
         # Check accounts
-        self.assertEqual(acc_src, self.account_src.id)
-        self.assertEqual(acc_dest, self.account_dest.id)
-        self.assertEqual(acc_valuation, self.account_valuation.id)
+        self.assertEqual(rule.acc_src_id, self.account_src)
+        self.assertEqual(rule.acc_dest_id, self.account_dest)
+        self.assertEqual(rule.acc_valuation_id, self.account_valuation)
 
-    def test_05_account_entry_move_with_valid_data(self):
-        """Test _account_entry_move with valid data."""
-        stock_move = self.env["stock.move"].create(
-            {
-                "product_id": self.product.id,
-                "location_id": self.supplier_location.id,
-                "location_dest_id": self.stock_location.id,
-                "product_uom_qty": 10,
-                "state": "done",
-            }
-        )
-        qty = 10
-        description = "Test Description"
-        svl_id = self.env["stock.valuation.layer"].create(
-            {
-                "stock_move_id": stock_move.id,
-                "value": 100.0,
-                "unit_cost": 10.0,
-                "company_id": self.env.company.id,
-                "product_id": self.product.id,
-            }
-        )
-        cost = 100.0
-        stock_move._account_entry_move(qty, description, svl_id.id, cost)
+
