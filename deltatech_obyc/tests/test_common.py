@@ -58,7 +58,6 @@ class TestCommon(TransactionCase):
             }
         )
 
-
         # Create an account modifier
         cls.account_modifier = cls.env["account.modifier"].create(
             {
@@ -91,4 +90,3 @@ class TestCommon(TransactionCase):
                 "valuation_area_id": cls.valuation_area.id,
             }
         )
-
