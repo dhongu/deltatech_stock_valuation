@@ -237,8 +237,7 @@ class TestOBYCAccountDetermination(TestCommon):
         )
 
         # Get product accounts with transaction key
-        self.env.context = dict(
-            self.env.context,
+        product_template = product_template.with_context(
             transaction_key="stock_receipt",
             valuation_area=self.valuation_area,
             account_modifier=self.account_modifier,
