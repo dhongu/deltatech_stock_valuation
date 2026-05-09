@@ -11,6 +11,7 @@ inspirat din conceptul SAP Material Valuation (MBEW & MBEWH).
 - **Evaluare din note contabile** — valorile sunt determinate direct din înregistrările contabile, nu din mișcările de stoc
 - **Istoric lunar** al evaluărilor (`product.valuation.history`) pentru urmărirea evoluției în timp
 - **Conturi contabile dedicate** — se marchează conturile utilizate la evaluarea stocului (`is_for_stock_valuation`)
+- **Validare inteligentă** — aria de evaluare devine obligatorie pe liniile contabile doar pentru conturile marcate pentru evaluare stoc
 - **Configurare nivel arie de evaluare** per companie (ex. nivel companie)
 - **Recalculare manuală** a evaluărilor din interfața de configurare (doar pentru administratori de sistem)
 
@@ -18,6 +19,11 @@ inspirat din conceptul SAP Material Valuation (MBEW & MBEWH).
 
 - `product.valuation` — evaluarea curentă a unui produs pe arie de evaluare, cont și companie (preț, cantitate, valoare)
 - `product.valuation.history` — istoricul lunar al evaluărilor (cantitate inițială, intrări, ieșiri, finală și valori aferente)
+
+### Modele extinse
+
+- `account.account` — adăugat câmpul `is_for_stock_valuation` pentru a marca conturile ce participă la evaluare
+- `account.move.line` — extinsă metoda `_is_valuation_area_required` pentru a impune aria de evaluare doar pe conturile de stoc marcate
 
 ### Inițializare
 

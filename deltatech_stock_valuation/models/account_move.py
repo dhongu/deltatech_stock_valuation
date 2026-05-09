@@ -10,6 +10,9 @@ class AccountMove(models.Model):
     _inherit = "account.move"
 
     def _recompute_valuation(self):
+        """
+        Recompute stock valuation and history for the move lines.
+        """
         for move in self:
             for line in move.line_ids:
                 if line.product_id and line.account_id.is_for_stock_valuation:
@@ -35,6 +38,9 @@ class AccountMove(models.Model):
                     valuation._recompute_amount()
 
     def write(self, vals):
+        """
+        Trigger valuation recomputation when the move is posted.
+        """
         res = super().write(vals)
         if vals.get("state") == "posted":
             self._recompute_valuation()
