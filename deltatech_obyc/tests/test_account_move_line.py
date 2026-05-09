@@ -19,7 +19,7 @@ class TestAccountMoveLine(TestCommon):
         cls.product_a = cls.env["product.product"].create(
             {
                 "name": "Test Product A",
-                "type": "product",
+                "is_storable": True,
                 "valuation_class_id": cls.valuation_class.id,
             }
         )
