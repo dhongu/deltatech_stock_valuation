@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 *.py~
+/.venv
+/.pytest_cache
+/.ruff_cache
 
 # C extensions
 *.so
@@ -9,6 +12,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+bin/
 build/
 develop-eggs/
 dist/

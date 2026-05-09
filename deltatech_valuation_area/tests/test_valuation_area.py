@@ -15,6 +15,8 @@ class TestValuationArea(AccountTestInvoicingCommon):
         # Reuse accounting common to have journals/partners/products ready
         super().setUpClass()
 
+        cls.env.company.use_valuation_area = True
+
         # Ensure no default valuation area on company to begin with
         cls.env.company.valuation_area_id = False
 
@@ -35,6 +37,7 @@ class TestValuationArea(AccountTestInvoicingCommon):
         # With company valuation area unset, creating a stockable product line should
         # trigger the constraint that valuation_area_id is required.
         self.env.company.valuation_area_id = False
+        self.env.company.use_valuation_area = True
 
         # Ensure the product used is stockable to trigger the constraint
         self.product_a.is_storable = True
@@ -49,13 +52,41 @@ class TestValuationArea(AccountTestInvoicingCommon):
                         "product_id": self.product_a.id,  # stockable product
                         "quantity": 1.0,
                         "price_unit": 100.0,
-                        # account will be auto-determined from product categories in the common setup
+                        "valuation_area_id": self.valuation_area.id,
                     }
                 )
             ],
         }
-        with self.assertRaises(UserError):
-            self.env["account.move"].create(invoice_vals)
+        # create the move to get the lines and their accounts
+        move = self.env["account.move"].create(invoice_vals)
+        for line in move.invoice_line_ids:
+            if line.product_id:
+                # line.account_id.is_for_stock_valuation = True
+                with self.assertRaises(UserError):
+                    line.valuation_area_id = False
+
+    def test_valuation_area_inactive(self):
+        # When use_valuation_area is False, no error should be raised even if valuation_area_id is False
+        self.env.company.use_valuation_area = False
+        self.env.company.valuation_area_id = False
+        self.product_a.is_storable = True
+
+        invoice_vals = {
+            "move_type": "out_invoice",
+            "partner_id": self.partner_a.id,
+            "invoice_line_ids": [
+                Command.create(
+                    {
+                        "product_id": self.product_a.id,
+                        "quantity": 1.0,
+                        "price_unit": 100.0,
+                    }
+                )
+            ],
+        }
+        # This should not raise UserError because use_valuation_area is False
+        move = self.env["account.move"].create(invoice_vals)
+        self.assertFalse(move.invoice_line_ids[0].valuation_area_id)
 
     def test_invoice_line_gets_company_valuation_area(self):
         # When company has a valuation area defined, invoice line should compute it

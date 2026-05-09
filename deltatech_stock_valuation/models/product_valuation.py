@@ -423,7 +423,7 @@ class ProductValuationHistory(models.Model):
             ]
             next_valuation = self.search(domain, order="month asc", limit=1)
             if next_valuation:
-                next_valuation.write(
+                next_valuation.update(
                     {
                         "quantity_initial": s.quantity_final,
                         "amount_initial": s.amount_final,
@@ -693,7 +693,7 @@ class ProductValuationHistory(models.Model):
         row = self.env.cr.dictfetchone()
         if row and row["cnt"]:
             _logger.warning(
-                "deltatech_stock_valuation: %d linii contabile excluse din evaluare " "(UoM lipsă), valoare totală: %s",
+                "deltatech_stock_valuation: %d linii contabile excluse din evaluare (UoM lipsă), valoare totală: %s",
                 row["cnt"],
                 row["valoare"] or 0,
             )
