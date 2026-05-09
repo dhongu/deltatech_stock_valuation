@@ -10,6 +10,9 @@ class StockMove(models.Model):
     _inherit = "stock.move"
 
     def _get_valuation_area(self, raise_if_not_found=True):
+        """
+        Get the valuation area for the stock move based on locations and warehouse.
+        """
         self.ensure_one()
         if not self.company_id.use_valuation_area:
             return self.env["valuation.area"]
@@ -30,6 +33,9 @@ class StockMove(models.Model):
         return valuation_area
 
     def _prepare_account_move_line(self, qty, cost, credit_account_id, debit_account_id, svl_id, description):
+        """
+        Inject the valuation area into the account move line values.
+        """
         res = super()._prepare_account_move_line(qty, cost, credit_account_id, debit_account_id, svl_id, description)
         if not self.company_id.use_valuation_area:
             return res

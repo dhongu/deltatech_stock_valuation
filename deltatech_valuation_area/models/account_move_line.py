@@ -23,6 +23,9 @@ class AccountMoveLine(models.Model):
 
     @api.constrains("product_id", "valuation_area_id", "account_id")
     def _check_valuation_area(self):
+        """
+        Check if valuation area is set on the account move line when required.
+        """
         if not self.env.registry.ready:
             return
 
@@ -37,12 +40,18 @@ class AccountMoveLine(models.Model):
                 )
 
     def _is_valuation_area_required(self):
+        """
+        Determine if valuation area is required for the current account move line.
+        """
         self.ensure_one()
         if self.product_id and self.product_id.is_storable and not self.valuation_area_id:
             return True
         return False
 
     def _get_valuation_area(self, raise_if_not_found=True):
+        """
+        Get the appropriate valuation area for the current account move line.
+        """
         self.ensure_one()
         if not self.company_id.use_valuation_area:
             return self.env["valuation.area"]
@@ -67,6 +76,9 @@ class AccountMoveLine(models.Model):
 
     @api.depends("product_id")
     def _compute_valuation_area(self):
+        """
+        Compute the valuation area for the account move lines.
+        """
         if not self.env.registry.ready:
             return False
         for line in self:

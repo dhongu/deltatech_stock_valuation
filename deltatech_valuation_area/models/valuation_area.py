@@ -14,5 +14,8 @@ class ValuationArea(models.Model):
     stock_journal_id = fields.Many2one("account.journal", string="Stock Journal")
 
     def _compute_display_name(self):
+        """
+        Format the display name as [CODE] Name.
+        """
         for item in self:
             item.display_name = f"[{item.code}] {item.name}"
