@@ -255,31 +255,13 @@ class ProductValuation(models.Model):
 
         return sql
 
-    def _recompute_all_amount(self):
-        """
-        Recalculează valorile curente din `product.valuation` pornind de la istoricul lunar.
-
-        Pași:
-        1. Șterge toate înregistrările existente din `product_valuation` pentru conturile de stoc.
-        2. Determină luna maximă disponibilă din `product_valuation_history`.
-        3. Inserează în `product_valuation` soldurile finale (quantity_final, amount_final, price)
-           din luna maximă a istoricului, pentru fiecare combinație
-           (product_id, valuation_area_id, account_id, company_id).
-
-        Această metodă este complementară `_recompute_all_amount` din `ProductValuationHistory`
-        care calculează istoricul lunar; aceasta preia doar soldul curent (ultima lună).
-
-        :return: None
-        """
-        params = {
-            "account_ids": tuple(self.env["account.account"].search([("is_for_stock_valuation", "=", True)]).ids),
-        }
-        self.env.cr.execute("DELETE FROM product_valuation WHERE account_id in %(account_ids)s", params)
-
+    def _set_months_and_dates(self, params):
         self.env.cr.execute(
             """
             SELECT min(month) as min_month, max(month) as max_month
             FROM product_valuation_history
+            WHERE valuation_area_id = %(valuation_area_id)s
+              AND company_id = %(company_id)s
             """,
             params,
         )
@@ -296,6 +278,32 @@ class ProductValuation(models.Model):
             params["min_date"] = datetime.today().replace(day=1)
             params["max_date"] = datetime.today().replace(day=1)
 
+    def _recompute_all_amount(self):
+        """
+        Recalculează valorile curente din `product.valuation` pornind de la istoricul lunar.
+
+        Pași:
+        1. Șterge toate înregistrările existente din `product_valuation` pentru conturile de stoc.
+        2. Determină luna maximă disponibilă din `product_valuation_history`.
+        3. Inserează în `product_valuation` soldurile finale (quantity_final, amount_final, price)
+           din luna maximă a istoricului, pentru fiecare combinație
+           (product_id, valuation_area_id, account_id, company_id).
+
+        Această metodă este complementară `_recompute_all_amount` din `ProductValuationHistory`
+        care calculează istoricul lunar; aceasta preia doar soldul curent (ultima lună).
+
+        :return: None
+        """
+        valuation_area = self.env.company.valuation_area_id
+        params = {
+            "account_ids": tuple(self.env["account.account"].search([("is_for_stock_valuation", "=", True)]).ids),
+            "valuation_area_id": valuation_area.id,
+            "company_id": self.env.company.id,
+        }
+        self.env.cr.execute("DELETE FROM product_valuation WHERE account_id in %(account_ids)s", params)
+
+        self._set_months_and_dates(params)
+
         sql = """
         INSERT INTO product_valuation
                 (product_id, valuation_area_id, account_id, company_id,
@@ -306,6 +314,8 @@ class ProductValuation(models.Model):
             FROM product_valuation_history as pv
 
             WHERE month = %(max_month)s
+              AND valuation_area_id = %(valuation_area_id)s
+              AND company_id = %(company_id)s
         """
         self.env.cr.execute(sql, params)
 
@@ -728,24 +738,7 @@ class ProductValuationHistory(models.Model):
                 self.env.cr.commit()
 
         # optinere data minima si maxima
-        self.env.cr.execute(
-            """
-            SELECT min(month) as min_month, max(month) as max_month
-            FROM product_valuation_history
-            """,
-            params,
-        )
-        res = self.env.cr.dictfetchone()
-        if res and res.get("min_month") and res.get("max_month"):
-            params["max_month"] = res.get("max_month")
-            params["min_month"] = res.get("min_month")
-            params["min_date"] = datetime.strptime(params["min_month"], "%Y%m")
-            params["max_date"] = datetime.strptime(params["max_month"], "%Y%m")
-        else:
-            params["max_month"] = fields.Date.today().strftime("%Y%m")
-            params["min_month"] = fields.Date.today().strftime("%Y%m")
-            params["min_date"] = datetime.today().replace(day=1)
-            params["max_date"] = datetime.today().replace(day=1)
+        self._set_months_and_dates(params)
 
         # Asigurăm că max_date este cel puțin luna curentă pentru a avea istoric la zi
         today_month_date = datetime.today().replace(day=1)

@@ -42,10 +42,6 @@ class TestValuationArea(AccountTestInvoicingCommon):
         # Ensure the product used is stockable to trigger the constraint
         self.product_a.is_storable = True
 
-        # set is_for_stock_valuation on account
-        # self.env.company.account_sale_tax_id.is_for_stock_valuation = True
-        # self.product_a.property_account_income_id.is_for_stock_valuation = True
-
         # Prepare a minimal customer invoice using existing fixtures
         invoice_vals = {
             "move_type": "out_invoice",
@@ -61,7 +57,6 @@ class TestValuationArea(AccountTestInvoicingCommon):
                 )
             ],
         }
-
         # create the move to get the lines and their accounts
         move = self.env["account.move"].create(invoice_vals)
         for line in move.invoice_line_ids:

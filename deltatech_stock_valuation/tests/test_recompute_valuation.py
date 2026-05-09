@@ -10,6 +10,11 @@ from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
 @tagged("post_install", "-at_install", "deltatech_stock_valuation")
 class TestRecomputeValuation(AccountTestInvoicingCommon):
+    """
+    Testări pentru recalcularea manuală și automată a evaluării produselor.
+    Verifică sincronizarea corectă între `product.valuation.history` și `product.valuation`.
+    """
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -58,6 +63,11 @@ class TestRecomputeValuation(AccountTestInvoicingCommon):
         return history
 
     def test_recompute_amount_on_single_record(self):
+        """
+        Verifică recalcularea evaluării pentru o singură înregistrare de produs.
+        Se asigură că `_recompute_amount()` actualizează corect câmpurile din `product.valuation`
+        pe baza datelor din ultima lună de istoric.
+        """
         # Create a history row for 202501 with a positive balance
         h = self._make_history(month="202501", qty_initial=0.0, amt_initial=0.0, qty_delta=10.0, amt_delta=200.0)
 
@@ -75,6 +85,11 @@ class TestRecomputeValuation(AccountTestInvoicingCommon):
         self.assertAlmostEqual(pv.price, h.amount_final / h.quantity_final, places=6)
 
     def test_recompute_all_amount_inserts_latest_month(self):
+        """
+        Verifică recalcularea globală a evaluării (`_recompute_all_amount()`).
+        Asigură că sunt șterse înregistrările vechi și sunt inserate doar datele
+        din cea mai recentă lună disponibilă în istoric pentru fiecare produs.
+        """
         PV = self.env["product.valuation"]
         # Prepare two months of history; only the latest should be inserted
         h_prev = self._make_history(month="202412", qty_initial=0.0, amt_initial=0.0, qty_delta=5.0, amt_delta=50.0)
