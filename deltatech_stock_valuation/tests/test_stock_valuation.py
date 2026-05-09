@@ -12,6 +12,12 @@ from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
 @tagged("post_install", "-at_install", "deltatech_stock_valuation")
 class TestStockValuation(AccountTestInvoicingCommon):
+    """
+    Testări generale pentru evaluarea stocului prin documente contabile.
+    Verifică impactul diferitelor tipuri de facturi (ieșire, retur, intrare)
+    asupra conturilor de evaluare.
+    """
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -36,6 +42,11 @@ class TestStockValuation(AccountTestInvoicingCommon):
         cls.env.company.set_stock_valuation_at_company_level()
 
     def test_account_move(self):
+        """
+        Verifică procesarea mai multor tipuri de mișcări contabile.
+        Creează facturi de client, facturi de furnizor și retururi, le postează
+        și validează indirect fluxul de date care va fi folosit pentru evaluare.
+        """
         today = fields.Date.today()
         today = fields.Date.from_string(today)
         date = today + relativedelta(day=1, months=-1, days=15)

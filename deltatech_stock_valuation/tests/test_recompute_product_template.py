@@ -10,6 +10,12 @@ from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
 @tagged("post_install", "-at_install", "deltatech_stock_valuation")
 class TestRecomputeProductTemplate(AccountTestInvoicingCommon):
+    """
+    Testări pentru recalcularea valorii stocului la nivel de șablon de produs (product.template).
+    Verifică dacă metoda `recompute_valuation_amount` propagă corect datele din istoricul
+    valorii stocului către înregistrările curente de evaluare.
+    """
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -81,6 +87,11 @@ class TestRecomputeProductTemplate(AccountTestInvoicingCommon):
         return hist
 
     def test_recompute_valuation_amount_single_variant(self):
+        """
+        Verifică recalcularea evaluării pentru un produs cu o singură variantă.
+        Asigură că datele (cantitate, sumă, preț) sunt preluate corect din ultima lună
+        de istoric disponibilă.
+        """
         # Assign category with valuation account to product_a's template
         tmpl = self.product_a.product_tmpl_id
         tmpl.categ_id = self.categ_with_account
@@ -110,6 +121,11 @@ class TestRecomputeProductTemplate(AccountTestInvoicingCommon):
         self.assertTrue(self.account_stock_val.is_for_stock_valuation)
 
     def test_recompute_valuation_amount_skips_templates_without_account(self):
+        """
+        Verifică faptul că recalcularea este ignorată pentru șabloanele de produs
+        care nu au un cont de evaluare a stocului definit în categorie.
+        Asigură că nu se creează înregistrări de evaluare eronate.
+        """
         # Create an isolated product template without a stock valuation account on its category
         tmpl = self.env["product.template"].create(
             {"name": "No Acc Tmpl", "is_storable": True, "categ_id": self.categ_without_account.id}
