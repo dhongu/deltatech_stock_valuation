@@ -27,6 +27,7 @@
                     <button
                         type="object"
                         name="refresh_stock_valuation"
+                        context="{'with_commit': True}"
                         icon="fa-refresh"
                         string="Refresh Valuation"
                         class="btn-link"

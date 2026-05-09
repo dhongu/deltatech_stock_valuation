@@ -91,16 +91,22 @@
                 <field name="account_id" />
                 <field name="month" />
                 <field name="quantity_initial" optional="show" />
-                <field name="quantity_in" sum="sum_qty_in" optional="hide" />
-                <field name="quantity_out" sum="sum_qty_out" optional="hide" />
-                <field name="quantity" sum="sum_qty" />
-                <field name="quantity_final" optional="show" />
-
                 <field name="amount_initial" optional="show" />
+
+
+                <field name="quantity" sum="sum_qty" />
+                 <field name="amount" sum="sum_amount" />
+
+                <field name="quantity_in" sum="sum_qty_in" optional="hide" />
                 <field name="debit" sum="sum_debit" optional="hide" />
+
+                <field name="quantity_out" sum="sum_qty_out" optional="hide" />
                 <field name="credit" sum="sum_credit" optional="hide" />
-                <field name="amount" sum="sum_amount" />
+
+                <field name="quantity_final" optional="show" />
                 <field name="amount_final" optional="show" />
+
+
                 <field name="currency_id" column_invisible="1" />
                 <field name="company_id" groups="base.group_multi_company" />
             </list>

@@ -3,6 +3,8 @@
 Modul pentru calculul și urmărirea evaluării stocului de produse pe arie de evaluare și cont contabil,
 inspirat din conceptul SAP Material Valuation (MBEW & MBEWH).
 
+![img.png](img.png)
+
 ### Funcționalități principale
 
 - **Cost mediu ponderat** calculat per produs, arie de evaluare și cont contabil
