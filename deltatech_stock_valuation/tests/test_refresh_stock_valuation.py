@@ -106,12 +106,11 @@ class TestRefreshStockValuation(AccountTestInvoicingCommon):
         move.action_post()
 
         # Update valuation_area_id on move lines if not set
-        move.line_ids.filtered(lambda l: l.account_id == self.account_stock_val).write(
-            {
-                "valuation_area_id": self.valuation_area.id,
-                "product_uom_id": self.product.uom_id.id,
-            }
+        self.env.cr.execute(
+            "UPDATE account_move_line SET valuation_area_id = %s WHERE move_id = %s",
+            (self.valuation_area.id, move.id),
         )
+        move.line_ids.invalidate_recordset(["valuation_area_id"])
 
         self.env.cr.execute(
             "SELECT count(*) FROM account_move_line WHERE valuation_area_id = %s", (self.valuation_area.id,)

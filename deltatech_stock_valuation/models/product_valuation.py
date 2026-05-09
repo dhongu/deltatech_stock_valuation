@@ -260,6 +260,8 @@ class ProductValuation(models.Model):
             """
             SELECT min(month) as min_month, max(month) as max_month
             FROM product_valuation_history
+            WHERE valuation_area_id = %(valuation_area_id)s
+              AND company_id = %(company_id)s
             """,
             params,
         )
@@ -292,8 +294,11 @@ class ProductValuation(models.Model):
 
         :return: None
         """
+        valuation_area = self.env.company.valuation_area_id
         params = {
             "account_ids": tuple(self.env["account.account"].search([("is_for_stock_valuation", "=", True)]).ids),
+            "valuation_area_id": valuation_area.id,
+            "company_id": self.env.company.id,
         }
         self.env.cr.execute("DELETE FROM product_valuation WHERE account_id in %(account_ids)s", params)
 
@@ -309,6 +314,8 @@ class ProductValuation(models.Model):
             FROM product_valuation_history as pv
 
             WHERE month = %(max_month)s
+              AND valuation_area_id = %(valuation_area_id)s
+              AND company_id = %(company_id)s
         """
         self.env.cr.execute(sql, params)
 
