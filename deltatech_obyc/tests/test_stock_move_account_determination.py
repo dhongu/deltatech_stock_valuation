@@ -200,5 +200,3 @@ class TestStockMoveAccountDetermination(TestCommon):
         self.assertEqual(rule.acc_src_id, self.account_src)
         self.assertEqual(rule.acc_dest_id, self.account_dest)
         self.assertEqual(rule.acc_valuation_id, self.account_valuation)
-
-
