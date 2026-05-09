@@ -58,11 +58,6 @@ class TestCommon(TransactionCase):
             }
         )
 
-        cls.env.company.write(
-            {
-                "valuation_area_id": cls.valuation_area.id,
-            }
-        )
 
         # Create an account modifier
         cls.account_modifier = cls.env["account.modifier"].create(
@@ -83,7 +78,7 @@ class TestCommon(TransactionCase):
         cls.product = cls.env["product.product"].create(
             {
                 "name": "Test Product",
-                "type": "product",
+                "is_storable": True,
                 "categ_id": cls.product_category.id,
                 "valuation_class_id": cls.valuation_class.id,
             }
@@ -92,6 +87,8 @@ class TestCommon(TransactionCase):
         # Assign valuation area to company
         cls.env.company.write(
             {
+                "use_valuation_area": True,
                 "valuation_area_id": cls.valuation_area.id,
             }
         )
+
