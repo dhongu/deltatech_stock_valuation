@@ -198,6 +198,8 @@ class TestValuationArea(AccountTestInvoicingCommon):
             wiz = self.env[res["res_model"]].browse(res["res_id"])
             wiz.process()
 
+        # in 19 livrare nu genereaza nota contabila la o miscare de stoc
+
         # # Fetch the accounting moves generated for this picking's stock moves
         # account_moves = self.env["account.move"].search([("stock_move_ids", "in", picking.move_ids.ids)])
         # self.assertTrue(account_moves, "No account moves generated for stock move")
