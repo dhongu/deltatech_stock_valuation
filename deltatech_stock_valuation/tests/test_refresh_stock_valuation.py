@@ -2,11 +2,15 @@
 #              Dorin Hongu <dhongu(@)gmail(.)com>
 # See README.rst file on addons root folder for license details
 
+import logging
+
 from odoo import fields
 from odoo.exceptions import UserError
 from odoo.tests import tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+
+_logger = logging.getLogger(__name__)
 
 
 @tagged("post_install", "-at_install", "deltatech_stock_valuation")
@@ -100,6 +104,19 @@ class TestRefreshStockValuation(AccountTestInvoicingCommon):
             }
         )
         move.action_post()
+
+        # Update valuation_area_id on move lines if not set
+        move.line_ids.filtered(lambda l: l.account_id == self.account_stock_val).write(
+            {
+                "valuation_area_id": self.valuation_area.id,
+                "product_uom_id": self.product.uom_id.id,
+            }
+        )
+
+        self.env.cr.execute(
+            "SELECT count(*) FROM account_move_line WHERE valuation_area_id = %s", (self.valuation_area.id,)
+        )
+        _logger.info("Found %s move lines for area %s", self.env.cr.fetchone()[0], self.valuation_area.id)
 
         PV = self.env["product.valuation"]
         PV.search(

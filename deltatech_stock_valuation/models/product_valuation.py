@@ -255,6 +255,27 @@ class ProductValuation(models.Model):
 
         return sql
 
+    def _set_months_and_dates(self, params):
+        self.env.cr.execute(
+            """
+            SELECT min(month) as min_month, max(month) as max_month
+            FROM product_valuation_history
+            """,
+            params,
+        )
+        res = self.env.cr.dictfetchone()
+
+        if res and res.get("min_month") and res.get("max_month"):
+            params["max_month"] = res.get("max_month")
+            params["min_month"] = res.get("min_month")
+            params["min_date"] = datetime.strptime(params["min_month"], "%Y%m")
+            params["max_date"] = datetime.strptime(params["max_month"], "%Y%m")
+        else:
+            params["max_month"] = fields.Date.today().strftime("%Y%m")
+            params["min_month"] = fields.Date.today().strftime("%Y%m")
+            params["min_date"] = datetime.today().replace(day=1)
+            params["max_date"] = datetime.today().replace(day=1)
+
     def _recompute_all_amount(self):
         """
         Recalculează valorile curente din `product.valuation` pornind de la istoricul lunar.
@@ -276,20 +297,7 @@ class ProductValuation(models.Model):
         }
         self.env.cr.execute("DELETE FROM product_valuation WHERE account_id in %(account_ids)s", params)
 
-        self.env.cr.execute(
-            """
-            SELECT min(month) as min_month, max(month) as max_month
-            FROM product_valuation_history
-            """,
-            params,
-        )
-        res = self.env.cr.dictfetchone()
-
-        params["min_month"] = res.get("min_month", "202401")
-        params["max_month"] = res.get("max_month", "202401")
-
-        params["min_date"] = datetime.strptime(params["min_month"], "%Y%m")
-        params["max_date"] = datetime.strptime(params["max_month"], "%Y%m")
+        self._set_months_and_dates(params)
 
         sql = """
         INSERT INTO product_valuation
@@ -726,20 +734,7 @@ class ProductValuationHistory(models.Model):
                 self.env.cr.commit()
 
         # optinere data minima si maxima
-        self.env.cr.execute(
-            """
-            SELECT min(month) as min_month, max(month) as max_month
-            FROM product_valuation_history
-            WHERE valuation_area_id = %(valuation_area_id)s
-            """,
-            params,
-        )
-        res = self.env.cr.dictfetchone()
-
-        params["max_month"] = res.get("max_month", fields.Date.today().strftime("%Y%m"))
-        params["min_month"] = res.get("min_month", fields.Date.today().strftime("%Y%m"))
-        params["min_date"] = datetime.strptime(params["min_month"], "%Y%m")
-        params["max_date"] = datetime.strptime(params["max_month"], "%Y%m")
+        self._set_months_and_dates(params)
 
         # Asigurăm că max_date este cel puțin luna curentă pentru a avea istoric la zi
         today_month_date = datetime.today().replace(day=1)

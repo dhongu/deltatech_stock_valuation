@@ -34,6 +34,7 @@ TRANSACTION_KEYS = [
     # Production transactions
     ("production_issue", "Production Issue"),
     ("production_receipt", "Production Receipt"),
+    ("landed_cost", "Landed Cost"),
 ]
 
 
