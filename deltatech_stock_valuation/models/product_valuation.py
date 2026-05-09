@@ -44,6 +44,18 @@ class ProductValuation(models.Model):
     # ]
 
     def get_valuation(self, product_id, valuation_area_id, account_id, company_id=False):
+        """
+        Returnează înregistrarea curentă de evaluare (product.valuation) pentru combinația
+        (product_id, valuation_area_id, account_id, company_id).
+
+        Dacă nu există, creează o înregistrare nouă cu valorile implicite (quantity=0, amount=0).
+
+        :param product_id: ID-ul produsului
+        :param valuation_area_id: ID-ul zonei de evaluare
+        :param account_id: ID-ul contului contabil de stoc
+        :param company_id: ID-ul companiei (implicit: compania curentă)
+        :return: recordset product.valuation
+        """
         if not company_id:
             company_id = self.env.company.id
         domain = [
@@ -65,6 +77,18 @@ class ProductValuation(models.Model):
         return valuation
 
     def _recompute_amount(self):
+        """
+        Recalculează valorile curente (quantity, amount, price) din `product.valuation`
+        pentru fiecare înregistrare din recordset, preluând datele din ultima lună disponibilă
+        din `product.valuation.history`.
+
+        Logica de calcul a prețului:
+        - dacă `quantity_final != 0`: price = amount_final / quantity_final
+        - altfel dacă `quantity_in != 0`: price = debit / quantity_in
+        - altfel: se păstrează prețul existent
+
+        :return: None
+        """
         for item in self:
             domain = [
                 ("product_id", "=", item.product_id.id),
@@ -89,6 +113,20 @@ class ProductValuation(models.Model):
                 )
 
     def _recompute_amount_sql(self):
+        """
+        Recalculează valorile curente (quantity, amount, price) din `product.valuation`
+        folosind un UPDATE SQL direct, bazat pe mișcările din notele contabile postate.
+
+        Spre deosebire de `_recompute_amount` (care iterează Python), această metodă
+        execută un singur UPDATE în baza de date, mai eficient pentru volume mari.
+
+        Câmpurile actualizate:
+        - `quantity` = cantitatea netă (intrări - ieșiri)
+        - `amount` = debit - credit
+        - `price` = amount / quantity (0 dacă quantity = 0)
+
+        :return: None
+        """
         valuation_areas = self.mapped("valuation_area_id")
         products = self.mapped("product_id")
         accounts = self.mapped("account_id")
@@ -127,6 +165,20 @@ class ProductValuation(models.Model):
         self.env.cr.execute(sql, params)
 
     def _get_sql_select(self, all_records=True):
+        """
+        Returnează un fragment SQL SELECT care agregă mișcările contabile pe combinația
+        (product_id, valuation_area_id, account_id, company_id), calculând:
+        - `debit`, `credit` = totaluri monetare
+        - `quantity_in` = cantitate intrată (in_invoice pozitiv, in_refund negativ)
+        - `quantity_out` = cantitate ieșită (out_invoice pozitiv, out_refund negativ)
+        - `quantity` = cantitate netă (ieșirile au semn negativ)
+
+        Folosit în `_recompute_amount_sql` pentru UPDATE pe `product.valuation`.
+
+        :param all_records: dacă True, include toate înregistrările; dacă False,
+                            filtrează după product_ids, account_ids, valuation_area_ids
+        :return: string SQL (fragment SELECT, fără parametri)
+        """
         sql = f"""
         SELECT product_id, valuation_area_id, account_id, company_id,
                 sum(debit) as debit, sum(credit) as credit,
@@ -168,6 +220,19 @@ class ProductValuation(models.Model):
         return sql
 
     def _get_sql_sub_select(self, all_records=True):
+        """
+        Returnează un fragment SQL SELECT cu liniile individuale din `account_move_line`,
+        filtrate după conturile de stoc și notele contabile postate.
+
+        Calculează cantitatea convertită în UoM-ul produsului (template), folosind
+        raportul factorilor UoM dintre linia de factură și UoM-ul produsului.
+
+        Folosit ca subquery în `_get_sql_select` (clasa ProductValuation).
+
+        :param all_records: dacă False, adaugă filtre suplimentare pe product_ids,
+                            account_ids și valuation_area_ids din params
+        :return: string SQL (fragment SELECT, fără parametri)
+        """
         sql = """
                 SELECT product_id, valuation_area_id, account_id, m.company_id,
                     debit, credit, move_type,
@@ -193,6 +258,21 @@ class ProductValuation(models.Model):
         return sql
 
     def _recompute_all_amount(self):
+        """
+        Recalculează valorile curente din `product.valuation` pornind de la istoricul lunar.
+
+        Pași:
+        1. Șterge toate înregistrările existente din `product_valuation` pentru conturile de stoc.
+        2. Determină luna maximă disponibilă din `product_valuation_history`.
+        3. Inserează în `product_valuation` soldurile finale (quantity_final, amount_final, price)
+           din luna maximă a istoricului, pentru fiecare combinație
+           (product_id, valuation_area_id, account_id, company_id).
+
+        Această metodă este complementară `_recompute_all_amount` din `ProductValuationHistory`
+        care calculează istoricul lunar; aceasta preia doar soldul curent (ultima lună).
+
+        :return: None
+        """
         params = {
             "account_ids": tuple(self.env["account.account"].search([("is_for_stock_valuation", "=", True)]).ids),
         }
@@ -254,13 +334,19 @@ class ProductValuationHistory(models.Model):
 
     def get_valuation(self, product_id, valuation_area_id, account_id, date, company_id=False):
         """
-            Obtinere valoare istorica pentru un produs intr-o zona de evaluare
-        :param product_id:
-        :param valuation_area_id:
-        :param account_id:
-        :param date:
-        :param company_id:
-        :return:
+        Returnează înregistrarea istorică (product.valuation.history) pentru combinația
+        (product_id, valuation_area_id, account_id, company_id) în luna corespunzătoare datei.
+
+        Dacă nu există înregistrare pentru luna respectivă, creează una nouă preluând
+        soldurile inițiale din ultima lună anterioară disponibilă (quantity_final, amount_final).
+        Dacă nu există nicio lună anterioară, soldurile inițiale sunt 0.
+
+        :param product_id: ID-ul produsului
+        :param valuation_area_id: ID-ul zonei de evaluare
+        :param account_id: ID-ul contului contabil de stoc
+        :param date: data pentru care se caută istoricul (se extrage luna YYYYMM)
+        :param company_id: ID-ul companiei (implicit: compania curentă)
+        :return: recordset product.valuation.history
         """
         if not company_id:
             company_id = self.env.company.id
@@ -309,6 +395,20 @@ class ProductValuationHistory(models.Model):
 
     @api.depends("quantity", "amount", "quantity_initial", "amount_initial")
     def _compute_final(self):
+        """
+        Calculează soldurile finale ale lunii curente și propagă soldurile inițiale
+        către luna imediat următoare.
+
+        Logica:
+        - `quantity_final = quantity_initial + quantity`
+        - `amount_final = amount_initial + amount`
+        - Dacă există o înregistrare pentru luna imediat următoare, actualizează
+          `quantity_initial` și `amount_initial` ale acesteia cu valorile finale curente.
+
+        :return: None
+        """
+        if self.env.context.get("skip_compute_final"):
+            return
         for s in self:
             s.quantity_final = s.quantity_initial + s.quantity
             s.amount_final = s.amount_initial + s.amount
@@ -329,6 +429,22 @@ class ProductValuationHistory(models.Model):
                 )
 
     def _compute_initial(self):
+        """
+        Calculează soldurile inițiale ale lunii curente pornind de la soldurile finale,
+        și propagă recursiv soldurile finale corecte către luna imediat anterioară.
+
+        Logica:
+        - `quantity_initial = quantity_final - quantity`
+        - `amount_initial = amount_final - amount`
+        - Dacă există o înregistrare pentru luna imediat anterioară, actualizează
+          `quantity_final` și `amount_final` ale acesteia cu valorile inițiale curente,
+          apoi apelează recursiv `_compute_initial` pe aceasta.
+
+        Notă: Metoda nu este apelată activ în fluxul curent; este utilă pentru
+        recalculări manuale sau corecții punctuale ale istoricului.
+
+        :return: None
+        """
         for item in self:
             item.quantity_initial = item.quantity_final - item.quantity
             item.amount_initial = item.amount_final - item.amount
@@ -351,9 +467,20 @@ class ProductValuationHistory(models.Model):
 
     def _get_sql_select(self, all_records=True):
         """
-            Determinare miscari lunare insumate
-        :param all_records:
-        :return:
+        Returnează un fragment SQL SELECT care agregă mișcările contabile pe combinația
+        (product_id, valuation_area_id, account_id, company_id, currency_id, month), calculând:
+        - `debit`, `credit` = totaluri monetare lunare
+        - `quantity_in` = cantitate intrată în luna respectivă
+          (in_invoice/in_receipt pozitiv, in_refund negativ)
+        - `quantity_out` = cantitate ieșită în luna respectivă
+          (out_invoice/out_receipt pozitiv, out_refund negativ)
+        - `quantity` = cantitate netă lunară (ieșirile au semn negativ)
+
+        Folosit în `_recompute_amount` pentru UPDATE pe `product.valuation.history`.
+
+        :param all_records: dacă True, include toate înregistrările; dacă False,
+                            filtrează după product_ids, account_ids, valuation_area_ids și month
+        :return: string SQL (fragment SELECT, fără parametri)
         """
         sql = f"""
                     SELECT product_id, valuation_area_id, account_id, company_id, currency_id,   month,
@@ -397,7 +524,17 @@ class ProductValuationHistory(models.Model):
 
     def _get_sql_sub_select(self, all_records=True):
         """
-        Determinare miscari lunare
+        Returnează un fragment SQL SELECT cu liniile individuale din `account_move_line`,
+        filtrate după conturile de stoc și notele contabile postate, incluzând luna (YYYYMM).
+
+        Calculează cantitatea convertită în UoM-ul produsului (template), folosind
+        raportul factorilor UoM dintre linia de factură și UoM-ul produsului.
+
+        Folosit ca subquery în `_get_sql_select` (clasa ProductValuationHistory).
+
+        :param all_records: dacă False, adaugă filtre suplimentare pe product_ids,
+                            account_ids, valuation_area_ids și month din params
+        :return: string SQL (fragment SELECT, fără parametri)
         """
         sql = """
             SELECT product_id, valuation_area_id, account_id, m.company_id, l.company_currency_id as currency_id,
@@ -426,6 +563,16 @@ class ProductValuationHistory(models.Model):
         return sql
 
     def _recompute_amount(self):
+        """
+        Recalculează mișcările lunare (quantity, amount, debit, credit, quantity_in, quantity_out)
+        din `product.valuation.history` pentru înregistrările din recordset curent,
+        folosind un UPDATE SQL direct bazat pe notele contabile postate.
+
+        După UPDATE, invalidează cache-ul câmpurilor computed și apelează `_compute_final`
+        pentru a recalcula soldurile finale și a le propaga în lunile următoare.
+
+        :return: None
+        """
         valuation_areas = self.mapped("valuation_area_id")
         products = self.mapped("product_id")
         accounts = self.mapped("account_id")
@@ -464,8 +611,47 @@ class ProductValuationHistory(models.Model):
 
     def _recompute_all_amount(self):
         """
-         Recalculare istoric valorilor
-        :return:
+        Recalculare completă a istoricului valorilor de stoc pe luni, bazată exclusiv pe notele contabile.
+
+        Algoritmul parcurge următorii pași:
+
+        1. **Ștergere date existente**: Se șterg toate înregistrările din `product_valuation_history`
+           pentru zona de evaluare curentă (company level).
+
+        2. **Calcul mișcări lunare** (INSERT din `_get_sql_select`):
+           Se inserează în `product_valuation_history` câte o linie per combinație
+           (product_id, valuation_area_id, account_id, company_id, month), cu:
+           - `quantity` = cantitatea netă mișcată în luna respectivă (intrări pozitive, ieșiri negative)
+           - `amount` = debit - credit (valoarea netă din notele contabile postate)
+           - `debit`, `credit`, `quantity_in`, `quantity_out` = detalii mișcare
+
+        3. **Completare luni lipsă** (dacă `compute_all = True`):
+           Se generează o serie temporală completă (lună cu lună) între prima și ultima lună cu mișcări.
+           Pentru combinațiile produs/cont care nu au mișcări într-o lună, se inserează linii cu valori 0
+           (ON CONFLICT DO NOTHING), astfel încât istoricul să fie continuu.
+
+        4. **Calcul sold final pentru ultima lună** (din note contabile):
+           Se calculează soldul cumulat total (de la începuturi până la `max_month`) direct din
+           `account_move_line` (facturi/note contabile postate), folosind:
+           - `total_amount = SUM(debit - credit)` — valoarea contabilă cumulată
+           - `total_quantity` = cantitate convertită în UoM-ul produsului, cu semn:
+             - `-1` pentru `out_invoice` și `in_refund` (ieșiri din stoc)
+             - `+1` pentru celelalte tipuri de document (intrări în stoc)
+           Apoi:
+           - `amount_final = total_amount` (soldul final cumulat)
+           - `amount_initial = total_amount - amount` (soldul la începutul lunii)
+           - similar pentru `quantity_final` și `quantity_initial`
+
+        5. **Propagare solduri pentru lunile anterioare** (dacă `compute_all = True`):
+           Folosind o fereastră SQL (`SUM ... OVER ... ORDER BY month DESC`), se calculează
+           soldurile cumulate descrescător pornind de la `max_month`, astfel încât fiecare lună
+           să primească `amount_final` și `quantity_final` corecte, iar `amount_initial` și
+           `quantity_initial` să fie soldul de la sfârșitul lunii precedente.
+
+        6. **Ștergere linii goale**: Se elimină înregistrările fără nicio mișcare și fără sold
+           (toate câmpurile de cantitate și valoare sunt 0 sau NULL).
+
+        :return: None
         """
 
         self.env.company.set_stock_valuation_at_company_level()

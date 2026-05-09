@@ -20,6 +20,7 @@
         "views/account_account_view.xml",
         "data/data.xml",
         "views/res_config_settings_views.xml",
+        "views/product_category_views.xml",
     ],
     "images": ["static/description/main_screenshot.png"],
     "development_status": "Alpha",

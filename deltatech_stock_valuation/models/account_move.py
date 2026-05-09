@@ -22,6 +22,8 @@ class AccountMove(models.Model):
             for line in move.line_ids:
                 if line.product_id and line.account_id.is_for_stock_valuation:
                     valuation_area = line.valuation_area_id
+                    if not valuation_area:
+                        continue
                     valuation_history = self.env["product.valuation.history"].get_valuation(
                         line.product_id.id, valuation_area.id, line.account_id.id, move.date, line.company_id.id
                     )
@@ -34,6 +36,6 @@ class AccountMove(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        if vals.get("state"):
+        if vals.get("state") == "posted":
             self._recompute_valuation()
         return res

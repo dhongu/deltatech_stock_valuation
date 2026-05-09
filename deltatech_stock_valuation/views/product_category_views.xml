@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="product_category_form_view_inherit" model="ir.ui.view">
+        <field name="name">product.category.form.inherit.stock.valuation</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='property_stock_valuation_account_id']" position="after">
+                <field name="use_valuation_area_price" invisible="property_cost_method == 'fifo'" />
+            </xpath>
+        </field>
+    </record>
+</odoo>
