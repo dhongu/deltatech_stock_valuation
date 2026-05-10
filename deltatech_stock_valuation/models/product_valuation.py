@@ -7,6 +7,7 @@ import logging
 from datetime import datetime
 
 from odoo import api, fields, models
+from odoo.tools import SQL
 
 _logger = logging.getLogger(__name__)
 
@@ -130,40 +131,32 @@ class ProductValuation(models.Model):
         valuation_areas = self.mapped("valuation_area_id")
         products = self.mapped("product_id")
         accounts = self.mapped("account_id")
-        companies = self.mapped("company_id")
-        domain = [
-            ("product_id", "in", products.ids),
-            ("account_id", "in", accounts.ids),
-            ("company_id", "in", companies.ids),
-        ]
-        if valuation_areas:
-            domain.append(("valuation_area_id", "in", valuation_areas.ids))
 
-        params = {
-            "product_ids": tuple(products.ids),
-            "account_ids": tuple(accounts.ids),
-            "company_ids": tuple(companies.ids),
-            "valuation_area_ids": tuple(valuation_areas.ids) or (None,),
-        }
-
-        sql = f"""
+        inner = self._get_sql_select(
+            account_ids=tuple(accounts.ids),
+            product_ids=tuple(products.ids),
+            valuation_area_ids=tuple(valuation_areas.ids) or (None,),
+        )
+        sql = SQL(
+            """
           UPDATE product_valuation AS pv
           SET quantity = sub.quantity,
                 amount = sub.debit - sub.credit,
                 price = CASE WHEN sub.quantity != 0 THEN (sub.debit - sub.credit) / sub.quantity ELSE 0 END
-            FROM ( {self._get_sql_select(all_records=False)} ) as sub
+            FROM (%(inner)s) as sub
             WHERE
                 pv.product_id = sub.product_id AND
                 pv.account_id = sub.account_id AND
                 pv.valuation_area_id = sub.valuation_area_id AND
                 pv.company_id = sub.company_id
-        """
+        """,
+            inner=inner,
+        )
+        self.env.cr.execute(sql)
 
-        self.env.cr.execute(sql, params)
-
-    def _get_sql_select(self, all_records=True):
+    def _get_sql_select(self, account_ids, product_ids=None, valuation_area_ids=None):
         """
-        Returnează un fragment SQL SELECT care agregă mișcările contabile pe combinația
+        Returnează un obiect SQL care agregă mișcările contabile pe combinația
         (product_id, valuation_area_id, account_id, company_id), calculând:
         - `debit`, `credit` = totaluri monetare
         - `quantity_in` = cantitate intrată (in_invoice pozitiv, in_refund negativ)
@@ -172,11 +165,14 @@ class ProductValuation(models.Model):
 
         Folosit în `_recompute_amount_sql` pentru UPDATE pe `product.valuation`.
 
-        :param all_records: dacă True, include toate înregistrările; dacă False,
-                            filtrează după product_ids, account_ids, valuation_area_ids
-        :return: string SQL (fragment SELECT, fără parametri)
+        :param account_ids: tuple de ID-uri conturi de stoc (filtru obligatoriu)
+        :param product_ids: tuple de ID-uri produse (None = toate)
+        :param valuation_area_ids: tuple de ID-uri arii (None = toate)
+        :return: obiect SQL compus
         """
-        sql = f"""
+        sub = self._get_sql_sub_select(account_ids, product_ids, valuation_area_ids)
+        return SQL(
+            """
         SELECT product_id, valuation_area_id, account_id, company_id,
                 sum(debit) as debit, sum(credit) as credit,
                 sum(
@@ -208,17 +204,15 @@ class ProductValuation(models.Model):
                     )
                 ) as quantity
 
-            FROM (
-               {self._get_sql_sub_select(all_records)}
-                ) as sub
+            FROM (%(sub)s) as sub
              GROUP BY  product_id, valuation_area_id, account_id, company_id
+        """,
+            sub=sub,
+        )
 
+    def _get_sql_sub_select(self, account_ids, product_ids=None, valuation_area_ids=None):
         """
-        return sql
-
-    def _get_sql_sub_select(self, all_records=True):
-        """
-        Returnează un fragment SQL SELECT cu liniile individuale din `account_move_line`,
+        Returnează un obiect SQL cu liniile individuale din `account_move_line`,
         filtrate după conturile de stoc și notele contabile postate.
 
         Calculează cantitatea convertită în UoM-ul produsului (template), folosind
@@ -226,11 +220,32 @@ class ProductValuation(models.Model):
 
         Folosit ca subquery în `_get_sql_select` (clasa ProductValuation).
 
-        :param all_records: dacă False, adaugă filtre suplimentare pe product_ids,
-                            account_ids și valuation_area_ids din params
-        :return: string SQL (fragment SELECT, fără parametri)
+        :param account_ids: tuple de ID-uri conturi (filtru obligatoriu)
+        :param product_ids: tuple de ID-uri produse; None = fără filtru pe produs
+        :param valuation_area_ids: tuple de ID-uri arii; None = fără filtru pe arie
+        :return: obiect SQL compus
         """
-        sql = """
+        if product_ids is None:
+            return SQL(
+                """
+                    SELECT product_id, valuation_area_id, account_id, m.company_id,
+                        debit, credit, move_type,
+                        l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
+                    FROM account_move_line as l
+                        LEFT JOIN account_move as m ON l.move_id=m.id
+                        LEFT JOIN product_product product ON product.id = l.product_id
+                        LEFT JOIN product_template template ON template.id = product.product_tmpl_id
+                        INNER JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
+                        INNER JOIN uom_uom uom_template ON uom_template.id = template.uom_id
+                    WHERE
+                        account_id in %(account_ids)s
+                        AND m.state = 'posted'
+                        AND l.product_id IS NOT NULL
+            """,
+                account_ids=account_ids,
+            )
+        return SQL(
+            """
                 SELECT product_id, valuation_area_id, account_id, m.company_id,
                     debit, credit, move_type,
                     l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
@@ -244,16 +259,13 @@ class ProductValuation(models.Model):
                     account_id in %(account_ids)s
                     AND m.state = 'posted'
                     AND l.product_id IS NOT NULL
-
-        """
-        if not all_records:
-            sql += """
                     AND product_id in %(product_ids)s
-                    AND account_id in %(account_ids)s
                     AND valuation_area_id in %(valuation_area_ids)s
-            """
-
-        return sql
+        """,
+            account_ids=account_ids,
+            product_ids=product_ids,
+            valuation_area_ids=valuation_area_ids,
+        )
 
     def _set_months_and_dates(self, params):
         self.env.cr.execute(
@@ -479,24 +491,26 @@ class ProductValuationHistory(models.Model):
                 )
                 prev_valuation._compute_initial()
 
-    def _get_sql_select(self, all_records=True):
+    def _get_sql_select(self, account_ids, product_ids=None, valuation_area_ids=None, months=None):
         """
-        Returnează un fragment SQL SELECT care agregă mișcările contabile pe combinația
+        Returnează un obiect SQL care agregă mișcările contabile pe combinația
         (product_id, valuation_area_id, account_id, company_id, currency_id, month), calculând:
         - `debit`, `credit` = totaluri monetare lunare
         - `quantity_in` = cantitate intrată în luna respectivă
-          (in_invoice/in_receipt pozitiv, in_refund negativ)
         - `quantity_out` = cantitate ieșită în luna respectivă
-          (out_invoice/out_receipt pozitiv, out_refund negativ)
         - `quantity` = cantitate netă lunară (ieșirile au semn negativ)
 
         Folosit în `_recompute_amount` pentru UPDATE pe `product.valuation.history`.
 
-        :param all_records: dacă True, include toate înregistrările; dacă False,
-                            filtrează după product_ids, account_ids, valuation_area_ids și month
-        :return: string SQL (fragment SELECT, fără parametri)
+        :param account_ids: tuple de ID-uri conturi (filtru obligatoriu)
+        :param product_ids: tuple de ID-uri produse; None = fără filtru
+        :param valuation_area_ids: tuple de ID-uri arii; None = fără filtru
+        :param months: tuple de luni (format YYYYMM); None = fără filtru
+        :return: obiect SQL compus
         """
-        sql = f"""
+        sub = self._get_sql_sub_select(account_ids, product_ids, valuation_area_ids, months)
+        return SQL(
+            """
                     SELECT product_id, valuation_area_id, account_id, company_id, currency_id,   month,
                 sum(debit) as debit, sum(credit) as credit,
                 sum(
@@ -528,17 +542,15 @@ class ProductValuationHistory(models.Model):
                     )
                 ) as quantity
 
-            FROM (
-                 {self._get_sql_sub_select(all_records)}
-                ) as sub
+            FROM (%(sub)s) as sub
              GROUP BY  product_id, valuation_area_id, account_id, company_id, currency_id,  month
-        """
+        """,
+            sub=sub,
+        )
 
-        return sql
-
-    def _get_sql_sub_select(self, all_records=True):
+    def _get_sql_sub_select(self, account_ids, product_ids=None, valuation_area_ids=None, months=None):
         """
-        Returnează un fragment SQL SELECT cu liniile individuale din `account_move_line`,
+        Returnează un obiect SQL cu liniile individuale din `account_move_line`,
         filtrate după conturile de stoc și notele contabile postate, incluzând luna (YYYYMM).
 
         Calculează cantitatea convertită în UoM-ul produsului (template), folosind
@@ -546,15 +558,37 @@ class ProductValuationHistory(models.Model):
 
         Folosit ca subquery în `_get_sql_select` (clasa ProductValuationHistory).
 
-        :param all_records: dacă False, adaugă filtre suplimentare pe product_ids,
-                            account_ids, valuation_area_ids și month din params
-        :return: string SQL (fragment SELECT, fără parametri)
+        :param account_ids: tuple de ID-uri conturi (filtru obligatoriu)
+        :param product_ids: tuple de ID-uri produse; None = fără filtru
+        :param valuation_area_ids: tuple de ID-uri arii; None = fără filtru
+        :param months: tuple de luni YYYYMM; None = fără filtru
+        :return: obiect SQL compus
         """
-        sql = """
+        if product_ids is None:
+            return SQL(
+                """
+                SELECT product_id, valuation_area_id, account_id, m.company_id, l.company_currency_id as currency_id,
+                        debit, credit, move_type,
+                        to_char(m.date, 'YYYYMM')  as month,
+                        l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
+                    FROM account_move_line as l
+                        LEFT JOIN account_move as m ON l.move_id=m.id
+                        LEFT JOIN product_product product ON product.id = l.product_id
+                        LEFT JOIN product_template template ON template.id = product.product_tmpl_id
+                        INNER JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
+                        INNER JOIN uom_uom uom_template ON uom_template.id = template.uom_id
+                    WHERE
+                        account_id in %(account_ids)s
+                        AND m.state = 'posted'
+                        AND l.product_id IS NOT NULL
+            """,
+                account_ids=account_ids,
+            )
+        return SQL(
+            """
             SELECT product_id, valuation_area_id, account_id, m.company_id, l.company_currency_id as currency_id,
                     debit, credit, move_type,
                     to_char(m.date, 'YYYYMM')  as month,
-
                     l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
                 FROM account_move_line as l
                     LEFT JOIN account_move as m ON l.move_id=m.id
@@ -566,16 +600,15 @@ class ProductValuationHistory(models.Model):
                     account_id in %(account_ids)s
                     AND m.state = 'posted'
                     AND l.product_id IS NOT NULL
-        """
-        if not all_records:
-            sql += """
                     AND product_id in %(product_ids)s
-                    AND account_id in %(account_ids)s
                     AND valuation_area_id in %(valuation_area_ids)s
-                    AND to_char(m.date, 'YYYYMM') in %(month)s
-            """
-
-        return sql
+                    AND to_char(m.date, 'YYYYMM') in %(months)s
+        """,
+            account_ids=account_ids,
+            product_ids=product_ids,
+            valuation_area_ids=valuation_area_ids,
+            months=months,
+        )
 
     def _recompute_amount(self):
         """
@@ -591,18 +624,15 @@ class ProductValuationHistory(models.Model):
         valuation_areas = self.mapped("valuation_area_id")
         products = self.mapped("product_id")
         accounts = self.mapped("account_id")
-        companies = self.mapped("company_id")
 
-        params = {
-            "product_ids": tuple(products.ids),
-            "account_ids": tuple(accounts.ids),
-            "month": tuple(self.mapped("month")),
-            "company_ids": tuple(companies.ids),
-            "valuation_area_ids": tuple(valuation_areas.ids) or (None,),
-        }
-        sql = f"""
-
-
+        inner = self._get_sql_select(
+            account_ids=tuple(accounts.ids),
+            product_ids=tuple(products.ids),
+            months=tuple(self.mapped("month")),
+            valuation_area_ids=tuple(valuation_areas.ids) or (None,),
+        )
+        sql = SQL(
+            """
            UPDATE product_valuation_history AS pv
             SET quantity = sub.quantity,
                 quantity_in = sub.quantity_in,
@@ -610,17 +640,18 @@ class ProductValuationHistory(models.Model):
                 debit = sub.debit,
                 credit = sub.credit,
                 amount = sub.debit - sub.credit
-            FROM ( {self._get_sql_select(all_records=False)} ) as sub
+            FROM (%(inner)s) as sub
             WHERE
                 pv.product_id = sub.product_id AND
                 pv.account_id = sub.account_id AND
                 pv.valuation_area_id = sub.valuation_area_id AND
                 pv.company_id = sub.company_id AND
-
                 pv.month = sub.month
-        """
-        self.env.cr.execute(sql, params)
-        # invalidate chashed fields
+        """,
+            inner=inner,
+        )
+        self.env.cr.execute(sql)
+        # invalidate cached fields
         self._invalidate_cache()
         self.with_context(skip_compute_final=True)._compute_final()
 
@@ -724,16 +755,19 @@ class ProductValuationHistory(models.Model):
         if 2 in execute_step:
             _logger.info("Calculare linii istoric miscari lunare")
 
-            sql = f"""
+            inner = self._get_sql_select(account_ids=params["account_ids"])
+            sql = SQL(
+                """
                 INSERT INTO product_valuation_history
                     (product_id, valuation_area_id, account_id, company_id, currency_id,  month,
                     quantity, quantity_in, quantity_out, debit, credit, amount)
                 SELECT product_id, valuation_area_id, account_id, company_id, currency_id,  month,
                             quantity, quantity_in, quantity_out, debit, credit, debit-credit as amount
-                FROM ( {self._get_sql_select()} ) as a
-            """
-
-            self.env.cr.execute(sql, params)
+                FROM (%(inner)s) as a
+            """,
+                inner=inner,
+            )
+            self.env.cr.execute(sql)
             if commit:
                 self.env.cr.commit()
 

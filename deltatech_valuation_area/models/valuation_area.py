@@ -1,7 +1,7 @@
 # © 2025 Deltatech
 # See README.rst file on addons root folder for license details
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class ValuationArea(models.Model):
@@ -13,6 +13,7 @@ class ValuationArea(models.Model):
     company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
     stock_journal_id = fields.Many2one("account.journal", string="Stock Journal")
 
+    @api.depends("code", "name")
     def _compute_display_name(self):
         """
         Format the display name as [CODE] Name.
