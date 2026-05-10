@@ -3,7 +3,7 @@
 
 import logging
 
-from odoo import fields, models
+from odoo import api, fields, models
 from odoo.exceptions import RedirectWarning
 
 _logger = logging.getLogger(__name__)
@@ -57,6 +57,7 @@ class ProductAccountDetermination(models.Model):
     acc_dest_id = fields.Many2one("account.account", string="Destination Account")
     acc_valuation_id = fields.Many2one("account.account", string="Valuation Account")
 
+    @api.depends("transaction_key", "valuation_class_id.name", "valuation_area_id.name", "account_modifier_id.name")
     def _compute_display_name(self):
         for item in self:
             item.display_name = (
