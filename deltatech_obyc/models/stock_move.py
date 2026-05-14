@@ -57,11 +57,7 @@ class StockMove(models.Model):
         if not qty:
             self = self.with_context(price_difference=True)
         am_vals_list = super()._account_entry_move(qty, description, svl_id, cost)
-        for am_vals in am_vals_list:
-            if not am_vals:
-                am_vals_list.remove(am_vals)
-
-        return am_vals_list
+        return [v for v in am_vals_list if v]
 
     def _compute_transaction_key(self):
         source_usage = self.location_id.usage
