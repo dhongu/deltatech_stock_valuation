@@ -11,5 +11,14 @@ env['product.valuation'].recompute_all_amount()
         </field>
     </record>
 
+    <record id="ir_cron_auto_refresh_valuation" model="ir.cron">
+        <field name="name">Auto Refresh Stock Valuation</field>
+        <field name="model_id" ref="deltatech_stock_valuation.model_product_valuation_history" />
+        <field name="state">code</field>
+        <field name="code">model._auto_refresh_step()</field>
+        <field name="interval_number">2</field>
+        <field name="interval_type">minutes</field>
+        <field name="active">False</field>
+    </record>
 
 </odoo>

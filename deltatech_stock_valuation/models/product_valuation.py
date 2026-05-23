@@ -11,6 +11,11 @@ from odoo.tools import SQL
 
 _logger = logging.getLogger(__name__)
 
+_PARAM_STEP = "deltatech_stock_valuation.refresh_step"
+_PARAM_STEP5_LAST_PID = "deltatech_stock_valuation.step5_last_product_id"
+_STEP5_CLICK_BATCH = 2000  # products per button click / cron run
+_STEP5_SQL_BATCH = 500  # products per SQL window function query
+
 
 # ca in SAP Material Valuation - MBEW & MBEWH
 class ProductValuation(models.Model):
@@ -235,8 +240,8 @@ class ProductValuation(models.Model):
                         LEFT JOIN account_move as m ON l.move_id=m.id
                         LEFT JOIN product_product product ON product.id = l.product_id
                         LEFT JOIN product_template template ON template.id = product.product_tmpl_id
-                        INNER JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
-                        INNER JOIN uom_uom uom_template ON uom_template.id = template.uom_id
+                        LEFT JOIN uom_uom uom_line ON uom_line.id = COALESCE(l.product_uom_id, template.uom_id)
+                        LEFT JOIN uom_uom uom_template ON uom_template.id = template.uom_id
                     WHERE
                         account_id in %(account_ids)s
                         AND m.state = 'posted'
@@ -306,21 +311,25 @@ class ProductValuation(models.Model):
 
         :return: None
         """
+        self.env.company.set_stock_valuation_at_company_level()
         valuation_area = self.env.company.valuation_area_id
+        account_ids = tuple(self.env["account.account"].search([("is_for_stock_valuation", "=", True)]).ids)
+        if not account_ids:
+            return
         params = {
-            "account_ids": tuple(self.env["account.account"].search([("is_for_stock_valuation", "=", True)]).ids),
+            "account_ids": account_ids,
             "valuation_area_id": valuation_area.id,
             "company_id": self.env.company.id,
         }
         self.env.cr.execute("DELETE FROM product_valuation WHERE account_id in %(account_ids)s", params)
 
-        self._set_months_and_dates(params)
+        params["max_month"] = fields.Date.today().strftime("%Y%m")
 
         sql = """
         INSERT INTO product_valuation
-                (product_id, valuation_area_id, account_id, company_id,
+                (product_id, valuation_area_id, account_id, company_id, currency_id,
                 quantity,  amount, price)
-           SELECT product_id, valuation_area_id, account_id, company_id,
+           SELECT product_id, valuation_area_id, account_id, company_id, currency_id,
                          quantity_final as quantity, amount_final as amount,
                          CASE WHEN quantity_final != 0 THEN amount_final / quantity_final ELSE 0 END as price
             FROM product_valuation_history as pv
@@ -578,8 +587,8 @@ class ProductValuationHistory(models.Model):
                         LEFT JOIN account_move as m ON l.move_id=m.id
                         LEFT JOIN product_product product ON product.id = l.product_id
                         LEFT JOIN product_template template ON template.id = product.product_tmpl_id
-                        INNER JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
-                        INNER JOIN uom_uom uom_template ON uom_template.id = template.uom_id
+                        LEFT JOIN uom_uom uom_line ON uom_line.id = COALESCE(l.product_uom_id, template.uom_id)
+                        LEFT JOIN uom_uom uom_template ON uom_template.id = template.uom_id
                     WHERE
                         account_id in %(account_ids)s
                         AND m.state = 'posted'
@@ -658,7 +667,7 @@ class ProductValuationHistory(models.Model):
         self._invalidate_cache()
         self.with_context(skip_compute_final=True)._compute_final()
 
-    def _recompute_all_amount(self, commit=False):
+    def _recompute_all_amount(self, execute_step=None):
         """
         Recalculare completă a istoricului valorilor de stoc pe luni, bazată exclusiv pe notele contabile.
 
@@ -674,43 +683,24 @@ class ProductValuationHistory(models.Model):
            - `amount` = debit - credit (valoarea netă din notele contabile postate)
            - `debit`, `credit`, `quantity_in`, `quantity_out` = detalii mișcare
 
-        3. **Completare luni lipsă** (dacă `compute_all = True`):
-           Se generează o serie temporală completă (lună cu lună) între prima și ultima lună cu mișcări.
-           Pentru combinațiile produs/cont care nu au mișcări într-o lună, se inserează linii cu valori 0
-           (ON CONFLICT DO NOTHING), astfel încât istoricul să fie continuu.
+        3. **Completare luni lipsă**: Se generează o serie temporală completă (lună cu lună) între
+           prima și ultima lună cu mișcări. Pentru combinațiile produs/cont care nu au mișcări
+           într-o lună, se inserează linii cu valori 0 (ON CONFLICT DO NOTHING).
 
         4. **Calcul sold final pentru ultima lună** (din note contabile):
-           Se calculează soldul cumulat total (de la începuturi până la `max_month`) direct din
-           `account_move_line` (facturi/note contabile postate), folosind:
-           - `total_amount = SUM(debit - credit)` — valoarea contabilă cumulată
-           - `total_quantity` = cantitate convertită în UoM-ul produsului, cu semn:
-             - `-1` pentru `out_invoice` și `in_refund` (ieșiri din stoc)
-             - `+1` pentru celelalte tipuri de document (intrări în stoc)
-           Apoi:
-           - `amount_final = total_amount` (soldul final cumulat)
-           - `amount_initial = total_amount - amount` (soldul la începutul lunii)
-           - similar pentru `quantity_final` și `quantity_initial`
+           Se calculează soldul cumulat total direct din `account_move_line`.
 
-        5. **Propagare solduri pentru lunile anterioare** (dacă `compute_all = True`):
-           Folosind o fereastră SQL (`SUM ... OVER ... ORDER BY month DESC`), se calculează
-           soldurile cumulate descrescător pornind de la `max_month`, astfel încât fiecare lună
-           să primească `amount_final` și `quantity_final` corecte, iar `amount_initial` și
-           `quantity_initial` să fie soldul de la sfârșitul lunii precedente.
+        5. **Propagare solduri pentru lunile anterioare** folosind fereastră SQL.
 
-        6. **Ștergere linii goale**: Se elimină înregistrările fără nicio mișcare și fără sold
-           (toate câmpurile de cantitate și valoare sunt 0 sau NULL).
+        6. **Ștergere linii goale**: Se elimină înregistrările fără nicio mișcare și fără sold.
 
         :return: None
         """
-
-        # pylint: disable=invalid-commit
-
-        execute_step = [1, 2, 3, 4, 5, 6]  # 1,2,3,4,5,6
+        if execute_step is None:
+            execute_step = [1, 2, 3, 4, 5, 6]
         if not self.env.registry.ready:
             return
         self.env.company.set_stock_valuation_at_company_level()
-        if commit:
-            self.env.cr.commit()
         valuation_area = self.env.company.valuation_area_id
 
         params = {
@@ -732,14 +722,14 @@ class ProductValuationHistory(models.Model):
               AND m.state = 'posted'
               AND m.company_id = %(company_id)s
               AND l.product_id IS NOT NULL
-              AND (l.product_uom_id IS NULL OR t.uom_id IS NULL)
+              AND t.uom_id IS NULL
         """,
             params,
         )
         row = self.env.cr.dictfetchone()
         if row and row["cnt"]:
             _logger.warning(
-                "deltatech_stock_valuation: %d linii contabile excluse din evaluare (UoM lipsă), valoare totală: %s",
+                "deltatech_stock_valuation: %d linii contabile excluse din evaluare (UoM produs lipsă), valoare totală: %s",
                 row["cnt"],
                 row["valoare"] or 0,
             )
@@ -748,12 +738,12 @@ class ProductValuationHistory(models.Model):
             _logger.info("Stergere linii istoric")
             self.env.cr.execute(
                 """
-                DELETE FROM product_valuation_history WHERE valuation_area_id = %(valuation_area_id)s;
+                DELETE FROM product_valuation_history
+                WHERE company_id = %(company_id)s
+                  AND (valuation_area_id = %(valuation_area_id)s OR valuation_area_id IS NULL);
             """,
                 params,
             )
-            if commit:
-                self.env.cr.commit()
 
         if 2 in execute_step:
             _logger.info("Calculare linii istoric miscari lunare")
@@ -771,8 +761,16 @@ class ProductValuationHistory(models.Model):
                 inner=inner,
             )
             self.env.cr.execute(sql)
-            if commit:
-                self.env.cr.commit()
+            # move lines without explicit valuation_area_id are assigned to company area
+            self.env.cr.execute(
+                """
+                UPDATE product_valuation_history
+                SET valuation_area_id = %(valuation_area_id)s
+                WHERE valuation_area_id IS NULL
+                  AND company_id = %(company_id)s
+                """,
+                params,
+            )
 
         # optinere data minima si maxima
         self._set_months_and_dates(params)
@@ -831,8 +829,6 @@ class ProductValuationHistory(models.Model):
             )
             _logger.info("Liniile lipsa au fost adaugate")
 
-            if commit:
-                self.env.cr.commit()
         if 4 in execute_step:
             _logger.info("Calculare sold initial si final pentru ultima luna din note contabile")
             self.env.cr.execute(
@@ -845,7 +841,7 @@ class ProductValuationHistory(models.Model):
                         quantity_final = aml.total_quantity
                     FROM (
                         SELECT l.product_id,
-                               l.valuation_area_id,
+                               COALESCE(l.valuation_area_id, %(valuation_area_id)s) AS valuation_area_id,
                                l.account_id,
                                m.company_id,
                                SUM(l.debit - l.credit) AS total_amount,
@@ -857,12 +853,12 @@ class ProductValuationHistory(models.Model):
                             LEFT JOIN account_move m ON l.move_id = m.id
                             LEFT JOIN product_product product ON product.id = l.product_id
                             LEFT JOIN product_template template ON template.id = product.product_tmpl_id
-                            INNER JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
-                            INNER JOIN uom_uom uom_template ON uom_template.id = template.uom_id
+                            LEFT JOIN uom_uom uom_line ON uom_line.id = COALESCE(l.product_uom_id, template.uom_id)
+                            LEFT JOIN uom_uom uom_template ON uom_template.id = template.uom_id
                         WHERE l.account_id IN %(account_ids)s
                             AND m.state = 'posted'
                             AND l.product_id IS NOT NULL
-                        GROUP BY l.product_id, l.valuation_area_id, l.account_id, m.company_id
+                        GROUP BY l.product_id, COALESCE(l.valuation_area_id, %(valuation_area_id)s), l.account_id, m.company_id
                     ) AS aml
                     WHERE pv.product_id = aml.product_id
                         AND pv.valuation_area_id = aml.valuation_area_id
@@ -872,59 +868,28 @@ class ProductValuationHistory(models.Model):
                 """,
                 params,
             )
-            if commit:
-                self.env.cr.commit()
 
         if 5 in execute_step:
             _logger.info("Calculare sold initial si final")
             self.env.cr.execute(
                 """
-                WITH final_values AS (
-                SELECT
-                        pvh.product_id,
-                        pvh.valuation_area_id,
-                        pvh.account_id,
-                        pvh.company_id,
-                        pvh.month,
-                        pvh_last.amount_final - SUM(pvh.amount)
-                            OVER (  PARTITION BY  pvh.product_id, pvh.valuation_area_id, pvh.account_id, pvh.company_id
-                            ORDER BY pvh.month desc) AS cumulative_amount,
-                        pvh_last.quantity_final - SUM(pvh.quantity)
-                            OVER (PARTITION BY pvh.product_id, pvh.valuation_area_id, pvh.account_id, pvh.company_id
-                            ORDER BY pvh.month desc) AS cumulative_quantity
-
-                    FROM
-                        product_valuation_history as pvh
-                        JOIN product_valuation_history as pvh_last on
-                            pvh.product_id = pvh_last.product_id and
-                            pvh.valuation_area_id = pvh_last.valuation_area_id AND
-                            pvh.account_id = pvh_last.account_id AND
-                            pvh.company_id = pvh_last.company_id AND
-                            pvh_last.month = %(max_month)s
-                )
-                UPDATE product_valuation_history pv
-                SET
-                    amount_initial = fv.cumulative_amount,
-                    quantity_initial = fv.cumulative_quantity,
-                    amount_final = fv.cumulative_amount + pv.amount,
-                    quantity_final = fv.cumulative_quantity + pv.quantity
-                FROM final_values fv
-                WHERE
-                    pv.product_id = fv.product_id AND
-                    pv.valuation_area_id = fv.valuation_area_id AND
-                    pv.account_id = fv.account_id AND
-                    pv.company_id = fv.company_id AND
-                    pv.month = fv.month AND
-                    pv.month < %(max_month)s
-
+                SELECT DISTINCT product_id
+                FROM product_valuation_history
+                WHERE valuation_area_id = %(valuation_area_id)s
+                  AND company_id = %(company_id)s
+                ORDER BY product_id
                 """,
                 params,
             )
-            if commit:
-                self.env.cr.commit()
+            all_product_ids = [row[0] for row in self.env.cr.fetchall()]
+            total = len(all_product_ids)
+            for batch_start in range(0, total, _STEP5_SQL_BATCH):
+                batch = tuple(all_product_ids[batch_start : batch_start + _STEP5_SQL_BATCH])
+                self._execute_step5_sql(params, batch)
+                if (batch_start // _STEP5_SQL_BATCH + 1) % 10 == 0:
+                    _logger.info("Step 5: %d/%d produse procesate", batch_start + _STEP5_SQL_BATCH, total)
 
         _logger.info("FINALIZARE CALCULARE ISTORIC VALORI")
-        #
 
         if 6 in execute_step:
             _logger.info("Sterge linii goale ")
@@ -941,10 +906,120 @@ class ProductValuationHistory(models.Model):
                 """,
                 params,
             )
-            if commit:
-                self.env.cr.commit()
 
         _logger.info("Calculare sold initial si final varianta Python")
-        # # domain = [("valuation_area_id", "=", valuation_area.id), ("month", "=", res["max_month"])]
-        # # valuations = self.search(domain)
-        # # valuations._compute_initial()
+
+    def _execute_step5_sql(self, params, batch):
+        self.env.cr.execute(
+            """
+            WITH cumsum AS (
+                SELECT
+                    id,
+                    SUM(amount) OVER (
+                        PARTITION BY product_id, valuation_area_id, account_id, company_id
+                        ORDER BY month ASC
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                    ) AS amount_final,
+                    SUM(quantity) OVER (
+                        PARTITION BY product_id, valuation_area_id, account_id, company_id
+                        ORDER BY month ASC
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                    ) AS quantity_final
+                FROM product_valuation_history
+                WHERE valuation_area_id = %(valuation_area_id)s
+                  AND company_id = %(company_id)s
+                  AND product_id IN %(batch)s
+                  AND month <= %(max_month)s
+            )
+            UPDATE product_valuation_history pv
+            SET amount_initial   = cs.amount_final - pv.amount,
+                quantity_initial = cs.quantity_final - pv.quantity,
+                amount_final     = CASE WHEN pv.month < %(max_month)s
+                                       THEN cs.amount_final
+                                       ELSE pv.amount_final END,
+                quantity_final   = CASE WHEN pv.month < %(max_month)s
+                                       THEN cs.quantity_final
+                                       ELSE pv.quantity_final END
+            FROM cumsum cs
+            WHERE pv.id = cs.id
+            """,
+            {**params, "batch": batch},
+        )
+
+    def _recompute_step5_batch(self, product_id_start=0, click_batch_size=_STEP5_CLICK_BATCH):
+        """Process step 5 for next click_batch_size products starting after product_id_start.
+        Returns last processed product_id if more remain, None if all done."""
+        self.env.company.set_stock_valuation_at_company_level()
+        valuation_area = self.env.company.valuation_area_id
+        params = {
+            "valuation_area_id": valuation_area.id,
+            "company_id": self.env.company.id,
+        }
+        self._set_months_and_dates(params)
+        today_month_date = datetime.today().replace(day=1)
+        if params["max_date"] < today_month_date:
+            params["max_date"] = today_month_date
+            params["max_month"] = today_month_date.strftime("%Y%m")
+
+        self.env.cr.execute(
+            """
+            SELECT DISTINCT product_id
+            FROM product_valuation_history
+            WHERE valuation_area_id = %(valuation_area_id)s
+              AND company_id = %(company_id)s
+              AND product_id > %(product_id_start)s
+            ORDER BY product_id
+            LIMIT %(click_batch_size)s
+            """,
+            {**params, "product_id_start": product_id_start, "click_batch_size": click_batch_size},
+        )
+        product_ids = [row[0] for row in self.env.cr.fetchall()]
+        if not product_ids:
+            return None
+
+        for i in range(0, len(product_ids), _STEP5_SQL_BATCH):
+            batch = tuple(product_ids[i : i + _STEP5_SQL_BATCH])
+            self._execute_step5_sql(params, batch)
+
+        last_pid = product_ids[-1]
+        self.env.cr.execute(
+            """
+            SELECT EXISTS(
+                SELECT 1 FROM product_valuation_history
+                WHERE valuation_area_id = %(valuation_area_id)s
+                  AND company_id = %(company_id)s
+                  AND product_id > %(last_pid)s
+                LIMIT 1
+            )
+            """,
+            {**params, "last_pid": last_pid},
+        )
+        has_more = self.env.cr.fetchone()[0]
+        return last_pid if has_more else None
+
+    def _auto_refresh_step(self):
+        """Called by scheduled action to auto-advance refresh steps one sub-step at a time."""
+        ICP = self.env["ir.config_parameter"].sudo()
+        step = int(ICP.get_param(_PARAM_STEP, "1"))
+
+        if step in (1, 2, 3, 4, 6):
+            self._recompute_all_amount(execute_step=[step])
+            ICP.set_param(_PARAM_STEP, str(step + 1))
+        elif step == 5:
+            last_pid = int(ICP.get_param(_PARAM_STEP5_LAST_PID, "0"))
+            next_pid = self._recompute_step5_batch(product_id_start=last_pid)
+            if next_pid is not None:
+                ICP.set_param(_PARAM_STEP5_LAST_PID, str(next_pid))
+            else:
+                ICP.set_param(_PARAM_STEP5_LAST_PID, "0")
+                ICP.set_param(_PARAM_STEP, "6")
+        elif step == 7:
+            self.env["product.valuation"]._recompute_all_amount()
+            ICP.set_param(_PARAM_STEP, "1")
+            cron = self.env.ref(
+                "deltatech_stock_valuation.ir_cron_auto_refresh_valuation",
+                raise_if_not_found=False,
+            )
+            if cron:
+                cron.sudo().active = False
+            _logger.info("Auto refresh valuation cycle complete. Cron deactivated.")

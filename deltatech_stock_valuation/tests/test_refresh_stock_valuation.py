@@ -138,8 +138,10 @@ class TestRefreshStockValuation(AccountTestInvoicingCommon):
             ]
         ).unlink()
 
-        # Execute refresh; history will be rebuilt from posted move lines
-        self._new_settings().refresh_stock_valuation()
+        # Execute all 7 steps (step-by-step refresh)
+        settings = self._new_settings()
+        for _ in range(7):
+            settings.refresh_stock_valuation()
 
         pv = PV.search(
             [
