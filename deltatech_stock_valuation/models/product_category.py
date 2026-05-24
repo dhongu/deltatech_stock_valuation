@@ -22,8 +22,8 @@ class ProductCategory(models.Model):
             if categ.use_valuation_area_price and categ.property_cost_method == "fifo":
                 raise ValidationError(
                     self.env._(
-                        "Category '%s': Use Valuation Area Price is not compatible "
+                        "Category '%(name)s': Use Valuation Area Price is not compatible "
                         "with FIFO costing method. Please use AVCO.",
-                        categ.name,
+                        name=categ.name,
                     )
                 )
