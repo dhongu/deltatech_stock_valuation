@@ -783,15 +783,19 @@ class ProductValuationHistory(models.Model):
 
         if 3 in execute_step:
             _logger.info("Adaugare linii lipsa")
+            self.env.cr.execute("DROP TABLE IF EXISTS calendar_temporal")
             self.env.cr.execute(
                 """
-                DROP TABLE IF EXISTS calendar_temporal;
                 CREATE TEMP TABLE calendar_temporal AS
                 SELECT
                      to_char(generate_series, 'YYYYMM') AS month
                 FROM
-                    generate_series(%(min_date)s::date, %(max_date)s::date, '1 month'::interval) ;
-
+                    generate_series(%(min_date)s::date, %(max_date)s::date, '1 month'::interval)
+                """,
+                params,
+            )
+            self.env.cr.execute(
+                """
                 INSERT INTO product_valuation_history
                 (
                     product_id, valuation_area_id, account_id, company_id, currency_id,  month,
@@ -817,13 +821,10 @@ class ProductValuationHistory(models.Model):
                     0 as debit,
                     0 as credit
 
-
                 FROM
                     calendar_temporal c
                 CROSS JOIN (SELECT DISTINCT product_id, account_id FROM product_valuation_history) pa
                 ON CONFLICT (product_id, valuation_area_id, account_id, company_id, month) DO NOTHING
-
-
                 """,
                 params,
             )
