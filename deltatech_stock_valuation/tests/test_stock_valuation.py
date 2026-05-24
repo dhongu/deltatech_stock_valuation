@@ -41,6 +41,19 @@ class TestStockValuation(AccountTestInvoicingCommon):
 
         cls.env.company.set_stock_valuation_at_company_level()
 
+        country_ro = cls.env.ref("base.ro", raise_if_not_found=False)
+        if country_ro:
+            state_ro = cls.env["res.country.state"].search([("country_id", "=", country_ro.id)], limit=1)
+            for partner in [cls.partner_a, cls.partner_b, cls.env.company.partner_id]:
+                partner.write(
+                    {
+                        "country_id": country_ro.id,
+                        "state_id": state_ro.id if state_ro else False,
+                        "city": partner.city or "Bucuresti",
+                        "street": partner.street or "Str. Test 1",
+                    }
+                )
+
     def test_account_move(self):
         """
         Verifică procesarea mai multor tipuri de mișcări contabile.
