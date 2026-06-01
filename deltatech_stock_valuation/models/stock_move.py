@@ -29,26 +29,27 @@ class StockMove(models.Model):
         if not valuation_area:
             return super()._get_price_unit()
 
-        _, _, _, account = self._get_accounting_data_for_valuation()
+        # _get_accounting_data_for_valuation returns account ids (integers), not records.
+        _, _, _, account_id = self._get_accounting_data_for_valuation()
 
-        if not account:
-            return super()._get_price_unit()
-
-        if not account:
+        if not account_id:
             return super()._get_price_unit()
 
         valuation = self.env["product.valuation"].search(
             [
                 ("product_id", "=", self.product_id.id),
                 ("valuation_area_id", "=", valuation_area.id),
-                ("account_id", "=", account.id),
+                ("account_id", "=", account_id),
                 ("company_id", "=", self.company_id.id),
             ],
             limit=1,
         )
 
         if valuation and valuation.price:
-            return valuation.price
+            # In Odoo 18 _get_price_unit returns a price per stock.lot, not a scalar.
+            if self.product_id.lot_valuated:
+                return dict.fromkeys(self.lot_ids, valuation.price)
+            return {self.env["stock.lot"]: valuation.price}
 
         _logger.warning(
             "deltatech_stock_valuation: nu există evaluare pentru produsul %s "

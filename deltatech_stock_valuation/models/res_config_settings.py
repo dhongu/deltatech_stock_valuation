@@ -6,17 +6,17 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-from .product_valuation import _PARAM_STEP, _PARAM_STEP5_LAST_PID
+from .product_valuation import (
+    _PARAM_LAST_DURATION,
+    _PARAM_LAST_RUN,
+    _PARAM_LAST_STEP,
+    _PARAM_NOTIFY_UID,
+    _PARAM_STEP,
+    _PARAM_STEP5_LAST_PID,
+    STEP_LABELS,
+)
 
-STEP_LABELS = {
-    1: "Step 1/7: Delete history",
-    2: "Step 2/7: Compute monthly movements",
-    3: "Step 3/7: Fill missing months",
-    4: "Step 4/7: Compute final balance for current month",
-    5: "Step 5/7: Propagate balances to previous months",
-    6: "Step 6/7: Delete empty rows",
-    7: "Step 7/7: Recompute current product valuation",
-}
+_CRON_XMLID = "deltatech_stock_valuation.ir_cron_auto_refresh_valuation"
 
 
 class ResConfigSettings(models.TransientModel):
@@ -29,6 +29,14 @@ class ResConfigSettings(models.TransientModel):
         string="Next Refresh Step",
         compute="_compute_refresh_valuation_step_info",
     )
+    is_refresh_running = fields.Boolean(
+        string="Background Refresh Running",
+        compute="_compute_refresh_valuation_step_info",
+    )
+    refresh_valuation_progress_info = fields.Char(
+        string="Last Refresh Progress",
+        compute="_compute_refresh_valuation_step_info",
+    )
 
     @api.depends("valuation_area_level")
     def _compute_refresh_valuation_step_info(self):
@@ -39,8 +47,27 @@ class ResConfigSettings(models.TransientModel):
             last_pid = int(ICP.get_param(_PARAM_STEP5_LAST_PID, "0"))
             if last_pid:
                 label = f"{label} (from product {last_pid})"
+
+        cron = self.env.ref(_CRON_XMLID, raise_if_not_found=False)
+        running = bool(cron and cron.sudo().active)
+
+        last_step = ICP.get_param(_PARAM_LAST_STEP)
+        last_run = ICP.get_param(_PARAM_LAST_RUN)
+        last_duration = ICP.get_param(_PARAM_LAST_DURATION)
+        if last_step and last_run:
+            progress = _(
+                "Last: %(label)s at %(when)s (%(s)ss)",
+                label=STEP_LABELS.get(int(last_step), ""),
+                when=last_run,
+                s=last_duration or "?",
+            )
+        else:
+            progress = _("No background refresh has run yet.")
+
         for rec in self:
             rec.refresh_valuation_step_info = label
+            rec.is_refresh_running = running
+            rec.refresh_valuation_progress_info = progress
 
     def set_values(self):
         res = super().set_values()
@@ -131,40 +158,68 @@ class ResConfigSettings(models.TransientModel):
             raise UserError(_("Only System Administrator can do this action!"))
         self.env["product.valuation"]._recompute_all_amount()
 
+    def action_recompute_in_background(self):
+        """Single-click background recompute: restart the cycle at step 1 and let the
+        cron run all 7 steps automatically. The cron keeps track of the current step
+        and notifies the initiating user after each step."""
+        if self.valuation_area_level != "company":
+            return
+        self._check_refresh_access()
+
+        cron = self.env.ref(_CRON_XMLID, raise_if_not_found=False)
+        # Guard against a double start: if a run is already in progress, do nothing
+        # so the user cannot restart the cycle mid-way by clicking again.
+        if cron and cron.sudo().active:
+            return self._notification(
+                _("Background Recompute"),
+                _("A background recompute is already running."),
+                "warning",
+            )
+
+        ICP = self.env["ir.config_parameter"].sudo()
+        # Restart a clean cycle and remember who should be notified.
+        ICP.set_param(_PARAM_STEP, "1")
+        ICP.set_param(_PARAM_STEP5_LAST_PID, "0")
+        ICP.set_param(_PARAM_NOTIFY_UID, str(self.env.uid))
+
+        if cron:
+            # Activate and trigger promptly instead of waiting for the next schedule.
+            cron.sudo().write({"active": True, "nextcall": fields.Datetime.now()})
+            cron.sudo()._trigger()
+        # Reload the settings so the button immediately flips to "Stop" (the run is now
+        # active) and the user cannot press the start button again.
+        return {"type": "ir.actions.client", "tag": "reload"}
+
     def start_auto_refresh(self):
         self._check_refresh_access()
-        cron = self.env.ref(
-            "deltatech_stock_valuation.ir_cron_auto_refresh_valuation",
-            raise_if_not_found=False,
-        )
+        ICP = self.env["ir.config_parameter"].sudo()
+        ICP.set_param(_PARAM_NOTIFY_UID, str(self.env.uid))
+        cron = self.env.ref(_CRON_XMLID, raise_if_not_found=False)
         if cron:
             cron.sudo().active = True
-        return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": _("Auto Refresh"),
-                "message": _("Auto refresh started. It will run every 2 minutes until complete."),
-                "type": "success",
-                "sticky": False,
-            },
-        }
+            cron.sudo()._trigger()
+        return self._notification(
+            _("Auto Refresh"),
+            _("Auto refresh started. It will run every 2 minutes until complete."),
+            "success",
+        )
 
     def stop_auto_refresh(self):
         self._check_refresh_access()
-        cron = self.env.ref(
-            "deltatech_stock_valuation.ir_cron_auto_refresh_valuation",
-            raise_if_not_found=False,
-        )
+        cron = self.env.ref(_CRON_XMLID, raise_if_not_found=False)
         if cron:
             cron.sudo().active = False
+        # Reload so the "Stop" button flips back to "Recompute All (Background)".
+        return {"type": "ir.actions.client", "tag": "reload"}
+
+    def _notification(self, title, message, msg_type):
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
-                "title": _("Auto Refresh"),
-                "message": _("Auto refresh stopped."),
-                "type": "warning",
+                "title": title,
+                "message": message,
+                "type": msg_type,
                 "sticky": False,
             },
         }
