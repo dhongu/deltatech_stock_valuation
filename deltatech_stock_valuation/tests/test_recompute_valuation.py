@@ -118,3 +118,8 @@ class TestRecomputeValuation(AccountTestInvoicingCommon):
             limit=1,
         )
         self.assertTrue(pv, "product.valuation record should be created by _recompute_all_amount")
+        # The current valuation must come from the latest available history month
+        # (here 202501), not from the calendar current month — otherwise, when no
+        # movements exist in the current month, the valuation would be empty.
+        self.assertEqual(pv.quantity, h_latest.quantity_final)
+        self.assertEqual(pv.amount, h_latest.amount_final)

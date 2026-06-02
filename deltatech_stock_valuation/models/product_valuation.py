@@ -7,6 +7,8 @@ import logging
 import time
 from datetime import datetime
 
+from dateutil.relativedelta import relativedelta
+
 from odoo import _, api, fields, models
 from odoo.tools import SQL
 
@@ -20,6 +22,9 @@ _PARAM_LAST_DURATION = "deltatech_stock_valuation.refresh_last_duration"
 _PARAM_LAST_STEP = "deltatech_stock_valuation.refresh_last_step"
 _STEP5_CLICK_BATCH = 2000  # products per button click / cron run
 _STEP5_SQL_BATCH = 500  # products per SQL window function query
+# Safety bound: a single accounting move with a wrong date (e.g. year 1561) must not
+# make the monthly calendar span centuries and explode the history table.
+_MAX_HISTORY_YEARS = 20
 
 # Labels shown in the configuration while the background refresh advances.
 STEP_LABELS = {
@@ -305,6 +310,21 @@ class ProductValuation(models.Model):
             params["min_month"] = res.get("min_month")
             params["min_date"] = datetime.strptime(params["min_month"], "%Y%m")
             params["max_date"] = datetime.strptime(params["max_month"], "%Y%m")
+
+            # Guard against a wrong move date producing a calendar of centuries: clamp the
+            # lower bound so generate_series cannot blow up the history table.
+            floor = params["max_date"] - relativedelta(years=_MAX_HISTORY_YEARS)
+            if params["min_date"] < floor:
+                _logger.warning(
+                    "deltatech_stock_valuation: history start %s is more than %d years before %s "
+                    "(likely a wrong move date); clamping to %s.",
+                    params["min_month"],
+                    _MAX_HISTORY_YEARS,
+                    params["max_month"],
+                    floor.strftime("%Y%m"),
+                )
+                params["min_date"] = floor
+                params["min_month"] = floor.strftime("%Y%m")
         else:
             params["max_month"] = fields.Date.today().strftime("%Y%m")
             params["min_month"] = fields.Date.today().strftime("%Y%m")
@@ -339,7 +359,24 @@ class ProductValuation(models.Model):
         }
         self.env.cr.execute("DELETE FROM product_valuation WHERE account_id in %(account_ids)s", params)
 
-        params["max_month"] = fields.Date.today().strftime("%Y%m")
+        # Flush pending ORM writes so the raw SQL below reads up-to-date final balances
+        # (quantity_final / amount_final are stored computed fields).
+        self.env["product.valuation.history"].flush_model()
+
+        # The current valuation is the running balance of the latest recorded history
+        # month (which carries the cumulative quantity_final / amount_final forward).
+        # Use the max available month instead of the calendar current month: otherwise,
+        # on the first day of a new month with no movements yet, no row would match.
+        self.env.cr.execute(
+            """
+            SELECT max(month) FROM product_valuation_history
+            WHERE valuation_area_id = %(valuation_area_id)s
+              AND company_id = %(company_id)s
+            """,
+            params,
+        )
+        row = self.env.cr.fetchone()
+        params["max_month"] = (row and row[0]) or fields.Date.today().strftime("%Y%m")
 
         sql = """
         INSERT INTO product_valuation
