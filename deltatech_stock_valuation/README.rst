@@ -26,8 +26,6 @@ Modul pentru calculul și urmărirea evaluării stocului de produse pe arie
 de evaluare și cont contabil, inspirat din conceptul SAP Material
 Valuation (MBEW & MBEWH).
 
-|img.png|
-
 Funcționalități principale
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -133,8 +131,6 @@ Dependențe
 
 - ``stock_account`` — evaluare stoc standard Odoo
 - ``deltatech_valuation_area`` — definirea ariilor de evaluare
-
-.. |https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_valuation/img.png| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_valuation/img.png
 
 .. IMPORTANT::
    This is an alpha version, the data model and design can change at any time without warning.
