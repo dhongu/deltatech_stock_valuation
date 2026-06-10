@@ -49,7 +49,10 @@ class StockMove(models.Model):
         for vals in vals_list:
             if not vals.get("product_id"):
                 continue
-            vals.setdefault("quantity", quantity)
+            # convenție: cantitate SEMNATĂ — pozitivă pe linia de debit (intrare),
+            # negativă pe linia de credit (ieșire); agregările din evaluare se bazează pe ea
+            signed_quantity = -quantity if vals.get("credit") else quantity
+            vals.setdefault("quantity", signed_quantity)
             vals.setdefault("product_uom_id", self.product_id.uom_id.id)
             if valuation_area:
                 vals["valuation_area_id"] = valuation_area.id
