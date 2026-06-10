@@ -34,9 +34,6 @@ class StockMove(models.Model):
         if not account:
             return super()._get_price_unit()
 
-        if not account:
-            return super()._get_price_unit()
-
         valuation = self.env["product.valuation"].search(
             [
                 ("product_id", "=", self.product_id.id),
