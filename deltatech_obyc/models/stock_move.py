@@ -168,8 +168,9 @@ class StockMove(models.Model):
         else:
             debit_acc = rule.acc_dest_id
             credit_acc = rule.acc_valuation_id
-        # cantitatea și UoM sunt necesare evaluării (deltatech_stock_valuation);
-        # aria de evaluare se completează prin compute-ul de pe account.move.line
+        # cantitatea (SEMNATĂ: negativă pe credit, pozitivă pe debit) și UoM sunt
+        # necesare evaluării (deltatech_stock_valuation); aria de evaluare se
+        # completează prin compute-ul de pe account.move.line
         quantity = self._get_valued_qty()
         return [
             {
@@ -178,7 +179,7 @@ class StockMove(models.Model):
                 "debit": 0,
                 "credit": self.value,
                 "product_id": self.product_id.id,
-                "quantity": quantity,
+                "quantity": -quantity,
                 "product_uom_id": self.product_id.uom_id.id,
             },
             {
