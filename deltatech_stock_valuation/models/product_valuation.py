@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 
 from odoo import api, fields, models
-from odoo.tools import SQL
+from odoo.tools import SQL, float_is_zero
 
 _logger = logging.getLogger(__name__)
 
@@ -41,13 +41,12 @@ class ProductValuation(models.Model):
         "res.company", string="Company", required=True, index=True, default=lambda self: self.env.company
     )
 
-    # _sql_constraints = [
-    #     (
-    #         "product_valuation_uniq",
-    #         "unique (product_id, valuation_area_id, account_id, company_id)",
-    #         "Product valuation must be unique",
-    #     )
-    # ]
+    # în Odoo 19 lista _sql_constraints e ignorată silențios — se folosește models.Constraint;
+    # atributul e suprascris în product.valuation.history (moștenire prototype) cu varianta pe lună
+    _combination_uniq = models.Constraint(
+        "UNIQUE (product_id, valuation_area_id, account_id, company_id)",
+        "Product valuation must be unique",
+    )
 
     def get_valuation(self, product_id, valuation_area_id, account_id, company_id=False):
         """
@@ -82,6 +81,53 @@ class ProductValuation(models.Model):
             )
         return valuation
 
+    @api.model
+    def _get_qty_epsilon(self):
+        """
+        Pragul sub care o cantitate e considerată reziduală (zero) la calculul prețului,
+        derivat din precizia zecimală globală „Product Unit of Measure".
+        În Odoo 19 `uom.uom.rounding` e câmp calculat (nestocat), deci nu poate fi
+        folosit direct în SQL.
+
+        :return: float, jumătate din pasul de rotunjire al cantităților
+        """
+        digits = self.env["decimal.precision"].precision_get("Product Unit of Measure")
+        return (10**-digits) / 2
+
+    @api.model
+    def _get_quantity_in_out_sql(self):
+        """
+        Returnează expresiile SQL (multiplicatori CASE) pentru clasificarea cantităților
+        în intrări/ieșiri, folosite de toate agregările (product.valuation,
+        product.valuation.history și soldul din pasul 4 al recalculării complete).
+
+        Convenții de semn (cantități în UoM-ul produsului, presupuse pozitive pe linie):
+        - intrare: in_invoice/in_receipt (+1), in_refund (-1); pe note de tip entry
+          multiplicatorul e SIGN(debit) — storno-ul RO (debit negativ) dă intrare negativă
+        - ieșire: out_invoice/out_receipt (+1), out_refund (-1); pe note de tip entry
+          multiplicatorul e SIGN(credit)
+        - cantitatea netă se calculează ca intrări - ieșiri
+
+        :return: tuple (in_case, out_case) de obiecte SQL cu multiplicatorii per linie
+        """
+        in_case = SQL(
+            """(CASE
+                    WHEN move_type IN ('in_invoice','in_receipt') THEN 1
+                    WHEN move_type = 'in_refund' THEN -1
+                    WHEN move_type IN ('out_invoice','out_refund','out_receipt') THEN 0
+                    ELSE SIGN(debit)
+                END)"""
+        )
+        out_case = SQL(
+            """(CASE
+                    WHEN move_type IN ('out_invoice','out_receipt') THEN 1
+                    WHEN move_type = 'out_refund' THEN -1
+                    WHEN move_type IN ('in_invoice','in_refund','in_receipt') THEN 0
+                    ELSE SIGN(credit)
+                END)"""
+        )
+        return in_case, out_case
+
     def _recompute_amount(self):
         """
         Recalculează valorile curente (quantity, amount, price) din `product.valuation`
@@ -105,9 +151,11 @@ class ProductValuation(models.Model):
             valuation = self.env["product.valuation.history"].search(domain, order="month desc", limit=1)
             if valuation:
                 price = item.price
-                if valuation.quantity_final:
+                # cantitățile reziduale (sub rotunjirea UoM) nu trebuie să producă prețuri aberante
+                rounding = item.product_id.uom_id.rounding or 0.01
+                if not float_is_zero(valuation.quantity_final, precision_rounding=rounding):
                     price = valuation.amount_final / valuation.quantity_final
-                elif valuation.quantity_in:
+                elif not float_is_zero(valuation.quantity_in, precision_rounding=rounding):
                     price = valuation.debit / valuation.quantity_in
 
                 item.write(
@@ -129,13 +177,24 @@ class ProductValuation(models.Model):
         Câmpurile actualizate:
         - `quantity` = cantitatea netă (intrări - ieșiri)
         - `amount` = debit - credit
-        - `price` = amount / quantity (0 dacă quantity = 0)
+        - `price` = amount / quantity (prețul anterior se păstrează dacă quantity e rezidual/zero)
 
         :return: None
         """
+        if not self:
+            return
         valuation_areas = self.mapped("valuation_area_id")
         products = self.mapped("product_id")
         accounts = self.mapped("account_id")
+
+        # zerorizare înainte de UPDATE (vezi comentariul din varianta de pe istoric);
+        # prețul se păstrează intenționat
+        self.env.cr.execute(
+            SQL(
+                "UPDATE product_valuation SET quantity = 0, amount = 0 WHERE id in %(ids)s",
+                ids=tuple(self.ids),
+            )
+        )
 
         inner = self._get_sql_select(
             account_ids=tuple(accounts.ids),
@@ -147,7 +206,9 @@ class ProductValuation(models.Model):
           UPDATE product_valuation AS pv
           SET quantity = sub.quantity,
                 amount = sub.debit - sub.credit,
-                price = CASE WHEN sub.quantity != 0 THEN (sub.debit - sub.credit) / sub.quantity ELSE 0 END
+                price = CASE WHEN abs(sub.quantity) >= %(qty_epsilon)s
+                             THEN (sub.debit - sub.credit) / sub.quantity
+                             ELSE pv.price END
             FROM (%(inner)s) as sub
             WHERE
                 pv.product_id = sub.product_id AND
@@ -156,8 +217,10 @@ class ProductValuation(models.Model):
                 pv.company_id = sub.company_id
         """,
             inner=inner,
+            qty_epsilon=self._get_qty_epsilon(),
         )
         self.env.cr.execute(sql)
+        self._invalidate_cache()
 
     def _get_sql_select(self, account_ids, product_ids=None, valuation_area_ids=None):
         """
@@ -176,43 +239,21 @@ class ProductValuation(models.Model):
         :return: obiect SQL compus
         """
         sub = self._get_sql_sub_select(account_ids, product_ids, valuation_area_ids)
+        in_case, out_case = self._get_quantity_in_out_sql()
         return SQL(
             """
         SELECT product_id, valuation_area_id, account_id, company_id,
                 sum(debit) as debit, sum(credit) as credit,
-                sum(
-                    quantity * (
-                    CASE
-                        WHEN move_type ='in_invoice' THEN 1
-                        WHEN move_type ='in_refund' THEN -1
-                        WHEN move_type IN ('out_invoice','out_refund') THEN 0
-                        ELSE
-                            CASE WHEN debit > 0 THEN 1 ELSE 0 END
-                    END
-                    )
-                ) as quantity_in,
-
-                sum(
-                    quantity * (
-                    CASE
-                        WHEN move_type ='out_invoice' THEN 1
-                        WHEN move_type ='out_refund' THEN -1
-                        WHEN move_type IN ('in_invoice','in_refund') THEN 0
-                        ELSE CASE WHEN credit > 0 THEN -1 ELSE 0 END
-                    END
-                    )
-                ) as quantity_out,
-
-                sum(
-                    quantity * (
-                    CASE WHEN move_type IN ('out_invoice','in_refund') THEN -1 ELSE 1 END
-                    )
-                ) as quantity
+                sum(quantity * %(in_case)s) as quantity_in,
+                sum(quantity * %(out_case)s) as quantity_out,
+                sum(quantity * (%(in_case)s - %(out_case)s)) as quantity
 
             FROM (%(sub)s) as sub
              GROUP BY  product_id, valuation_area_id, account_id, company_id
         """,
             sub=sub,
+            in_case=in_case,
+            out_case=out_case,
         )
 
     def _get_sql_sub_select(self, account_ids, product_ids=None, valuation_area_ids=None):
@@ -321,9 +362,15 @@ class ProductValuation(models.Model):
             "valuation_area_id": valuation_area.id,
             "company_id": self.env.company.id,
         }
-        self.env.cr.execute("DELETE FROM product_valuation WHERE account_id in %(account_ids)s", params)
+        # filtrul pe companie e esențial: conturile pot fi partajate între companii,
+        # iar refresh-ul unei companii nu trebuie să șteargă evaluările celorlalte
+        self.env.cr.execute(
+            "DELETE FROM product_valuation WHERE account_id in %(account_ids)s AND company_id = %(company_id)s",
+            params,
+        )
 
         params["max_month"] = fields.Date.today().strftime("%Y%m")
+        params["qty_epsilon"] = self._get_qty_epsilon()
 
         sql = """
         INSERT INTO product_valuation
@@ -331,7 +378,8 @@ class ProductValuation(models.Model):
                 quantity,  amount, price)
            SELECT product_id, valuation_area_id, account_id, company_id, currency_id,
                          quantity_final as quantity, amount_final as amount,
-                         CASE WHEN quantity_final != 0 THEN amount_final / quantity_final ELSE 0 END as price
+                         CASE WHEN abs(quantity_final) >= %(qty_epsilon)s
+                              THEN amount_final / quantity_final ELSE 0 END as price
             FROM product_valuation_history as pv
 
             WHERE month = %(max_month)s
@@ -362,13 +410,12 @@ class ProductValuationHistory(models.Model):
         "Final Quantity", digits="Product Unit of Measure", compute="_compute_final", store=True, default=0.0
     )
 
-    _sql_constraints = [
-        (
-            "product_valuation_history_uniq",
-            "unique (product_id, valuation_area_id, account_id, company_id, month)",
-            "Product valuation history must be unique",
-        )
-    ]
+    # suprascrie constrângerea moștenită din product.valuation cu varianta pe lună;
+    # ON CONFLICT din _recompute_all_amount (pasul 3) depinde de acest index unic
+    _combination_uniq = models.Constraint(
+        "UNIQUE (product_id, valuation_area_id, account_id, company_id, month)",
+        "Product valuation history must be unique",
+    )
 
     def get_valuation(self, product_id, valuation_area_id, account_id, date, company_id=False):
         """
@@ -466,6 +513,66 @@ class ProductValuationHistory(models.Model):
                     }
                 )
 
+    def _propagate_balances(self):
+        """
+        Recalculează soldurile inițiale/finale pentru TOATE lunile combinațiilor
+        (product, valuation_area, account, company) din recordset, printr-un singur
+        UPDATE SQL cu window function (sumă cumulată ordonată pe lună).
+
+        Înlocuiește cascada Python din `_compute_final` (un search + write per lună)
+        pe calea incrementală — esențial la corecții retroactive cu istoric lung.
+
+        Ancora: soldul inițial al primei luni din serie (0 după un refresh complet);
+        de la el, final(luna) = ancora + cumsum(mișcări) până la luna respectivă.
+
+        :return: None
+        """
+        combos = {
+            (item.product_id.id, item.valuation_area_id.id, item.account_id.id, item.company_id.id)
+            for item in self
+            if item.valuation_area_id
+        }
+        if not combos:
+            return
+        self.env.cr.execute(
+            SQL(
+                """
+                WITH base AS (
+                    SELECT DISTINCT ON (product_id, valuation_area_id, account_id, company_id)
+                           product_id, valuation_area_id, account_id, company_id,
+                           quantity_initial AS qty_base, amount_initial AS amt_base
+                    FROM product_valuation_history
+                    WHERE (product_id, valuation_area_id, account_id, company_id) IN %(combos)s
+                    ORDER BY product_id, valuation_area_id, account_id, company_id, month ASC
+                ),
+                cumsum AS (
+                    SELECT pvh.id,
+                           b.qty_base + SUM(pvh.quantity) OVER w AS quantity_final,
+                           b.amt_base + SUM(pvh.amount) OVER w AS amount_final
+                    FROM product_valuation_history pvh
+                    JOIN base b ON b.product_id = pvh.product_id
+                              AND b.valuation_area_id = pvh.valuation_area_id
+                              AND b.account_id = pvh.account_id
+                              AND b.company_id = pvh.company_id
+                    WINDOW w AS (
+                        PARTITION BY pvh.product_id, pvh.valuation_area_id, pvh.account_id, pvh.company_id
+                        ORDER BY pvh.month ASC
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                    )
+                )
+                UPDATE product_valuation_history pv
+                SET quantity_final   = cs.quantity_final,
+                    amount_final     = cs.amount_final,
+                    quantity_initial = cs.quantity_final - pv.quantity,
+                    amount_initial   = cs.amount_final - pv.amount
+                FROM cumsum cs
+                WHERE pv.id = cs.id
+                """,
+                combos=tuple(combos),
+            )
+        )
+        self._invalidate_cache()
+
     def _compute_initial(self):
         """
         Calculează soldurile inițiale ale lunii curente pornind de la soldurile finale,
@@ -521,43 +628,21 @@ class ProductValuationHistory(models.Model):
         :return: obiect SQL compus
         """
         sub = self._get_sql_sub_select(account_ids, product_ids, valuation_area_ids, months)
+        in_case, out_case = self._get_quantity_in_out_sql()
         return SQL(
             """
                     SELECT product_id, valuation_area_id, account_id, company_id, currency_id,   month,
                 sum(debit) as debit, sum(credit) as credit,
-                sum(
-                    quantity * (
-                    CASE
-                        WHEN move_type IN ('in_invoice','in_receipt') THEN 1
-                        WHEN move_type ='in_refund' THEN -1
-                        WHEN move_type IN ('out_invoice','out_refund') THEN 0
-                        ELSE
-                            CASE WHEN debit > 0 THEN 1 ELSE 0 END
-                    END
-                    )
-                ) as quantity_in,
-
-                sum(
-                    quantity * (
-                    CASE
-                        WHEN move_type in ('out_invoice','out_receipt') THEN 1
-                        WHEN move_type ='out_refund' THEN -1
-                        WHEN move_type IN ('in_invoice','in_refund') THEN 0
-                        ELSE CASE WHEN credit > 0 THEN -1 ELSE 0 END
-                    END
-                    )
-                ) as quantity_out,
-
-                sum(
-                    quantity * (
-                    CASE WHEN move_type IN ('out_invoice','in_refund') THEN -1 ELSE 1 END
-                    )
-                ) as quantity
+                sum(quantity * %(in_case)s) as quantity_in,
+                sum(quantity * %(out_case)s) as quantity_out,
+                sum(quantity * (%(in_case)s - %(out_case)s)) as quantity
 
             FROM (%(sub)s) as sub
              GROUP BY  product_id, valuation_area_id, account_id, company_id, currency_id,  month
         """,
             sub=sub,
+            in_case=in_case,
+            out_case=out_case,
         )
 
     def _get_sql_sub_select(self, account_ids, product_ids=None, valuation_area_ids=None, months=None):
@@ -633,9 +718,26 @@ class ProductValuationHistory(models.Model):
 
         :return: None
         """
+        if not self:
+            return
         valuation_areas = self.mapped("valuation_area_id")
         products = self.mapped("product_id")
         accounts = self.mapped("account_id")
+
+        # zerorizare înainte de UPDATE: dacă pentru o combinație nu mai există mișcări
+        # postate (ex. notă de-postată), sub-query-ul nu întoarce rânduri și valorile
+        # vechi ar rămâne altfel neschimbate
+        self.env.cr.execute(
+            SQL(
+                """
+                UPDATE product_valuation_history
+                SET quantity = 0, quantity_in = 0, quantity_out = 0,
+                    debit = 0, credit = 0, amount = 0
+                WHERE id in %(ids)s
+                """,
+                ids=tuple(self.ids),
+            )
+        )
 
         inner = self._get_sql_select(
             account_ids=tuple(accounts.ids),
@@ -665,7 +767,10 @@ class ProductValuationHistory(models.Model):
         self.env.cr.execute(sql)
         # invalidate cached fields
         self._invalidate_cache()
-        self.with_context(skip_compute_final=True)._compute_final()
+        # propagarea soldurilor pe toate lunile combinațiilor afectate, într-un singur
+        # UPDATE cu window function (cascada Python din _compute_final făcea un
+        # search + write per lună)
+        self._propagate_balances()
 
     def _recompute_all_amount(self, execute_step=None):
         """
@@ -832,7 +937,8 @@ class ProductValuationHistory(models.Model):
 
         if 4 in execute_step:
             _logger.info("Calculare sold initial si final pentru ultima luna din note contabile")
-            self.env.cr.execute(
+            in_case, out_case = self._get_quantity_in_out_sql()
+            sql_step4 = SQL(
                 """
                     UPDATE product_valuation_history pv
                     SET
@@ -848,7 +954,7 @@ class ProductValuationHistory(models.Model):
                                SUM(l.debit - l.credit) AS total_amount,
                                SUM(
                                    l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0)
-                                   * (CASE WHEN move_type IN ('out_invoice','in_refund') THEN -1 ELSE 1 END)
+                                   * (%(in_case)s - %(out_case)s)
                                ) AS total_quantity
                         FROM account_move_line l
                             LEFT JOIN account_move m ON l.move_id = m.id
@@ -867,8 +973,13 @@ class ProductValuationHistory(models.Model):
                         AND pv.company_id = aml.company_id
                         AND pv.month = %(max_month)s;
                 """,
-                params,
+                in_case=in_case,
+                out_case=out_case,
+                valuation_area_id=params["valuation_area_id"],
+                account_ids=params["account_ids"],
+                max_month=params["max_month"],
             )
+            self.env.cr.execute(sql_step4)
 
         if 5 in execute_step:
             _logger.info("Calculare sold initial si final")
