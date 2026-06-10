@@ -4,7 +4,10 @@
 
 
 import logging
+import time
 from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
 from odoo.tools import SQL, float_is_zero
@@ -13,8 +16,26 @@ _logger = logging.getLogger(__name__)
 
 _PARAM_STEP = "deltatech_stock_valuation.refresh_step"
 _PARAM_STEP5_LAST_PID = "deltatech_stock_valuation.step5_last_product_id"
+_PARAM_NOTIFY_UID = "deltatech_stock_valuation.refresh_notify_uid"
+_PARAM_LAST_RUN = "deltatech_stock_valuation.refresh_last_run"
+_PARAM_LAST_DURATION = "deltatech_stock_valuation.refresh_last_duration"
+_PARAM_LAST_STEP = "deltatech_stock_valuation.refresh_last_step"
 _STEP5_CLICK_BATCH = 2000  # products per button click / cron run
 _STEP5_SQL_BATCH = 500  # products per SQL window function query
+# Safety bound: a single accounting move with a wrong date (e.g. year 1561) must not
+# make the monthly calendar span centuries and explode the history table.
+_MAX_HISTORY_YEARS = 20
+
+# Labels shown in the configuration while the background refresh advances.
+STEP_LABELS = {
+    1: "Step 1/7: Delete history",
+    2: "Step 2/7: Compute monthly movements",
+    3: "Step 3/7: Fill missing months",
+    4: "Step 4/7: Compute final balance for current month",
+    5: "Step 5/7: Propagate balances to previous months",
+    6: "Step 6/7: Delete empty rows",
+    7: "Step 7/7: Recompute current product valuation",
+}
 
 
 # ca in SAP Material Valuation - MBEW & MBEWH
@@ -369,7 +390,24 @@ class ProductValuation(models.Model):
             params,
         )
 
-        params["max_month"] = fields.Date.today().strftime("%Y%m")
+        # Flush pending ORM writes so the raw SQL below reads up-to-date final balances
+        # (quantity_final / amount_final are stored computed fields).
+        self.env["product.valuation.history"].flush_model()
+
+        # The current valuation is the running balance of the latest recorded history
+        # month (which carries the cumulative quantity_final / amount_final forward).
+        # Use the max available month instead of the calendar current month: otherwise,
+        # on the first day of a new month with no movements yet, no row would match.
+        self.env.cr.execute(
+            """
+            SELECT max(month) FROM product_valuation_history
+            WHERE valuation_area_id = %(valuation_area_id)s
+              AND company_id = %(company_id)s
+            """,
+            params,
+        )
+        row = self.env.cr.fetchone()
+        params["max_month"] = (row and row[0]) or fields.Date.today().strftime("%Y%m")
         params["qty_epsilon"] = self._get_qty_epsilon()
 
         sql = """
@@ -886,6 +924,21 @@ class ProductValuationHistory(models.Model):
             params["max_date"] = today_month_date
             params["max_month"] = today_month_date.strftime("%Y%m")
 
+        # Guard against a wrong move date producing a calendar of centuries: clamp the
+        # lower bound so generate_series cannot blow up the history table.
+        floor = params["max_date"] - relativedelta(years=_MAX_HISTORY_YEARS)
+        if params["min_date"] < floor:
+            _logger.warning(
+                "deltatech_stock_valuation: history start %s is more than %d years before %s "
+                "(likely a wrong move date); clamping to %s.",
+                params["min_month"],
+                _MAX_HISTORY_YEARS,
+                params["max_month"],
+                floor.strftime("%Y%m"),
+            )
+            params["min_date"] = floor
+            params["min_month"] = floor.strftime("%Y%m")
+
         if 3 in execute_step:
             _logger.info("Adaugare linii lipsa")
             self.env.cr.execute("DROP TABLE IF EXISTS calendar_temporal")
@@ -1110,9 +1163,15 @@ class ProductValuationHistory(models.Model):
         return last_pid if has_more else None
 
     def _auto_refresh_step(self):
-        """Called by scheduled action to auto-advance refresh steps one sub-step at a time."""
+        """Called by the scheduled action to auto-advance the refresh steps one sub-step
+        at a time. The cron keeps the current step in `ir.config_parameter`, so it always
+        knows what is left to execute. Records timing and notifies the initiating user."""
         ICP = self.env["ir.config_parameter"].sudo()
         step = int(ICP.get_param(_PARAM_STEP, "1"))
+
+        start = fields.Datetime.now()
+        t0 = time.monotonic()
+        finished = False
 
         if step in (1, 2, 3, 4, 6):
             self._recompute_all_amount(execute_step=[step])
@@ -1134,4 +1193,40 @@ class ProductValuationHistory(models.Model):
             )
             if cron:
                 cron.sudo().active = False
+            finished = True
             _logger.info("Auto refresh valuation cycle complete. Cron deactivated.")
+
+        duration = round(time.monotonic() - t0, 2)
+        ICP.set_param(_PARAM_LAST_RUN, fields.Datetime.to_string(start))
+        ICP.set_param(_PARAM_LAST_DURATION, str(duration))
+        ICP.set_param(_PARAM_LAST_STEP, str(step))
+
+        label = STEP_LABELS.get(step, "")
+        if finished:
+            self._notify_refresh(self.env._("Stock valuation refresh complete (%(s)ss).", s=duration), "success")
+            ICP.set_param(_PARAM_NOTIFY_UID, "")
+        else:
+            self._notify_refresh(self.env._("%(label)s done in %(s)ss.", label=label, s=duration), "info")
+
+    def _notify_refresh(self, message, msg_type="info"):
+        """Best-effort toast notification to the user who started the background refresh."""
+        ICP = self.env["ir.config_parameter"].sudo()
+        uid = ICP.get_param(_PARAM_NOTIFY_UID)
+        if not uid:
+            return
+        user = self.env["res.users"].browse(int(uid)).exists()
+        if not user:
+            return
+        try:
+            self.env["bus.bus"]._sendone(
+                user.partner_id,
+                "simple_notification",
+                {
+                    "type": msg_type,
+                    "title": self.env._("Stock Valuation Refresh"),
+                    "message": message,
+                    "sticky": False,
+                },
+            )
+        except Exception:  # pragma: no cover - notification must never break the cron
+            _logger.exception("Could not send stock valuation refresh notification")

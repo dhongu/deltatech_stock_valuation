@@ -32,16 +32,25 @@ class StockMove(models.Model):
             raise UserError(self.env._("Valuation area is not defined"))
         return valuation_area
 
-    def _prepare_account_move_line(self, qty, cost, credit_account_id, debit_account_id, svl_id, description):
+    def _get_account_move_line_vals(self):
         """
-        Inject the valuation area into the account move line values.
+        Inject the valuation area, quantity and UoM into the account move line values.
+
+        Nota: în Odoo 19 hook-ul core este `_get_account_move_line_vals` (vechiul
+        `_prepare_account_move_line` nu mai există), iar liniile generate de core nu
+        poartă cantitate/UoM — fără ele evaluarea ar pierde cantitățile pe notele
+        de stoc.
         """
-        res = super()._prepare_account_move_line(qty, cost, credit_account_id, debit_account_id, svl_id, description)
-        if not self.company_id.use_valuation_area:
-            return res
-        valuation_area = self._get_valuation_area()
-        for line in res:
-            product_id = line[2].get("product_id")
-            if product_id:
-                line[2].update({"valuation_area_id": valuation_area.id})
-        return res
+        vals_list = super()._get_account_move_line_vals()
+        quantity = self._get_valued_qty()
+        valuation_area = (
+            self._get_valuation_area(raise_if_not_found=False) if self.company_id.use_valuation_area else False
+        )
+        for vals in vals_list:
+            if not vals.get("product_id"):
+                continue
+            vals.setdefault("quantity", quantity)
+            vals.setdefault("product_uom_id", self.product_id.uom_id.id)
+            if valuation_area:
+                vals["valuation_area_id"] = valuation_area.id
+        return vals_list
