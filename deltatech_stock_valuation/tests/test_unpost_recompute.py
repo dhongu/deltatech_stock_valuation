@@ -40,6 +40,8 @@ class TestUnpostRecompute(AccountTestInvoicingCommon):
         cls.product.is_storable = True
 
     def _create_entry(self, debit=0.0, credit=0.0, quantity=0.0, date=None):
+        # convenția semnată: cantitate pozitivă pe linia de debit, negativă pe credit
+        signed_quantity = quantity if debit else -quantity
         return self.env["account.move"].create(
             {
                 "journal_id": self.journal.id,
@@ -55,7 +57,7 @@ class TestUnpostRecompute(AccountTestInvoicingCommon):
                             "credit": credit,
                             "product_id": self.product.id,
                             "product_uom_id": self.product.uom_id.id,
-                            "quantity": quantity,
+                            "quantity": signed_quantity,
                         },
                     ),
                     (

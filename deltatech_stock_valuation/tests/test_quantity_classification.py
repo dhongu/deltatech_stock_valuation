@@ -44,7 +44,9 @@ class TestQuantityClassification(AccountTestInvoicingCommon):
     def _post_entry(self, debit=0.0, credit=0.0, quantity=0.0):
         """Postează o notă contabilă de tip entry cu o linie pe contul de stoc
         (cu produs și cantitate) și contrapartidă fără produs. Suportă valori
-        negative pe debit/credit (storno)."""
+        negative pe debit/credit (storno). Cantitatea respectă convenția semnată:
+        pozitivă pe linia de debit, negativă pe linia de credit."""
+        signed_quantity = quantity if debit else -quantity
         move = self.env["account.move"].create(
             {
                 "journal_id": self.journal.id,
@@ -59,7 +61,7 @@ class TestQuantityClassification(AccountTestInvoicingCommon):
                             "credit": credit,
                             "product_id": self.product.id,
                             "product_uom_id": self.product.uom_id.id,
-                            "quantity": quantity,
+                            "quantity": signed_quantity,
                         },
                     ),
                     (

@@ -47,6 +47,15 @@ raportare pe centre de cost/depozite.
 
 > **Notă Odoo 19:** Modelul `stock.valuation.layer` a fost eliminat în Odoo 19. Evaluarea stocului standard se bazează acum direct pe `stock.move`. Modulul `deltatech_stock_valuation` rămâne independent de această schimbare, deoarece folosește `account.move.line` ca sursă de adevăr.
 
+### Convenția de cantitate pe notele contabile
+
+Pe liniile notelor de tip `entry` (note de stoc), cantitatea este **semnată**:
+pozitivă pe linia de debit (intrare), negativă pe linia de credit (ieșire).
+Convenția este cea folosită istoric de notele generate de Odoo/OCA (validată pe
+baze de client) și este respectată automat de liniile generate de
+`deltatech_valuation_area`/`deltatech_obyc`. La înregistrarea manuală a notelor
+de stoc, introduceți cantitatea cu semn.
+
 ### Limitări
 
 > ⚠️ **Limitare:** Modulul suportă exclusiv metoda de evaluare **AVCO (cost mediu ponderat)**. Nu este compatibil cu produsele configurate cu metoda **FIFO**. Utilizarea cu produse FIFO va produce rezultate incorecte.
