@@ -122,12 +122,17 @@ class ProductValuation(models.Model):
         în intrări/ieșiri, folosite de toate agregările (product.valuation,
         product.valuation.history și soldul din pasul 4 al recalculării complete).
 
-        Convenții de semn (cantități în UoM-ul produsului, presupuse pozitive pe linie):
-        - intrare: in_invoice/in_receipt (+1), in_refund (-1); pe note de tip entry
-          multiplicatorul e SIGN(debit) — storno-ul RO (debit negativ) dă intrare negativă
-        - ieșire: out_invoice/out_receipt (+1), out_refund (-1); pe note de tip entry
-          multiplicatorul e SIGN(credit)
-        - cantitatea netă se calculează ca intrări - ieșiri
+        Convenția canonică pe note de tip `entry` (validată pe baze de client 16/18):
+        cantitatea de pe linie e SEMNATĂ — pozitivă la intrare (linia de debit),
+        negativă la ieșire (linia de credit). Multiplicatorii de mai jos convertesc
+        cantitatea semnată în intrări/ieșiri pozitive:
+        - intrare: debit > 0 → +1 (qty pozitiv = intrare); storno (debit < 0) → -1;
+          liniile valoric-zero cu cantitate (mișcări la cost 0) sunt intrări semnate
+        - ieșire: credit > 0 → -1 (qty negativ devine ieșire pozitivă);
+          storno pe credit (credit < 0) → +1
+        - facturile (in_/out_invoice/refund/receipt) au cantitate pozitivă,
+          multiplicatorii rămân pe move_type
+        - cantitatea netă = intrări - ieșiri (== cantitatea semnată, pe note entry)
 
         :return: tuple (in_case, out_case) de obiecte SQL cu multiplicatorii per linie
         """
@@ -136,7 +141,10 @@ class ProductValuation(models.Model):
                     WHEN move_type IN ('in_invoice','in_receipt') THEN 1
                     WHEN move_type = 'in_refund' THEN -1
                     WHEN move_type IN ('out_invoice','out_refund','out_receipt') THEN 0
-                    ELSE SIGN(debit)
+                    ELSE CASE WHEN debit > 0 THEN 1
+                              WHEN debit < 0 THEN -1
+                              WHEN credit = 0 THEN 1
+                              ELSE 0 END
                 END)"""
         )
         out_case = SQL(
@@ -144,7 +152,9 @@ class ProductValuation(models.Model):
                     WHEN move_type IN ('out_invoice','out_receipt') THEN 1
                     WHEN move_type = 'out_refund' THEN -1
                     WHEN move_type IN ('in_invoice','in_refund','in_receipt') THEN 0
-                    ELSE SIGN(credit)
+                    ELSE CASE WHEN credit > 0 THEN -1
+                              WHEN credit < 0 THEN 1
+                              ELSE 0 END
                 END)"""
         )
         return in_case, out_case
