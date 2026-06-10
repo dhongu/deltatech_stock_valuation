@@ -1,6 +1,6 @@
 import logging
 
-from odoo import models
+from odoo import Command, fields, models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
@@ -156,39 +156,119 @@ class StockMove(models.Model):
             should = True
         return should
 
+    def _is_storno_return(self):
+        """Retururile se înregistrează în roșu (storno) când compania are activată
+        contabilitatea storno: aceleași conturi ca tranzacția originală, sume negative."""
+        self.ensure_one()
+        return bool(self.company_id.account_storno and self.origin_returned_move_id)
+
     def _get_account_move_line_vals(self):
         if not self.product_id.valuation_class_id:
-            return super()._get_account_move_line_vals()
-
-        rule = self._get_rule_account()
-
-        if rule.acc_src_id:
-            debit_acc = rule.acc_valuation_id
-            credit_acc = rule.acc_src_id
+            vals_list = super()._get_account_move_line_vals()
         else:
-            debit_acc = rule.acc_dest_id
-            credit_acc = rule.acc_valuation_id
-        # cantitatea (SEMNATĂ: negativă pe credit, pozitivă pe debit) și UoM sunt
-        # necesare evaluării (deltatech_stock_valuation); aria de evaluare se
-        # completează prin compute-ul de pe account.move.line
-        quantity = self._get_valued_qty()
-        return [
+            rule = self._get_rule_account()
+
+            if rule.acc_src_id:
+                debit_acc = rule.acc_valuation_id
+                credit_acc = rule.acc_src_id
+            else:
+                debit_acc = rule.acc_dest_id
+                credit_acc = rule.acc_valuation_id
+            # cantitatea (SEMNATĂ: negativă pe credit, pozitivă pe debit) și UoM sunt
+            # necesare evaluării (deltatech_stock_valuation); aria de evaluare se
+            # completează prin compute-ul de pe account.move.line
+            quantity = self._get_valued_qty()
+            vals_list = [
+                {
+                    "account_id": credit_acc.id,
+                    "name": self.reference,
+                    "debit": 0,
+                    "credit": self.value,
+                    "product_id": self.product_id.id,
+                    "quantity": -quantity,
+                    "product_uom_id": self.product_id.uom_id.id,
+                },
+                {
+                    "account_id": debit_acc.id,
+                    "name": self.reference,
+                    "debit": self.value,
+                    "credit": 0,
+                    "product_id": self.product_id.id,
+                    "quantity": quantity,
+                    "product_uom_id": self.product_id.uom_id.id,
+                },
+            ]
+
+        if self._is_storno_return():
+            # transformare în storno (roșu): nota „neagră" de retur (Dr A / Cr B)
+            # devine tranzacția originală cu sume negative (Dr B -V / Cr A -V);
+            # mecanic: suma trece pe partea opusă, negată, iar cantitatea semnată
+            # se inversează odată cu partea
+            for vals in vals_list:
+                debit = vals.get("debit", 0.0)
+                credit = vals.get("credit", 0.0)
+                vals["debit"], vals["credit"] = -credit, -debit
+                if vals.get("quantity"):
+                    vals["quantity"] = -vals["quantity"]
+        return vals_list
+
+    def _get_obyc_stock_journal(self):
+        """Jurnalul de stoc al ariei de evaluare, pentru produsele cu clasă de
+        evaluare OBYC; recordset gol dacă nu se aplică."""
+        self.ensure_one()
+        journal = self.env["account.journal"]
+        if self.product_id.valuation_class_id:
+            valuation_area = self._get_valuation_area(raise_if_not_found=False)
+            if valuation_area and valuation_area.stock_journal_id:
+                journal = valuation_area.stock_journal_id
+        return journal
+
+    def _create_account_move(self):
+        """Grupează mișcările pe jurnalul ariei de evaluare: mișcările OBYC dintr-o
+        arie cu jurnal propriu primesc nota pe acel jurnal; restul merg pe
+        comportamentul standard (jurnalul de stoc al companiei)."""
+        result = self.env["account.move"]
+        default_moves = self.browse()
+        by_journal = {}
+        for move in self:
+            journal = move._get_obyc_stock_journal()
+            if journal:
+                by_journal.setdefault(journal, self.browse())
+                by_journal[journal] |= move
+            else:
+                default_moves |= move
+        if default_moves:
+            result |= super(StockMove, default_moves)._create_account_move()
+        for journal, moves in by_journal.items():
+            result |= moves._create_account_move_with_journal(journal)
+        return result
+
+    def _create_account_move_with_journal(self, journal):
+        """Replica fluxului core `_create_account_move`, cu jurnalul forțat
+        (core-ul folosește necondiționat jurnalul de stoc al companiei)."""
+        aml_vals_list = []
+        move_to_link = set()
+        for move in self:
+            if move._should_create_account_move():
+                aml_vals_list += move._get_account_move_line_vals()
+                move_to_link.add(move.id)
+        if not aml_vals_list:
+            return self.env["account.move"]
+
+        move_refs = list(set(self.mapped("reference")))
+        joined_refs = ", ".join(move_refs)
+        if len(joined_refs) > 43:
+            joined_refs = joined_refs[:40] + "..."
+
+        account_move = self.env["account.move"].sudo().create(
             {
-                "account_id": credit_acc.id,
-                "name": self.reference,
-                "debit": 0,
-                "credit": self.value,
-                "product_id": self.product_id.id,
-                "quantity": -quantity,
-                "product_uom_id": self.product_id.uom_id.id,
-            },
-            {
-                "account_id": debit_acc.id,
-                "name": self.reference,
-                "debit": self.value,
-                "credit": 0,
-                "product_id": self.product_id.id,
-                "quantity": quantity,
-                "product_uom_id": self.product_id.uom_id.id,
-            },
-        ]
+                "ref": joined_refs,
+                "partner_id": self._get_partner_id_for_valuation_lines(),
+                "journal_id": journal.id,
+                "line_ids": [Command.create(aml_vals) for aml_vals in aml_vals_list],
+                "date": self.env.context.get("force_period_date") or fields.Date.context_today(self),
+            }
+        )
+        self.env["stock.move"].browse(move_to_link).account_move_id = account_move.id
+        account_move._post()
+        return account_move

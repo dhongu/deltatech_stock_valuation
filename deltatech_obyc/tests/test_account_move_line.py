@@ -11,9 +11,20 @@ class TestAccountMoveLine(TestCommon):
     def setUpClass(cls):
         super().setUpClass()
 
+        # compania default din test19 nu are plan de conturi complet — contul
+        # de creanțe trebuie setat explicit pe partener
+        cls.account_receivable = cls.env["account.account"].create(
+            {
+                "name": "Test Receivable",
+                "code": "TREC01",
+                "account_type": "asset_receivable",
+                "reconcile": True,
+            }
+        )
         cls.partner_a = cls.env["res.partner"].create(
             {
                 "name": "Test Partner A",
+                "property_account_receivable_id": cls.account_receivable.id,
             }
         )
         cls.product_a = cls.env["product.product"].create(

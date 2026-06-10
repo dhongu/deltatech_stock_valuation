@@ -22,12 +22,6 @@ class TestNCGeneration(TestCommon):
         cls.account_stock_valuation = cls.env["account.account"].create(
             {"name": "Stock Valuation Cat", "code": "SVC001", "account_type": "asset_current"}
         )
-        cls.account_stock_input = cls.env["account.account"].create(
-            {"name": "Stock Input Cat", "code": "SIC001", "account_type": "asset_current"}
-        )
-        cls.account_stock_output = cls.env["account.account"].create(
-            {"name": "Stock Output Cat", "code": "SOC001", "account_type": "asset_current"}
-        )
 
         # Categoria trebuie sa fie real_time pentru a genera NC
         cls.product_category.write(
@@ -35,8 +29,6 @@ class TestNCGeneration(TestCommon):
                 "property_valuation": "real_time",
                 "property_cost_method": "standard",
                 "property_stock_valuation_account_id": cls.account_stock_valuation.id,
-                "property_stock_account_input_categ_id": cls.account_stock_input.id,
-                "property_stock_account_output_categ_id": cls.account_stock_output.id,
                 "property_stock_journal": cls.stock_journal.id,
             }
         )
@@ -70,12 +62,14 @@ class TestNCGeneration(TestCommon):
     def _validate_picking(self, picking):
         picking.action_confirm()
         picking.move_ids._set_quantity_done(picking.move_ids[0].product_uom_qty)
-        result = picking.button_validate()
+        # demo_mode sare validarea de transportator din l10n_ro_edi_stock (e-Transport)
+        result = picking.with_context(demo_mode=True).button_validate()
         if isinstance(result, dict) and result.get("res_model") == "stock.immediate.transfer":
             self.env[result["res_model"]].browse(result["res_id"]).process()
 
     def _get_nc_for_picking(self, picking):
-        return self.env["account.move"].search([("stock_move_id", "in", picking.move_ids.ids)])
+        # în O19 legătura e stock_move.account_move_id (account.move nu are stock_move_id)
+        return picking.move_ids.account_move_id
 
     def test_01_receipt_generates_nc_with_obyc_accounts(self):
         """Receptie furnizor → NC cu conturile din regula OBYC stock_receipt.
@@ -90,10 +84,9 @@ class TestNCGeneration(TestCommon):
                 "picking_type_id": self.picking_type_in.id,
                 "location_id": self.supplier_location.id,
                 "location_dest_id": self.stock_location.id,
-                "move_ids_without_package": [
+                "move_ids": [
                     Command.create(
                         {
-                            "name": self.product.display_name,
                             "product_id": self.product.id,
                             "product_uom_qty": 10.0,
                             "product_uom": self.product.uom_id.id,
@@ -130,10 +123,9 @@ class TestNCGeneration(TestCommon):
                 "picking_type_id": self.picking_type_out.id,
                 "location_id": self.stock_location.id,
                 "location_dest_id": self.customer_location.id,
-                "move_ids_without_package": [
+                "move_ids": [
                     Command.create(
                         {
-                            "name": self.product.display_name,
                             "product_id": self.product.id,
                             "product_uom_qty": 5.0,
                             "product_uom": self.product.uom_id.id,
@@ -160,10 +152,9 @@ class TestNCGeneration(TestCommon):
                 "picking_type_id": self.picking_type_in.id,
                 "location_id": self.supplier_location.id,
                 "location_dest_id": self.stock_location.id,
-                "move_ids_without_package": [
+                "move_ids": [
                     Command.create(
                         {
-                            "name": self.product.display_name,
                             "product_id": self.product.id,
                             "product_uom_qty": 3.0,
                             "product_uom": self.product.uom_id.id,
@@ -187,50 +178,77 @@ class TestNCGeneration(TestCommon):
                 f"Linia NC pentru contul {line.account_id.code} nu are valuation_area_id setat",
             )
 
-    def test_04_equal_accounts_no_crash(self):
-        """Cand acc_src == acc_dest in regula price_difference, _account_entry_move
-        nu trebuie sa ridice exceptie si returneaza lista goala (nu genereaza NC inutila).
-
-        Acesta testeaza direct bug-fix-ul din _account_entry_move: filtrarea corecta
-        a valorilor False returnate de _prepare_account_move_vals.
-        """
-        # Regula price_difference cu conturi egale — simuleaza situatia in care
-        # diferenta de pret nu necesita NC (e absorbita in acelasi cont)
-        self.env["product.account.determination"].create(
+    def _make_receipt(self, qty=10.0):
+        picking = self.env["stock.picking"].create(
             {
-                "transaction_key": "price_difference",
-                "valuation_class_id": self.valuation_class.id,
-                "valuation_area_id": self.valuation_area.id,
-                "company_id": self.env.company.id,
-                "acc_src_id": self.account_valuation.id,
-                "acc_dest_id": self.account_valuation.id,  # intentionat acelasi
-                "acc_valuation_id": self.account_valuation.id,
-            }
-        )
-        move = self.env["stock.move"].create(
-            {
-                "name": "Test price difference equal accounts",
-                "product_id": self.product.id,
+                "picking_type_id": self.picking_type_in.id,
                 "location_id": self.supplier_location.id,
                 "location_dest_id": self.stock_location.id,
-                "product_uom_qty": 2.0,
-                "product_uom": self.product.uom_id.id,
-                "state": "done",
+                "move_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.product.id,
+                            "product_uom_qty": qty,
+                            "product_uom": self.product.uom_id.id,
+                            "location_id": self.supplier_location.id,
+                            "location_dest_id": self.stock_location.id,
+                        }
+                    )
+                ],
             }
         )
-        svl = self.env["stock.valuation.layer"].create(
-            {
-                "stock_move_id": move.id,
-                "value": 200.0,
-                "unit_cost": 100.0,
-                "quantity": 2.0,
-                "company_id": self.env.company.id,
-                "product_id": self.product.id,
-            }
+        self._validate_picking(picking)
+        return picking
+
+    def test_04_nc_uses_valuation_area_journal(self):
+        """NC-ul mișcărilor OBYC trebuie generat pe jurnalul de stoc al ariei de
+        evaluare, nu pe jurnalul de stoc al companiei."""
+        area_journal = self.env["account.journal"].create(
+            {"name": "Area Stock Journal", "code": "ASJ1", "type": "general"}
         )
-        # qty=0 -> context price_difference=True -> regula gasita dar acc_src==acc_dest
-        # -> _prepare_account_move_vals returneaza False
-        # -> fix-ul [v for v in list if v] filtreaza corect -> returneaza []
-        result = move._account_entry_move(0, "Test price diff", svl.id, 200.0)
-        self.assertIsInstance(result, list)
-        self.assertEqual(result, [], "Lista trebuie sa fie goala cand acc_src == acc_dest")
+        self.valuation_area.stock_journal_id = area_journal
+
+        picking = self._make_receipt()
+        nc_moves = self._get_nc_for_picking(picking)
+        self.assertTrue(nc_moves, "Nu s-a generat NC la recepție")
+        self.assertEqual(
+            nc_moves.journal_id,
+            area_journal,
+            "NC-ul trebuie să folosească jurnalul ariei de evaluare",
+        )
+
+    def test_05_return_to_supplier_uses_storno(self):
+        """Cu storno activ pe companie, returul la furnizor se înregistrează în roșu:
+        aceleași conturi ca recepția (Dr valuation / Cr src), cu sume negative."""
+        self.env.company.account_storno = True
+        # regula de retur configurată simetric cu recepția: doar acc_dest setat
+        # → nota "neagră" ar fi Dr acc_dest / Cr valuation; storno o inversează
+        rule = self.env["product.account.determination"].search(
+            [("transaction_key", "=", "return_to_supplier"), ("company_id", "=", self.env.company.id)]
+        )
+        rule.write({"acc_src_id": False, "acc_dest_id": self.account_src.id})
+
+        picking = self._make_receipt()
+
+        return_wizard = (
+            self.env["stock.return.picking"]
+            .with_context(active_id=picking.id, active_model="stock.picking")
+            .create({})
+        )
+        return_wizard.product_return_moves.quantity = 5.0
+        action = return_wizard.action_create_returns()
+        return_picking = self.env["stock.picking"].browse(action["res_id"])
+        self._validate_picking(return_picking)
+
+        nc_return = self._get_nc_for_picking(return_picking)
+        self.assertTrue(nc_return, "Nu s-a generat NC la retur")
+        self.assertTrue(all(m.state == "posted" for m in nc_return), "NC-ul de retur nu este postat")
+
+        valuation_line = nc_return.line_ids.filtered(lambda line: line.account_id == self.account_valuation)
+        src_line = nc_return.line_ids.filtered(lambda line: line.account_id == self.account_src)
+        self.assertTrue(valuation_line and src_line, "NC-ul de retur trebuie să aibă liniile pe conturile recepției")
+        # storno (roșu): valoarea pe partea tranzacției originale, cu semn negativ
+        self.assertEqual(valuation_line.debit, -500.0, "valuation trebuie debitat cu sumă negativă (storno)")
+        self.assertEqual(valuation_line.credit, 0.0)
+        self.assertEqual(src_line.credit, -500.0, "contul sursă trebuie creditat cu sumă negativă (storno)")
+        self.assertEqual(src_line.debit, 0.0)
