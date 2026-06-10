@@ -27,23 +27,54 @@
                     id="compute_deltatech_stock_valuation"
                     invisible="valuation_area_level != 'company'"
                 >
+                    <field name="is_refresh_running" invisible="1" />
 
-
+                    <!-- One-click background recompute: runs all 7 steps automatically -->
                     <div class="row mt16" invisible="valuation_area_level != 'company'">
                         <div class="col-lg-12">
-                            <span class="o_light_label me-2">Next step:</span>
-                            <field name="refresh_valuation_step_info" readonly="1" class="fw-bold" />
+                            <button
+                                type="object"
+                                name="action_recompute_in_background"
+                                icon="fa-rocket"
+                                string="Recompute All (Background)"
+                                class="btn-primary me-2"
+                                invisible="is_refresh_running"
+                                confirm="This will rebuild the whole stock valuation history in the background. Continue?"
+                            />
+                            <button
+                                type="object"
+                                name="stop_auto_refresh"
+                                icon="fa-stop-circle"
+                                string="Stop Background Refresh"
+                                class="btn-danger me-2"
+                                invisible="not is_refresh_running"
+                            />
+                            <span class="badge text-bg-info" invisible="not is_refresh_running">Running…</span>
                         </div>
                     </div>
 
                     <div class="row mt8" invisible="valuation_area_level != 'company'">
                         <div class="col-lg-12">
+                            <span class="o_light_label me-2">Next step:</span>
+                            <field name="refresh_valuation_step_info" readonly="1" class="fw-bold" />
+                        </div>
+                    </div>
+                    <div class="row" invisible="valuation_area_level != 'company'">
+                        <div class="col-lg-12 text-muted">
+                            <field name="refresh_valuation_progress_info" readonly="1" />
+                        </div>
+                    </div>
+
+         <!--           &lt;!&ndash; Manual stepping (advanced / debugging) &ndash;&gt;
+                    <div class="row mt16" invisible="valuation_area_level != 'company'">
+                        <div class="col-lg-12">
+                            <span class="o_light_label me-2">Manual (advanced):</span>
                             <button
                                 type="object"
                                 name="refresh_stock_valuation"
                                 icon="fa-play"
                                 string="Execute Next Step"
-                                class="btn-primary me-2"
+                                class="btn-secondary me-2"
                             />
                             <button
                                 type="object"
@@ -60,26 +91,7 @@
                                 class="btn-link"
                             />
                         </div>
-                    </div>
-                    <div class="row mt8" invisible="valuation_area_level != 'company'">
-                        <div class="col-lg-12">
-                            <span class="o_light_label me-2">Auto Refresh (Odoo.sh):</span>
-                            <button
-                                type="object"
-                                name="start_auto_refresh"
-                                icon="fa-play-circle"
-                                string="Start Auto Refresh"
-                                class="btn-success me-2"
-                            />
-                            <button
-                                type="object"
-                                name="stop_auto_refresh"
-                                icon="fa-stop-circle"
-                                string="Stop"
-                                class="btn-secondary"
-                            />
-                        </div>
-                    </div>
+                    </div>-->
                 </setting>
 
             </xpath>
