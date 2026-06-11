@@ -26,9 +26,7 @@ class AccountMove(models.Model):
                     valuation_area = line._get_valuation_area(raise_if_not_found=False)
                 if not valuation_area:
                     continue
-                keys.add(
-                    (line.product_id.id, valuation_area.id, line.account_id.id, line.company_id.id, move.date)
-                )
+                keys.add((line.product_id.id, valuation_area.id, line.account_id.id, line.company_id.id, move.date))
         return keys
 
     @api.model
