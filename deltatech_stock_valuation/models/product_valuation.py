@@ -619,7 +619,9 @@ class ProductValuationHistory(models.Model):
                 combos=tuple(combos),
             )
         )
-        self._invalidate_cache()
+        # UPDATE-ul atinge TOATE lunile combinațiilor, nu doar rândurile din self —
+        # invalidarea trebuie făcută pe tot modelul
+        self.env["product.valuation.history"].invalidate_model()
 
     def _compute_initial(self):
         """
