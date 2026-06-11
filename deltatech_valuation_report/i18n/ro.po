@@ -1,0 +1,69 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* deltatech_valuation_report
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-11 16:08+0000\n"
+"PO-Revision-Date: 2026-06-11 16:08+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));\n"
+
+#. module: deltatech_valuation_report
+#: model:account.report.column,name:deltatech_valuation_report.col_balance
+msgid "Account Balance"
+msgstr "Sold cont"
+
+#. module: deltatech_valuation_report
+#: model:account.report.column,name:deltatech_valuation_report.col_difference
+msgid "Difference (lines without product)"
+msgstr "Diferență (linii fără produs)"
+
+#. module: deltatech_valuation_report
+#: model:ir.model.fields,field_description:deltatech_valuation_report.field_valuation_check_report_handler__display_name
+msgid "Display Name"
+msgstr "Nume afișat"
+
+#. module: deltatech_valuation_report
+#: model:ir.model.fields,field_description:deltatech_valuation_report.field_valuation_check_report_handler__id
+msgid "ID"
+msgstr "ID"
+
+#. module: deltatech_valuation_report
+#. odoo-python
+#: code:addons/deltatech_valuation_report/models/valuation_check_handler.py:0
+msgid "Lines without product"
+msgstr "Linii fără produs"
+
+#. module: deltatech_valuation_report
+#: model:ir.ui.menu,name:deltatech_valuation_report.menu_valuation_check_report
+msgid "Stock Valuation Check"
+msgstr "Verificare evaluare stoc"
+
+#. module: deltatech_valuation_report
+#: model:account.report,name:deltatech_valuation_report.valuation_check_report
+#: model:ir.actions.client,name:deltatech_valuation_report.action_valuation_check_report
+msgid "Stock Valuation vs Balance Check"
+msgstr "Verificare evaluare stoc vs. balanță"
+
+#. module: deltatech_valuation_report
+#: model:ir.model,name:deltatech_valuation_report.model_valuation_check_report_handler
+msgid "Stock Valuation vs Balance Check Report Handler"
+msgstr "Handler raport verificare evaluare stoc vs. balanță"
+
+#. module: deltatech_valuation_report
+#: model:account.report.line,name:deltatech_valuation_report.line_accounts
+msgid "Stock valuation accounts"
+msgstr "Conturi de evaluare stoc"
+
+#. module: deltatech_valuation_report
+#: model:account.report.column,name:deltatech_valuation_report.col_valuation
+msgid "Valuation (lines with product)"
+msgstr "Evaluare (linii cu produs)"

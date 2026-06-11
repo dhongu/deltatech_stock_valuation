@@ -80,8 +80,23 @@ Dacă aceeași companie are depozite sau locații interne tratate separat, compl
 
 ### Pasul 4 — folosiți fluxurile de stoc sau contabile
 
-La generarea liniilor contabile din mișcările de stoc, modulul injectează
-automat `valuation_area_id` pe liniile care au produs.
+La generarea liniilor contabile din mișcările de stoc, modulul completează
+automat pe liniile care au produs:
+
+- **aria de evaluare** (determinată după prioritatea de mai sus);
+- **cantitatea**, cu semn: **pozitivă pe linia de debit** (intrare în stoc),
+  **negativă pe linia de credit** (ieșire din stoc);
+- **unitatea de măsură** a produsului.
+
+În Odoo 19 standard, liniile notelor contabile generate din stoc nu poartă
+cantități — fără completarea automată, evaluarea pe arii ar pierde cantitățile
+de pe notele de stoc. Pe notele de stoc generate automat, consultantul găsește
+deci aria și cantitatea deja completate.
+
+La **notele contabile manuale** cu produse stocabile, aria se calculează
+automat din companie/depozit/locație (poate fi apoi modificată), iar
+cantitatea se introduce manual **respectând convenția de semn** (pozitiv pe
+debit, negativ pe credit).
 
 Pentru documentele contabile cu produse stocabile, când compania folosește
 Valuation Area, aria devine obligatorie; fără ea apare mesajul:
@@ -102,6 +117,10 @@ Mesajul de blocare pentru mutări interne între arii diferite este:
 
 > `Source and destination locations must have the same valuation area for internal moves.`
 
+**Remediere:** organizați transferul printr-o locație de tranzit sau păstrați
+sursa și destinația în aceeași arie. Suportul complet pentru transferuri între
+arii este planificat (roadmap evaluare pe depozit).
+
 ## 5. Unde se vede în interfață
 
 - `Inventar → Configurare → Evaluation Area`
@@ -117,6 +136,9 @@ Mesajul de blocare pentru mutări interne între arii diferite este:
 - [ ] depozitele/locațiile critice au `valuation_area_id` completat
 - [ ] mutările interne nu traversează două arii diferite direct
 - [ ] liniile contabile de stoc păstrează aria corectă
+- [ ] notele de stoc generate automat au cantitatea și UoM completate, cu semnul
+      corect (pozitiv pe debit, negativ pe credit)
+- [ ] notele manuale cu produse stocabile respectă convenția de semn la cantitate
 
 ## 7. Limitări cunoscute
 
@@ -128,11 +150,43 @@ Mesajul de blocare pentru mutări interne între arii diferite este:
 - descrierea modulului precizează explicit că direcția principală este compatibilă
   cu **AVCO**, nu cu **FIFO**.
 
-## 8. Capturi recomandate
+## 8. Capturi
 
-- [ ] [SCREENSHOT: Setări Inventar cu Use Valuation Area]
-- [ ] [SCREENSHOT: Lista Evaluation Area]
-- [ ] [SCREENSHOT: Formular Evaluation Area cu code, company și stock journal]
-- [ ] [SCREENSHOT: Locație internă cu Valuation Area]
-- [ ] [SCREENSHOT: Depozit cu Valuation Area]
-- [ ] [SCREENSHOT: Linia contabilă cu coloana Valuation Area]
+### Setări Inventar cu Use Valuation Area
+
+Secțiunea **Evaluare** din `Inventar → Configurare → Setări`: bifa **Use Valuation
+Area** și aria implicită a companiei ([STD] Arie standard).
+
+![Setări Inventar cu Use Valuation Area](screenshots/01_setari_use_valuation_area.png)
+
+### Lista ariilor de evaluare
+
+`Inventar → Configurare → Evaluation Area` — coloanele Code / Name / Company /
+Stock Journal.
+
+![Lista Evaluation Area](screenshots/02_valuation_area_list.png)
+
+### Formular arie de evaluare
+
+Formularul unei arii cu `Code`, `Name`, `Company` și `Stock Journal`. Numele afișat
+este `[CODE] Name`.
+
+![Formular Evaluation Area](screenshots/03_valuation_area_form.png)
+
+### Depozit cu Valuation Area
+
+Lista depozitelor cu coloana **Valuation Area** — depozitul are aria proprie
+([DEP] Arie depozit), care suprascrie fallback-ul companiei.
+
+![Depozit cu Valuation Area](screenshots/04_depozit_valuation_area.png)
+
+### Linia contabilă cu coloana Valuation Area
+
+Notă de stoc postată: pe linia produsului (371 Mărfuri, debit 1.000) apare
+coloana opțională **Valuation Area** completată cu [STD] Arie standard.
+
+![Linia contabilă cu Valuation Area](screenshots/05_linie_contabila_valuation_area.png)
+
+> Notă: câmpul **Valuation Area** există și pe formularul de locație internă și pe
+> formularul de depozit (`groups="stock.group_stock_manager"`); aici aria
+> depozitului este ilustrată prin lista de depozite, mai compactă pentru fișă.
