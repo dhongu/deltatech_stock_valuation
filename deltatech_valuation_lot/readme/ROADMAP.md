@@ -1,6 +1,9 @@
 # deltatech_valuation_lot — Plan de implementare
 
 > Status: planificat (modulul nu e încă implementat). Plan agreat la 10.06.2026.
+> ⚠️ Ordine (decizie 11.06.2026): ÎNAINTEA acestui modul se livrează evaluarea la
+> nivel de depozit (vezi `deltatech_stock_valuation/readme/ROADMAP.md`) — scripturile
+> de setup/backfill/refresh per arie + transferurile inter-depozite.
 
 ## Poziționare
 
