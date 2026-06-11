@@ -307,7 +307,7 @@ class ProductValuation(models.Model):
                 """
                     SELECT product_id, valuation_area_id, account_id, m.company_id,
                         debit, credit, move_type,
-                        l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
+                        l.quantity * uom_template.factor / NULLIF(uom_line.factor, 0) as quantity
                     FROM account_move_line as l
                         LEFT JOIN account_move as m ON l.move_id=m.id
                         LEFT JOIN product_product product ON product.id = l.product_id
@@ -325,7 +325,7 @@ class ProductValuation(models.Model):
             """
                 SELECT product_id, valuation_area_id, account_id, m.company_id,
                     debit, credit, move_type,
-                    l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
+                    l.quantity * uom_template.factor / NULLIF(uom_line.factor, 0) as quantity
                 FROM account_move_line as l
                     LEFT JOIN account_move as m ON l.move_id=m.id
                     LEFT JOIN product_product product ON product.id = l.product_id
@@ -717,7 +717,7 @@ class ProductValuationHistory(models.Model):
                 SELECT product_id, valuation_area_id, account_id, m.company_id, l.company_currency_id as currency_id,
                         debit, credit, move_type,
                         to_char(m.date, 'YYYYMM')  as month,
-                        l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
+                        l.quantity * uom_template.factor / NULLIF(uom_line.factor, 0) as quantity
                     FROM account_move_line as l
                         LEFT JOIN account_move as m ON l.move_id=m.id
                         LEFT JOIN product_product product ON product.id = l.product_id
@@ -736,7 +736,7 @@ class ProductValuationHistory(models.Model):
             SELECT product_id, valuation_area_id, account_id, m.company_id, l.company_currency_id as currency_id,
                     debit, credit, move_type,
                     to_char(m.date, 'YYYYMM')  as month,
-                    l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
+                    l.quantity * uom_template.factor / NULLIF(uom_line.factor, 0) as quantity
                 FROM account_move_line as l
                     LEFT JOIN account_move as m ON l.move_id=m.id
                     LEFT JOIN product_product product ON product.id = l.product_id
@@ -1018,7 +1018,7 @@ class ProductValuationHistory(models.Model):
                                m.company_id,
                                SUM(l.debit - l.credit) AS total_amount,
                                SUM(
-                                   l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0)
+                                   l.quantity * uom_template.factor / NULLIF(uom_line.factor, 0)
                                    * (%(in_case)s - %(out_case)s)
                                ) AS total_quantity
                         FROM account_move_line l
