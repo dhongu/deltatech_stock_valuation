@@ -204,6 +204,65 @@ class TestQuantityClassification(AccountTestInvoicingCommon):
         PVH.create(dict(common, month="202602"))
         PVH.flush_model()
 
+    def test_uom_conversion_to_reference(self):
+        """Liniile postate într-un UoM diferit de cel de referință al produsului
+        trebuie convertite la unitatea de referință (qty / line.factor * tmpl.factor).
+        Regresie: o conversie inversată (qty * line.factor / tmpl.factor) umfla
+        cantitatea — dormantă cât timp liniile folosesc UoM-ul de referință (factor 1),
+        activă pe produse postate în alt UoM."""
+        # UoM mai mic în aceeași categorie: 4 unități din acesta = 1 unitate de referință
+        small_uom = self.env["uom.uom"].create(
+            {
+                "name": "Quarter QC",
+                "category_id": self.product.uom_id.category_id.id,
+                "uom_type": "smaller",
+                "factor": 4.0,
+            }
+        )
+        # recepție: 8 buc din UoM-ul mic -> 8 / 4 = 2.0 unități de referință
+        move = self.env["account.move"].create(
+            {
+                "journal_id": self.journal.id,
+                "line_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "name": "Stock line (small uom)",
+                            "account_id": self.account_stock_val.id,
+                            "debit": 400.0,
+                            "credit": 0.0,
+                            "product_id": self.product.id,
+                            "product_uom_id": small_uom.id,
+                            "quantity": 8.0,
+                        },
+                    ),
+                    (
+                        0,
+                        0,
+                        {
+                            "name": "Counterpart",
+                            "account_id": self.counterpart_account.id,
+                            "debit": 0.0,
+                            "credit": 400.0,
+                        },
+                    ),
+                ],
+            }
+        )
+        move.action_post()
+        self.env.cr.execute(
+            "UPDATE account_move_line SET valuation_area_id = %s WHERE move_id = %s AND product_id IS NOT NULL",
+            (self.valuation_area.id, move.id),
+        )
+        move.line_ids.invalidate_recordset(["valuation_area_id"])
+
+        history = self._get_history()
+        self.assertTrue(history)
+        self.assertEqual(history.quantity_in, 2.0, "8 din UoM cu factor 4 = 2.0 unități de referință")
+        self.assertEqual(history.quantity_final, 2.0)
+        self.assertEqual(history.amount_final, 400.0)
+
     def test_residual_quantity_keeps_price(self):
         """O ajustare pur valorică (amount fără cantitate — ex. nota de corecție CMP
         periodic) nu trebuie să producă un preț aberant — se păstrează prețul anterior."""
