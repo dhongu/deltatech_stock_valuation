@@ -260,14 +260,18 @@ class StockMove(models.Model):
         if len(joined_refs) > 43:
             joined_refs = joined_refs[:40] + "..."
 
-        account_move = self.env["account.move"].sudo().create(
-            {
-                "ref": joined_refs,
-                "partner_id": self._get_partner_id_for_valuation_lines(),
-                "journal_id": journal.id,
-                "line_ids": [Command.create(aml_vals) for aml_vals in aml_vals_list],
-                "date": self.env.context.get("force_period_date") or fields.Date.context_today(self),
-            }
+        account_move = (
+            self.env["account.move"]
+            .sudo()
+            .create(
+                {
+                    "ref": joined_refs,
+                    "partner_id": self._get_partner_id_for_valuation_lines(),
+                    "journal_id": journal.id,
+                    "line_ids": [Command.create(aml_vals) for aml_vals in aml_vals_list],
+                    "date": self.env.context.get("force_period_date") or fields.Date.context_today(self),
+                }
+            )
         )
         self.env["stock.move"].browse(move_to_link).account_move_id = account_move.id
         account_move._post()

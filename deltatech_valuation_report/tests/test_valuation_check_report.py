@@ -108,9 +108,7 @@ class TestValuationCheckReport(AccountTestInvoicingCommon):
         self.assertTrue(account_line, "raportul trebuie să conțină o linie pentru contul de stoc")
 
         values = {
-            col["expression_label"]: col["no_format"]
-            for col in account_line["columns"]
-            if col.get("expression_label")
+            col["expression_label"]: col["no_format"] for col in account_line["columns"] if col.get("expression_label")
         }
         self.assertEqual(values["balance"], 1070.0)
         self.assertEqual(values["valuation"], 1000.0)
@@ -127,9 +125,7 @@ class TestValuationCheckReport(AccountTestInvoicingCommon):
         )
         self.assertTrue(account_line)
         values = {
-            col["expression_label"]: col["no_format"]
-            for col in account_line["columns"]
-            if col.get("expression_label")
+            col["expression_label"]: col["no_format"] for col in account_line["columns"] if col.get("expression_label")
         }
         self.assertEqual(values["balance"], values["valuation"])
         self.assertEqual(values["difference"], 0.0)

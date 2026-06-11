@@ -224,9 +224,7 @@ class TestUnpostRecompute(AccountTestInvoicingCommon):
         """Recalcularea completă a evaluării pe compania curentă nu trebuie să șteargă
         evaluările altei companii care folosește aceleași conturi."""
         company_b = self.env["res.company"].create({"name": "Other Co UR"})
-        area_b = self.env["valuation.area"].create(
-            {"name": "Area B", "code": "AREAB", "company_id": company_b.id}
-        )
+        area_b = self.env["valuation.area"].create({"name": "Area B", "code": "AREAB", "company_id": company_b.id})
         valuation_b = self.env["product.valuation"].create(
             {
                 "product_id": self.product.id,
@@ -242,8 +240,6 @@ class TestUnpostRecompute(AccountTestInvoicingCommon):
         # refresh complet pe compania curentă (A)
         self.env["product.valuation"]._recompute_all_amount()
 
-        self.assertTrue(
-            valuation_b.exists(), "evaluarea companiei B nu trebuie ștearsă de refresh-ul companiei A"
-        )
+        self.assertTrue(valuation_b.exists(), "evaluarea companiei B nu trebuie ștearsă de refresh-ul companiei A")
         self.assertEqual(valuation_b.quantity, 5.0)
         self.assertEqual(valuation_b.amount, 500.0)
