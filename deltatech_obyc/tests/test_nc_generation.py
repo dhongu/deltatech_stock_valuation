@@ -231,9 +231,7 @@ class TestNCGeneration(TestCommon):
         picking = self._make_receipt()
 
         return_wizard = (
-            self.env["stock.return.picking"]
-            .with_context(active_id=picking.id, active_model="stock.picking")
-            .create({})
+            self.env["stock.return.picking"].with_context(active_id=picking.id, active_model="stock.picking").create({})
         )
         return_wizard.product_return_moves.quantity = 5.0
         action = return_wizard.action_create_returns()
