@@ -35,16 +35,30 @@ lot + disciplina invariantului sumă-alocări.
 
 ## Iterații
 
-### IT0 — Spike și decizii (~1 zi)
-- Explorare `lot_valuated` nativ pe test19: de unde se citește defalcarea pe lot la
-  postare — `stock.move.move_line_ids` (lot + cantitate) plus valoarea per lot calculată
-  de core în `_set_value`. De confirmat că informația e disponibilă în momentul generării
-  notei contabile.
-- Reprezentarea „fără lot" în constrângerile de unicitate (NULL are semantici speciale la
-  UNIQUE; PG15+ are `NULLS NOT DISTINCT`, altfel valoare-santinelă).
-- Gate-uri: `company.valuation_lot_level` (câmp existent în `deltatech_stock_valuation`,
-  până acum nefolosit) = comutator global al stratului contabil; declanșator per produs =
-  `product.lot_valuated` (core).
+### IT0 — Spike și decizii (~1 zi) — ✅ EFECTUAT (10.06.2026, test19)
+
+Concluzii (rulare exploratorie cu `lot_valuated`, 2 loturi la prețuri diferite,
+livrare 15 buc cu removal FIFO):
+
+1. **Splitul pe loturi există la momentul potrivit**: `stock.move.move_line_ids`
+   conține (lot, cantitate) corect la `_action_done` (L1=10, L2=5, ordine FIFO) —
+   sursa de alocare pentru sub-ledger e disponibilă când se generează nota.
+2. **⚠️ În O19 core notele de stoc NU se generează la recepție/livrare simplă**:
+   `_should_create_account_move` cere `valuation_account_id` pe una din locații.
+   Fluxurile care chiar produc note (și deci intră în sub-ledger): (a) locații cu
+   cont de valorizare, (b) OBYC (suprascrie condiția pentru clasele de evaluare),
+   (c) facturile. IT1 se ancorează pe (a)+(b); facturile rămân pe alocare
+   proporțională (IT4).
+3. **⚠️ `stock.lot.standard_price` nu reține costul recepției** fără cost cunoscut
+   (PO): în spike ambele loturi au ajuns la ultimul standard_price (12.0), iar
+   livrarea FIFO a fost valorizată 180 în loc de 160. Confirmă decizia: prețul per
+   lot se calculează din PROPRIUL sub-ledger (Dr/Cr per lot), nu din
+   `lot.standard_price`; fallback-ul la prețul core e doar pentru loturi fără
+   istoric contabil.
+
+Rămase de decis în IT1: reprezentarea „fără lot" în unicitate (PG15+ `NULLS NOT
+DISTINCT` vs. valoare-santinelă). Gate-uri confirmate: `company.valuation_lot_level`
+(global) + `product.lot_valuated` (per produs).
 
 ### IT1 — Sub-ledger-ul (1–2 zile)
 - `product.valuation.lot.line`: `aml_id` (ondelete cascade), `lot_id`, `quantity`,
