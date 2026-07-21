@@ -38,6 +38,8 @@ class ResCompany(models.Model):
         accounts = categories.mapped("property_stock_valuation_account_id")
         accounts.write({"is_for_stock_valuation": True})
         accounts = self.env["account.account"].search([("is_for_stock_valuation", "=", True)])
+        if not accounts:
+            return
         params = {
             "account_ids": tuple(accounts.ids),
             "valuation_area_id": self.valuation_area_id.id,
