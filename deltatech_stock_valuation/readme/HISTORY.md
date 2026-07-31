@@ -1,6 +1,4 @@
-# Changelog
-
-## 19.0.0.0.6
+### 19.0.0.0.6
 
 * **[FIX]** Inverted UoM conversion when deriving stock quantity from accounting
   move lines. The aggregation used `quantity * uom_line.factor / uom_template.factor`,

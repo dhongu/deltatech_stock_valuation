@@ -1,6 +1,4 @@
-# Roadmap
-
-## Evaluare la nivel de depozit (warehouse) — planificat, înaintea `deltatech_valuation_lot`
+### Evaluare la nivel de depozit (warehouse) — planificat, înaintea `deltatech_valuation_lot`
 
 Infrastructura SQL e deja multi-arie (agregările și propagarea grupează pe
 `valuation_area_id`); hardcodarea pe „companie" e în setup (`set_stock_valuation_at_company_level`),
