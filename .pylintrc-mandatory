@@ -2,6 +2,9 @@
 [MASTER]
 load-plugins=pylint_odoo
 score=n
+# scripts/ conține utilitare CLI de întreținere, nu module Odoo: `print` e ieșirea
+# lor normală, iar regulile de addon (manifest, readme, traduceri) nu se aplică.
+ignore-paths=(^|.*/)scripts/.*
 
 [ODOOLINT]
 readme-template-url="https://github.com/OCA/maintainer-tools/blob/master/template/module/README.rst"
