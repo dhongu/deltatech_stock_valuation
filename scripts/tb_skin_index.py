@@ -36,12 +36,17 @@ Cum funcționează:
        - adaugă un bloc de suport + footer Terrabit (inline) la final.
   3. Atinge DOAR fișierele generate de OCA (care conțin marcajul "oca-gen-addon-readme").
 
-Idempotent: dacă fișierul a fost deja îmbrăcat (conține marcaj tb-skin), îl sare.
+Idempotent: dacă fișierul a fost deja îmbrăcat (conține marcaj tb-skin), îl sare; iar dacă
+rezultatul e identic cu ce e deja pe disc, nu rescrie fișierul (ar schimba doar mtime și ar
+face pre-commit să raporteze „files were modified by this hook").
 Re-skin: regenerează întâi cu oca-gen-addon-readme (șterge marcajul), apoi rulează scriptul.
 
 Utilizare:
     python3 tb_skin_index.py --addons-dir .          # tot repo-ul
     python3 tb_skin_index.py --addon-dir deltatech_delivery_status
+    python3 tb_skin_index.py deltatech_obyc/static/description/index.html   # doar acest modul
+Căile poziționale (cele pe care le trimite pre-commit când pass_filenames e activ) au
+prioritate față de --addons-dir/--addon-dir: procesăm doar modulele lor, nu toată suita.
 """
 
 import argparse
@@ -245,7 +250,7 @@ def remove_changelog(html):
     start = re.search(r'<div class="section" id="changelog', html)
     if not start:
         return html
-    bug = re.search(r'<div class="section" id="bug-tracker"', html[start.start():])
+    bug = re.search(r'<div class="section" id="bug-tracker"', html[start.start() :])
     if bug:
         end = start.start() + bug.start()
     else:
@@ -449,32 +454,64 @@ def process(addon_dir):
     new_html = skin_html(html, manifest)
     if new_html is None:
         return False
+    # Scrie DOAR dacă rezultatul diferă: un write cu conținut identic schimbă mtime și
+    # face pre-commit să raporteze „files were modified by this hook".
+    if new_html == html:
+        return False
     with open(index_path, "w", encoding="utf8") as f:
         f.write(new_html)
     print(f"[tb-skin] {index_path}")
     return True
 
 
+def is_addon(path):
+    return os.path.isdir(path) and (
+        os.path.exists(os.path.join(path, "__manifest__.py")) or os.path.exists(os.path.join(path, "__openerp__.py"))
+    )
+
+
 def find_addons(addons_dir):
     for entry in sorted(os.listdir(addons_dir)):
         d = os.path.join(addons_dir, entry)
-        if os.path.isdir(d) and (
-            os.path.exists(os.path.join(d, "__manifest__.py")) or os.path.exists(os.path.join(d, "__openerp__.py"))
-        ):
+        if is_addon(d):
             yield d
+
+
+def addon_dir_of(path):
+    """Directorul de modul pentru o cale primită ca argument (fișier sau director).
+
+    Acceptă atât `deltatech_x` cât și `deltatech_x/static/description/index.html` —
+    pre-commit trimite căi de fișiere, nu de module. Întoarce None dacă nu e sub un modul.
+    """
+    d = path if os.path.isdir(path) else os.path.dirname(path)
+    while d and d not in (".", os.sep):
+        if is_addon(d):
+            return d
+        d = os.path.dirname(d)
+    return None
 
 
 def main():
     ap = argparse.ArgumentParser(description="Terrabit skin pentru index.html OCA")
     ap.add_argument("--addon-dir", action="append", default=[], help="un singur modul")
     ap.add_argument("--addons-dir", help="director cu mai multe module")
+    ap.add_argument("paths", nargs="*", help="fișiere/module de procesat (au prioritate față de --addons-dir)")
     args = ap.parse_args()
 
-    targets = list(args.addon_dir)
-    if args.addons_dir:
-        targets += list(find_addons(args.addons_dir))
-    if not targets:
-        targets = list(find_addons("."))
+    # Căile poziționale (ex. cele trimise de pre-commit) restrâng procesarea la modulele
+    # lor: altfel hook-ul ar atinge tot repo-ul chiar dacă i s-a dat un singur fișier.
+    if args.paths:
+        targets = []
+        for p in args.paths:
+            d = addon_dir_of(p)
+            if d and d not in targets:
+                targets.append(d)
+    else:
+        targets = list(args.addon_dir)
+        if args.addons_dir:
+            targets += list(find_addons(args.addons_dir))
+        if not targets:
+            targets = list(find_addons("."))
 
     count = sum(1 for d in targets if process(d))
     print(f"[tb-skin] gata: {count} module modernizate.")
