@@ -1,0 +1,492 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* deltatech_stock_valuation
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-31 10:25+0000\n"
+"PO-Revision-Date: 2026-07-31 10:25+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "%(done)s completed. Next: %(next)s"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "%(done)s completed. Refresh cycle finished. Ready to restart."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "%(done)s — processed up to product %(pid)s. Press again to continue."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/product_valuation.py:0
+msgid "%(label)s done in %(s)ss."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.res_config_settings_view_form
+msgid ""
+"<span class=\"badge text-bg-info\" invisible=\"not "
+"is_refresh_running\">Running…</span>"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.res_config_settings_view_form
+msgid "<span class=\"o_light_label me-2\">Next step:</span>"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "A background recompute is already running."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model,name:deltatech_stock_valuation.model_account_account
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__account_id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__account_id
+msgid "Account"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__amount
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__amount
+msgid "Amount"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "Auto Refresh"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.actions.server,name:deltatech_stock_valuation.ir_cron_auto_refresh_valuation_ir_actions_server
+msgid "Auto Refresh Stock Valuation"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "Auto refresh started. It will run every 2 minutes until complete."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "Background Recompute"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_res_config_settings__is_refresh_running
+msgid "Background Refresh Running"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/product_category.py:0
+msgid ""
+"Category '%(name)s': Use Valuation Area Price is not compatible with FIFO "
+"costing method. Please use AVCO."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model,name:deltatech_stock_valuation.model_res_company
+msgid "Companies"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__company_id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__company_id
+#: model:ir.model.fields.selection,name:deltatech_stock_valuation.selection__res_company__valuation_area_level__company
+msgid "Company"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model,name:deltatech_stock_valuation.model_res_config_settings
+msgid "Config Settings"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__create_uid
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__create_date
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__credit
+msgid "Credit"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__currency_id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__currency_id
+msgid "Currency"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__debit
+msgid "Debit"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_account_account__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_account_move__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_category__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_product__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_template__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_res_company__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_stock_move__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__amount_final
+msgid "Final Amount"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__quantity_final
+msgid "Final Quantity"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_account_account__id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_account_move__id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_account_move_line__id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_category__id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_product__id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_template__id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_res_company__id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_res_config_settings__id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_stock_move__id
+msgid "ID"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,help:deltatech_stock_valuation.field_product_category__use_valuation_area_price
+msgid ""
+"If enabled, stock outgoing moves use the price computed from "
+"product.valuation instead of standard_price."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__amount_initial
+msgid "Initial Amount"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__quantity_initial
+msgid "Initial Quantity"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model,name:deltatech_stock_valuation.model_account_move
+msgid "Journal Entry"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model,name:deltatech_stock_valuation.model_account_move_line
+msgid "Journal Item"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_res_config_settings__refresh_valuation_progress_info
+msgid "Last Refresh Progress"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__write_uid
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__write_date
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "Last: %(label)s at %(when)s (%(s)ss)"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields.selection,name:deltatech_stock_valuation.selection__res_company__valuation_area_level__location
+msgid "Location"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__month
+msgid "Month"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_res_config_settings__refresh_valuation_step_info
+msgid "Next Refresh Step"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "No background refresh has run yet."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "Only System Administrator can do this action!"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__price
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__price
+msgid "Price"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model,name:deltatech_stock_valuation.model_product_template
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__product_id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__product_id
+msgid "Product"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model,name:deltatech_stock_valuation.model_product_category
+msgid "Product Category"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__product_tmpl_id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__product_tmpl_id
+msgid "Product Template"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.actions.act_window,name:deltatech_stock_valuation.product_valuation_action
+#: model:ir.model,name:deltatech_stock_valuation.model_product_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_template__product_valuation_ids
+#: model:ir.ui.menu,name:deltatech_stock_valuation.product_valuation_menu
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_valuation_view_form
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_valuation_view_pivot
+msgid "Product Valuation"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.actions.act_window,name:deltatech_stock_valuation.product_valuation_history_action
+#: model:ir.model,name:deltatech_stock_valuation.model_product_valuation_history
+#: model:ir.ui.menu,name:deltatech_stock_valuation.product_valuation_history_menu
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_valuation_history_view_form
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_valuation_history_view_pivot
+msgid "Product Valuation History"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_product__product_valuation_ids
+msgid "Product Valuations"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model,name:deltatech_stock_valuation.model_product_product
+msgid "Product Variant"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.constraint,message:deltatech_stock_valuation.constraint_product_valuation_history_combination_uniq
+msgid "Product valuation history must be unique"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.constraint,message:deltatech_stock_valuation.constraint_product_valuation_combination_uniq
+msgid "Product valuation must be unique"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__quantity
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__quantity
+msgid "Quantity"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__quantity_in
+msgid "Quantity In"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__quantity_out
+msgid "Quantity Out"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.res_config_settings_view_form
+msgid "Recompute All (Background)"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.actions.server,name:deltatech_stock_valuation.action_product_valuation_history_recompute
+msgid "Recompute All Stock Valuation"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.actions.server,name:deltatech_stock_valuation.product_valuation_history_recompute_amount_action
+#: model:ir.actions.server,name:deltatech_stock_valuation.product_valuation_recompute_amount_action
+msgid "Recompute Amount"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.actions.server,name:deltatech_stock_valuation.product_template_recompute_amount_action
+msgid "Recompute Valuation"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "Refresh step reset to Step 1."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.res_config_settings_view_form
+msgid "Refresh valuation."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "Reset"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.res_config_settings_view_form
+msgid "Set the valuation area level and the valuation area for the company."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model,name:deltatech_stock_valuation.model_stock_move
+msgid "Stock Move"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_account_account__is_for_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_res_config_settings__module_deltatech_stock_valuation
+msgid "Stock Valuation"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/product_valuation.py:0
+#: code:addons/deltatech_stock_valuation/models/res_config_settings.py:0
+msgid "Stock Valuation Refresh"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#. odoo-python
+#: code:addons/deltatech_stock_valuation/models/product_valuation.py:0
+msgid "Stock valuation refresh complete (%(s)ss)."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.res_config_settings_view_form
+msgid "Stop Background Refresh"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.res_config_settings_view_form
+msgid ""
+"This will rebuild the whole stock valuation history in the background. "
+"Continue?"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_category__use_valuation_area_price
+msgid "Use Valuation Area Price"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation__valuation_area_id
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_product_valuation_history__valuation_area_id
+msgid "Valuation Area"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_res_company__valuation_area_level
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_res_config_settings__valuation_area_level
+msgid "Valuation Area Level"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,field_description:deltatech_stock_valuation.field_res_company__valuation_lot_level
+msgid "Valuation Lot Level"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields,help:deltatech_stock_valuation.field_product_product__product_valuation_ids
+msgid "Valuations of this product in different valuation areas and accounts."
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model:ir.model.fields.selection,name:deltatech_stock_valuation.selection__res_company__valuation_area_level__warehouse
+msgid "Warehouse"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_template_form_view
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_valuation_history_view_tree
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_valuation_view_tree
+msgid "sum_amount"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_valuation_history_view_tree
+msgid "sum_credit"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_valuation_history_view_tree
+msgid "sum_debit"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_template_form_view
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_valuation_history_view_tree
+msgid "sum_qty"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_valuation_history_view_tree
+msgid "sum_qty_in"
+msgstr ""
+
+#. module: deltatech_stock_valuation
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_valuation.product_valuation_history_view_tree
+msgid "sum_qty_out"
+msgstr ""
