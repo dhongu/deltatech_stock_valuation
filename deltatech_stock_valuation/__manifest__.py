@@ -6,7 +6,7 @@
 {
     "name": "Product Valuation",
     "summary": "Product Stock Valuation",
-    "version": "19.0.0.0.6",
+    "version": "19.0.0.0.7",
     "author": "Terrabit, Dorin Hongu",
     "website": "https://www.terrabit.ro",
     "category": "Valuation/Valuation",

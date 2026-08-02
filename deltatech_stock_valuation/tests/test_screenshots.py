@@ -76,9 +76,7 @@ class TestStockValuationScreenshots(AccountTestInvoicingCommon, ScreenshotCase o
         cls.product.write({"name": "Marfă demo", "is_storable": True, "categ_id": cls.categ.id})
 
         # nota de stoc CU produs — debit 1000, cantitate +10 (convenția semnată: qty pozitiv pe debit)
-        cls.move_in = cls._post_stock_entry(
-            "Recepție mărfuri în magazin", 1000.0, quantity=10.0
-        )
+        cls.move_in = cls._post_stock_entry("Recepție mărfuri în magazin", 1000.0, quantity=10.0)
 
         # seed product.valuation + product.valuation.history (sold curent + istoric lunar)
         month = fields.Date.today().strftime("%Y%m")
@@ -239,8 +237,7 @@ class TestStockValuationScreenshots(AccountTestInvoicingCommon, ScreenshotCase o
             },
             # 8. Template-ul produsului cu tabelul Product Valuations (tab Accounting / Invoicing)
             {
-                "path": f"/web?debug=0#id={self.product.product_tmpl_id.id}"
-                f"&model=product.template&view_type=form",
+                "path": f"/web?debug=0#id={self.product.product_tmpl_id.id}&model=product.template&view_type=form",
                 "name": "08_template_valuations.png",
                 "wait": ".o_form_view",
                 "click_tab": "Contabilitate",

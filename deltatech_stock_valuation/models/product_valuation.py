@@ -295,6 +295,10 @@ class ProductValuation(models.Model):
         Calculează cantitatea convertită în UoM-ul produsului (template), folosind
         raportul factorilor UoM dintre linia de factură și UoM-ul produsului.
 
+        În Odoo 19 `uom.uom.factor` este cantitatea ABSOLUTĂ (o unitate mai mare are
+        factor mai mare: Dozens=12, kg=1000), invers față de 18.0. Conversia corectă
+        este deci `qty * uom_line.factor / uom_template.factor`.
+
         Folosit ca subquery în `_get_sql_select` (clasa ProductValuation).
 
         :param account_ids: tuple de ID-uri conturi (filtru obligatoriu)
@@ -307,7 +311,7 @@ class ProductValuation(models.Model):
                 """
                     SELECT product_id, valuation_area_id, account_id, m.company_id,
                         debit, credit, move_type,
-                        l.quantity * uom_template.factor / NULLIF(uom_line.factor, 0) as quantity
+                        l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
                     FROM account_move_line as l
                         LEFT JOIN account_move as m ON l.move_id=m.id
                         LEFT JOIN product_product product ON product.id = l.product_id
@@ -325,7 +329,7 @@ class ProductValuation(models.Model):
             """
                 SELECT product_id, valuation_area_id, account_id, m.company_id,
                     debit, credit, move_type,
-                    l.quantity * uom_template.factor / NULLIF(uom_line.factor, 0) as quantity
+                    l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
                 FROM account_move_line as l
                     LEFT JOIN account_move as m ON l.move_id=m.id
                     LEFT JOIN product_product product ON product.id = l.product_id
@@ -703,6 +707,10 @@ class ProductValuationHistory(models.Model):
         Calculează cantitatea convertită în UoM-ul produsului (template), folosind
         raportul factorilor UoM dintre linia de factură și UoM-ul produsului.
 
+        În Odoo 19 `uom.uom.factor` este cantitatea ABSOLUTĂ (o unitate mai mare are
+        factor mai mare: Dozens=12, kg=1000), invers față de 18.0. Conversia corectă
+        este deci `qty * uom_line.factor / uom_template.factor`.
+
         Folosit ca subquery în `_get_sql_select` (clasa ProductValuationHistory).
 
         :param account_ids: tuple de ID-uri conturi (filtru obligatoriu)
@@ -717,7 +725,7 @@ class ProductValuationHistory(models.Model):
                 SELECT product_id, valuation_area_id, account_id, m.company_id, l.company_currency_id as currency_id,
                         debit, credit, move_type,
                         to_char(m.date, 'YYYYMM')  as month,
-                        l.quantity * uom_template.factor / NULLIF(uom_line.factor, 0) as quantity
+                        l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
                     FROM account_move_line as l
                         LEFT JOIN account_move as m ON l.move_id=m.id
                         LEFT JOIN product_product product ON product.id = l.product_id
@@ -736,7 +744,7 @@ class ProductValuationHistory(models.Model):
             SELECT product_id, valuation_area_id, account_id, m.company_id, l.company_currency_id as currency_id,
                     debit, credit, move_type,
                     to_char(m.date, 'YYYYMM')  as month,
-                    l.quantity * uom_template.factor / NULLIF(uom_line.factor, 0) as quantity
+                    l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0) as quantity
                 FROM account_move_line as l
                     LEFT JOIN account_move as m ON l.move_id=m.id
                     LEFT JOIN product_product product ON product.id = l.product_id
@@ -1018,7 +1026,7 @@ class ProductValuationHistory(models.Model):
                                m.company_id,
                                SUM(l.debit - l.credit) AS total_amount,
                                SUM(
-                                   l.quantity * uom_template.factor / NULLIF(uom_line.factor, 0)
+                                   l.quantity * uom_line.factor / NULLIF(uom_template.factor, 0)
                                    * (%(in_case)s - %(out_case)s)
                                ) AS total_quantity
                         FROM account_move_line l
