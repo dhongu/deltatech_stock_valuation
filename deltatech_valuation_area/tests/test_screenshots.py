@@ -44,9 +44,7 @@ class TestValuationAreaScreenshots(AccountTestInvoicingCommon, ScreenshotCase or
         # jurnalul de stoc (asociat ariei de evaluare)
         cls.stock_journal = env["account.journal"].search(
             [("type", "=", "general"), ("company_id", "=", company.id)], limit=1
-        ) or env["account.journal"].create(
-            {"name": "Stoc", "type": "general", "code": "STK", "company_id": company.id}
-        )
+        ) or env["account.journal"].create({"name": "Stoc", "type": "general", "code": "STK", "company_id": company.id})
 
         # aria implicită pe companie + o a doua arie pentru depozit
         cls.area_default = env["valuation.area"].create(

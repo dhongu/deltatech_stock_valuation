@@ -206,17 +206,19 @@ class TestQuantityClassification(AccountTestInvoicingCommon):
 
     def test_uom_conversion_to_reference(self):
         """Liniile postate într-un UoM diferit de cel de referință al produsului
-        trebuie convertite la unitatea de referință (qty / line.factor * tmpl.factor).
-        Regresie: o conversie inversată (qty * line.factor / tmpl.factor) umfla
+        trebuie convertite la unitatea de referință (qty * line.factor / tmpl.factor).
+        Regresie: o conversie inversată (qty * tmpl.factor / line.factor) umfla
         cantitatea — dormantă cât timp liniile folosesc UoM-ul de referință (factor 1),
-        activă pe produse postate în alt UoM."""
-        # UoM mai mic în aceeași categorie: 4 unități din acesta = 1 unitate de referință
+        activă pe produse postate în alt UoM. Atenție: în Odoo 19 `factor` e cantitatea
+        ABSOLUTĂ (Dozens=12), invers față de 18.0, deci formula s-a inversat și ea."""
+        # UoM mai mic, relativ la cel al produsului: 4 unități din acesta = 1 unitate de
+        # referință. În Odoo 19 relația se exprimă prin `relative_uom_id` + `relative_factor`
+        # ("Contains"), iar `factor` (cantitate absolută) se calculează din ele: 0.25 * 1 = 0.25.
         small_uom = self.env["uom.uom"].create(
             {
                 "name": "Quarter QC",
-                "category_id": self.product.uom_id.category_id.id,
-                "uom_type": "smaller",
-                "factor": 4.0,
+                "relative_uom_id": self.product.uom_id.id,
+                "relative_factor": 0.25,
             }
         )
         # recepție: 8 buc din UoM-ul mic -> 8 / 4 = 2.0 unități de referință
@@ -259,7 +261,7 @@ class TestQuantityClassification(AccountTestInvoicingCommon):
 
         history = self._get_history()
         self.assertTrue(history)
-        self.assertEqual(history.quantity_in, 2.0, "8 din UoM cu factor 4 = 2.0 unități de referință")
+        self.assertEqual(history.quantity_in, 2.0, "8 din UoM cu factor absolut 0.25 = 2.0 unități de referință")
         self.assertEqual(history.quantity_final, 2.0)
         self.assertEqual(history.amount_final, 400.0)
 
