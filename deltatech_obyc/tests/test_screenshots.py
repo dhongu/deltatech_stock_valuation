@@ -121,9 +121,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         # --- Locații / tipuri de picking (din depozitul companiei RO) -----------------
         warehouse = env["stock.warehouse"].search([("company_id", "=", company.id)], limit=1)
         if not warehouse:
-            warehouse = env["stock.warehouse"].create(
-                {"name": "Depozit RO", "code": "RO", "company_id": company.id}
-            )
+            warehouse = env["stock.warehouse"].create({"name": "Depozit RO", "code": "RO", "company_id": company.id})
         cls.supplier_location = env.ref("stock.stock_location_suppliers")
         cls.stock_location = warehouse.lot_stock_id
         cls.picking_type_in = warehouse.in_type_id
@@ -189,9 +187,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
     def _make_storno_return(cls, picking, qty=5.0):
         cls.env.company.account_storno = True
         return_wizard = (
-            cls.env["stock.return.picking"]
-            .with_context(active_id=picking.id, active_model="stock.picking")
-            .create({})
+            cls.env["stock.return.picking"].with_context(active_id=picking.id, active_model="stock.picking").create({})
         )
         return_wizard.product_return_moves.quantity = qty
         action = return_wizard.action_create_returns()
@@ -226,8 +222,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
             },
             # 2. Formularul unei reguli OBYC (condiții + conturi sursă/destinație/evaluare)
             {
-                "path": f"/web?debug=0#id={self.rule_modifier.id}"
-                f"&model=product.account.determination&view_type=form",
+                "path": f"/web?debug=0#id={self.rule_modifier.id}&model=product.account.determination&view_type=form",
                 "name": "02_account_determination_form.png",
                 "wait": ".o_form_view",
                 "eval": hide_new_btn_js,
@@ -242,8 +237,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
             },
             # 4. Aria de evaluare cu Stock Journal dedicat (jurnalul OBYC pe arie)
             {
-                "path": f"/web?debug=0#id={self.valuation_area.id}"
-                f"&model=valuation.area&view_type=form",
+                "path": f"/web?debug=0#id={self.valuation_area.id}&model=valuation.area&view_type=form",
                 "name": "04_valuation_area_journal.png",
                 "wait": ".o_form_view",
                 "eval": hide_new_btn_js,
@@ -252,8 +246,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
             },
             # 5. Produsul cu Valuation Class completat (tab Contabilitate)
             {
-                "path": f"/web?debug=0#id={self.product.product_tmpl_id.id}"
-                f"&model=product.template&view_type=form",
+                "path": f"/web?debug=0#id={self.product.product_tmpl_id.id}&model=product.template&view_type=form",
                 "name": "05_product_valuation_class.png",
                 "wait": ".o_form_view",
                 "click_tab": "Contabilitate",
