@@ -1,0 +1,173 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* deltatech_valuation_area
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-31 10:25+0000\n"
+"PO-Revision-Date: 2026-07-31 10:25+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__code
+msgid "Code"
+msgstr "Cod"
+
+#. module: deltatech_valuation_area
+#: model:ir.model,name:deltatech_valuation_area.model_res_company
+msgid "Companies"
+msgstr "Companii"
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__company_id
+msgid "Company"
+msgstr "Companie"
+
+#. module: deltatech_valuation_area
+#: model:ir.model,name:deltatech_valuation_area.model_res_config_settings
+msgid "Config Settings"
+msgstr "Setări de configurare"
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__create_uid
+msgid "Created by"
+msgstr "Creat de"
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__create_date
+msgid "Created on"
+msgstr "Creat în"
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_company__display_name
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_stock_location__display_name
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_stock_move__display_name
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_stock_warehouse__display_name
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__display_name
+msgid "Display Name"
+msgstr "Nume afișat"
+
+#. module: deltatech_valuation_area
+#: model:ir.ui.menu,name:deltatech_valuation_area.menu_valuation_area
+msgid "Evaluation Area"
+msgstr "Zonă de evaluare"
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_account_move_line__id
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_company__id
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_config_settings__id
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_stock_location__id
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_stock_move__id
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_stock_warehouse__id
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__id
+msgid "ID"
+msgstr "ID"
+
+#. module: deltatech_valuation_area
+#: model:ir.model,name:deltatech_valuation_area.model_stock_location
+msgid "Inventory Locations"
+msgstr "Locații inventar"
+
+#. module: deltatech_valuation_area
+#: model:ir.model,name:deltatech_valuation_area.model_account_move_line
+msgid "Journal Item"
+msgstr "Element jurnal"
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__write_uid
+msgid "Last Updated by"
+msgstr "Ultima actualizare făcută de"
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__write_date
+msgid "Last Updated on"
+msgstr "Ultima actualizare pe"
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__name
+msgid "Name"
+msgstr "Nume"
+
+#. module: deltatech_valuation_area
+#: model_terms:ir.ui.view,arch_db:deltatech_valuation_area.res_config_settings_view_form
+msgid "Set valuation area for the company."
+msgstr "Setați zona de evaluare pentru companie."
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,help:deltatech_valuation_area.field_valuation_area__code
+msgid "Short code used in account determination"
+msgstr "Cod scurt folosit în determinarea contului"
+
+#. module: deltatech_valuation_area
+#. odoo-python
+#: code:addons/deltatech_valuation_area/models/stock_move.py:0
+msgid ""
+"Source and destination locations must have the same valuation area for "
+"internal moves."
+msgstr ""
+"Locațiile sursă și destinație trebuie să aibă aceeași zonă de evaluare "
+"pentru mișcările interne."
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__stock_journal_id
+msgid "Stock Journal"
+msgstr "Jurnal de stoc"
+
+#. module: deltatech_valuation_area
+#: model:ir.model,name:deltatech_valuation_area.model_stock_move
+msgid "Stock Move"
+msgstr "Mișcare stoc"
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_company__use_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_config_settings__use_valuation_area
+msgid "Use Valuation Area"
+msgstr "Folosește zonă de evaluare"
+
+#. module: deltatech_valuation_area
+#: model_terms:ir.ui.view,arch_db:deltatech_valuation_area.res_config_settings_view_form
+msgid "Use valuation area for this company."
+msgstr "Folosește zonă de evaluare pentru această companie."
+
+#. module: deltatech_valuation_area
+#: model:ir.actions.act_window,name:deltatech_valuation_area.action_valuation_area
+#: model:ir.model,name:deltatech_valuation_area.model_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_account_move_line__valuation_area_id
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_company__valuation_area_id
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_config_settings__valuation_area_id
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_stock_location__valuation_area_id
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_stock_warehouse__valuation_area_id
+msgid "Valuation Area"
+msgstr "Arie de evaluare"
+
+#. module: deltatech_valuation_area
+#. odoo-python
+#: code:addons/deltatech_valuation_area/models/account_move_line.py:0
+msgid ""
+"Valuation Area is required for stockable products. If the product is not "
+"stockable, you can leave it empty."
+msgstr ""
+"Zona de evaluare este obligatorie pentru produsele stocabile. Dacă produsul "
+"nu este stocabil, o puteți lăsa necompletată."
+
+#. module: deltatech_valuation_area
+#. odoo-python
+#: code:addons/deltatech_valuation_area/models/account_move_line.py:0
+#: code:addons/deltatech_valuation_area/models/stock_move.py:0
+msgid "Valuation area is not defined"
+msgstr "Zona de evaluare nu este definită"
+
+#. module: deltatech_valuation_area
+#: model:ir.model,name:deltatech_valuation_area.model_stock_warehouse
+msgid "Warehouse"
+msgstr "Depozit"
