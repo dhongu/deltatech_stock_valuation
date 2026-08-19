@@ -74,9 +74,7 @@ class StockMove(models.Model):
         debit=0/credit=0 — o notă aparent înregistrată, dar fără valoare.
         """
         res = super()._set_value(correction_quantity=correction_quantity)
-        obyc_dropship_moves = self.filtered(
-            lambda m: m.product_id.valuation_class_id and m.is_dropship and not m.value
-        )
+        obyc_dropship_moves = self.filtered(lambda m: m.product_id.valuation_class_id and m.is_dropship and not m.value)
         for move in obyc_dropship_moves:
             move.value = move.sudo()._get_value()
         return res
