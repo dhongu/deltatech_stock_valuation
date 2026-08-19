@@ -63,6 +63,22 @@ class StockMove(models.Model):
     #
     #     return am_vals_list
 
+    def _set_value(self, correction_quantity=None):
+        """Completează valoarea mișcărilor dropship pentru produsele OBYC.
+
+        Core (`stock_account._set_value`) include mișcările dropship în
+        filtrul `is_in or is_dropship`, dar atribuie `move.value` doar când
+        `is_in` e adevărat. Fără acest fix, `_get_account_move_line_vals()`
+        de mai jos ar folosi `self.value == 0`, iar nota contabilă OBYC
+        generată imediat după (tot în `_action_done()`) ar fi postată cu
+        debit=0/credit=0 — o notă aparent înregistrată, dar fără valoare.
+        """
+        res = super()._set_value(correction_quantity=correction_quantity)
+        obyc_dropship_moves = self.filtered(lambda m: m.product_id.valuation_class_id and m.is_dropship and not m.value)
+        for move in obyc_dropship_moves:
+            move.value = move.sudo()._get_value()
+        return res
+
     def _compute_transaction_key(self):
         source_usage = self.location_id.usage
         dest_usage = self.location_dest_id.usage
