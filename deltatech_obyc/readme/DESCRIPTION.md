@@ -195,6 +195,7 @@ This three-account approach enables more sophisticated accounting treatments tha
 ## 📊 Transaction Key Use Cases
 
 ### Purchase Flow
+
 - **stock_receipt**: When goods are received from a supplier
   - Debit: Inventory (Destination Account)
   - Credit: GR/IR Clearing (Source Account)
@@ -206,6 +207,7 @@ This three-account approach enables more sophisticated accounting treatments tha
   - Valuation Account: Used for price differences
 
 ### Sales Flow
+
 - **stock_delivery**: When goods are delivered to a customer
   - Debit: COGS (Destination Account)
   - Credit: Inventory (Source Account)
@@ -222,6 +224,7 @@ This three-account approach enables more sophisticated accounting treatments tha
   - Valuation Account: Usually not used in this context
 
 ### Inventory Management
+
 - **inventory_adjustment_plus**: For positive inventory adjustments
   - Debit: Inventory (Destination Account)
   - Credit: Inventory Adjustment (Source Account)
@@ -233,6 +236,7 @@ This three-account approach enables more sophisticated accounting treatments tha
   - Valuation Account: Used for valuation effects
 
 ### Manufacturing
+
 - **production_issue**: When materials are consumed in production
   - Debit: WIP (Destination Account)
   - Credit: Raw Materials (Source Account)
@@ -244,6 +248,7 @@ This three-account approach enables more sophisticated accounting treatments tha
   - Valuation Account: Used for price differences
 
 ### Special Cases
+
 - **dropship**: For direct delivery from supplier to customer
   - Debit: COGS (Destination Account)
   - Credit: Payables (Source Account)
