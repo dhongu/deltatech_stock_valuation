@@ -4,6 +4,7 @@
 
 from odoo.exceptions import ValidationError
 from odoo.tests import tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -126,6 +127,12 @@ class TestValuationPricing(AccountTestInvoicingCommon):
             "Outgoing move should be valued at the product.valuation price",
         )
 
+    # Testul trece deliberat pe calea fără evaluare, iar `_get_price_unit`
+    # loghează acolo un WARNING. checklog-odoo (OCA_ENABLE_CHECKLOG_ODOO) pică
+    # rularea la orice WARNING din log, deși niciun test nu eșuează. Tăcem
+    # loggerul doar aici; în producție avertizarea rămâne, fiindcă semnalează
+    # o configurare incompletă a ariilor de evaluare.
+    @mute_logger("odoo.addons.deltatech_stock_valuation.models.stock_move")
     def test_outgoing_move_without_valuation_falls_back_to_standard(self):
         """
         Dacă nu există evaluare pentru produs, ieșirea trebuie să folosească

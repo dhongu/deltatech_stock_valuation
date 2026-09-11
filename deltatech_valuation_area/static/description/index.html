@@ -1,434 +1,135 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils: https://docutils.sourceforge.io/" />
-<title>Deltatech Stock Valuation Area</title>
-<style type="text/css">
-
-/*
-:Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 9511 2024-01-13 09:50:07Z milde $
-:Copyright: This stylesheet has been placed in the public domain.
-
-Default cascading style sheet for the HTML output of Docutils.
-Despite the name, some widely supported CSS2 features are used.
-
-See https://docutils.sourceforge.io/docs/howto/html-stylesheets.html for how to
-customize this style sheet.
-*/
-
-/* used to remove borders from tables and images */
-.borderless, table.borderless td, table.borderless th {
-  border: 0 }
-
-table.borderless td, table.borderless th {
-  /* Override padding for "table.docutils td" with "! important".
-     The right padding separates the table cells. */
-  padding: 0 0.5em 0 0 ! important }
-
-.first {
-  /* Override more specific margin styles with "! important". */
-  margin-top: 0 ! important }
-
-.last, .with-subtitle {
-  margin-bottom: 0 ! important }
-
-.hidden {
-  display: none }
-
-.subscript {
-  vertical-align: sub;
-  font-size: smaller }
-
-.superscript {
-  vertical-align: super;
-  font-size: smaller }
-
-a.toc-backref {
-  text-decoration: none ;
-  color: black }
-
-blockquote.epigraph {
-  margin: 2em 5em ; }
-
-dl.docutils dd {
-  margin-bottom: 0.5em }
-
-object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
-  overflow: hidden;
-}
-
-/* Uncomment (and remove this text!) to get bold-faced definition list terms
-dl.docutils dt {
-  font-weight: bold }
-*/
-
-div.abstract {
-  margin: 2em 5em }
-
-div.abstract p.topic-title {
-  font-weight: bold ;
-  text-align: center }
-
-div.admonition, div.attention, div.caution, div.danger, div.error,
-div.hint, div.important, div.note, div.tip, div.warning {
-  margin: 2em ;
-  border: medium outset ;
-  padding: 1em }
-
-div.admonition p.admonition-title, div.hint p.admonition-title,
-div.important p.admonition-title, div.note p.admonition-title,
-div.tip p.admonition-title {
-  font-weight: bold ;
-  font-family: sans-serif }
-
-div.attention p.admonition-title, div.caution p.admonition-title,
-div.danger p.admonition-title, div.error p.admonition-title,
-div.warning p.admonition-title, .code .error {
-  color: red ;
-  font-weight: bold ;
-  font-family: sans-serif }
-
-/* Uncomment (and remove this text!) to get reduced vertical space in
-   compound paragraphs.
-div.compound .compound-first, div.compound .compound-middle {
-  margin-bottom: 0.5em }
-
-div.compound .compound-last, div.compound .compound-middle {
-  margin-top: 0.5em }
-*/
-
-div.dedication {
-  margin: 2em 5em ;
-  text-align: center ;
-  font-style: italic }
-
-div.dedication p.topic-title {
-  font-weight: bold ;
-  font-style: normal }
-
-div.figure {
-  margin-left: 2em ;
-  margin-right: 2em }
-
-div.footer, div.header {
-  clear: both;
-  font-size: smaller }
-
-div.line-block {
-  display: block ;
-  margin-top: 1em ;
-  margin-bottom: 1em }
-
-div.line-block div.line-block {
-  margin-top: 0 ;
-  margin-bottom: 0 ;
-  margin-left: 1.5em }
-
-div.sidebar {
-  margin: 0 0 0.5em 1em ;
-  border: medium outset ;
-  padding: 1em ;
-  background-color: #ffffee ;
-  width: 40% ;
-  float: right ;
-  clear: right }
-
-div.sidebar p.rubric {
-  font-family: sans-serif ;
-  font-size: medium }
-
-div.system-messages {
-  margin: 5em }
-
-div.system-messages h1 {
-  color: red }
-
-div.system-message {
-  border: medium outset ;
-  padding: 1em }
-
-div.system-message p.system-message-title {
-  color: red ;
-  font-weight: bold }
-
-div.topic {
-  margin: 2em }
-
-h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
-h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
-  margin-top: 0.4em }
-
-h1.title {
-  text-align: center }
-
-h2.subtitle {
-  text-align: center }
-
-hr.docutils {
-  width: 75% }
-
-img.align-left, .figure.align-left, object.align-left, table.align-left {
-  clear: left ;
-  float: left ;
-  margin-right: 1em }
-
-img.align-right, .figure.align-right, object.align-right, table.align-right {
-  clear: right ;
-  float: right ;
-  margin-left: 1em }
-
-img.align-center, .figure.align-center, object.align-center {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-table.align-center {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.align-left {
-  text-align: left }
-
-.align-center {
-  clear: both ;
-  text-align: center }
-
-.align-right {
-  text-align: right }
-
-/* reset inner alignment in figures */
-div.align-right {
-  text-align: inherit }
-
-/* div.align-center * { */
-/*   text-align: left } */
-
-.align-top    {
-  vertical-align: top }
-
-.align-middle {
-  vertical-align: middle }
-
-.align-bottom {
-  vertical-align: bottom }
-
-ol.simple, ul.simple {
-  margin-bottom: 1em }
-
-ol.arabic {
-  list-style: decimal }
-
-ol.loweralpha {
-  list-style: lower-alpha }
-
-ol.upperalpha {
-  list-style: upper-alpha }
-
-ol.lowerroman {
-  list-style: lower-roman }
-
-ol.upperroman {
-  list-style: upper-roman }
-
-p.attribution {
-  text-align: right ;
-  margin-left: 50% }
-
-p.caption {
-  font-style: italic }
-
-p.credits {
-  font-style: italic ;
-  font-size: smaller }
-
-p.label {
-  white-space: nowrap }
-
-p.rubric {
-  font-weight: bold ;
-  font-size: larger ;
-  color: maroon ;
-  text-align: center }
-
-p.sidebar-title {
-  font-family: sans-serif ;
-  font-weight: bold ;
-  font-size: larger }
-
-p.sidebar-subtitle {
-  font-family: sans-serif ;
-  font-weight: bold }
-
-p.topic-title {
-  font-weight: bold }
-
-pre.address {
-  margin-bottom: 0 ;
-  margin-top: 0 ;
-  font: inherit }
-
-pre.literal-block, pre.doctest-block, pre.math, pre.code {
-  margin-left: 2em ;
-  margin-right: 2em }
-
-pre.code .ln { color: gray; } /* line numbers */
-pre.code, code { background-color: #eeeeee }
-pre.code .comment, code .comment { color: #5C6576 }
-pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
-pre.code .literal.string, code .literal.string { color: #0C5404 }
-pre.code .name.builtin, code .name.builtin { color: #352B84 }
-pre.code .deleted, code .deleted { background-color: #DEB0A1}
-pre.code .inserted, code .inserted { background-color: #A3D289}
-
-span.classifier {
-  font-family: sans-serif ;
-  font-style: oblique }
-
-span.classifier-delimiter {
-  font-family: sans-serif ;
-  font-weight: bold }
-
-span.interpreted {
-  font-family: sans-serif }
-
-span.option {
-  white-space: nowrap }
-
-span.pre {
-  white-space: pre }
-
-span.problematic, pre.problematic {
-  color: red }
-
-span.section-subtitle {
-  /* font-size relative to parent (h1..h6 element) */
-  font-size: 80% }
-
-table.citation {
-  border-left: solid 1px gray;
-  margin-left: 1px }
-
-table.docinfo {
-  margin: 2em 4em }
-
-table.docutils {
-  margin-top: 0.5em ;
-  margin-bottom: 0.5em }
-
-table.footnote {
-  border-left: solid 1px black;
-  margin-left: 1px }
-
-table.docutils td, table.docutils th,
-table.docinfo td, table.docinfo th {
-  padding-left: 0.5em ;
-  padding-right: 0.5em ;
-  vertical-align: top }
-
-table.docutils th.field-name, table.docinfo th.docinfo-name {
-  font-weight: bold ;
-  text-align: left ;
-  white-space: nowrap ;
-  padding-left: 0 }
-
-/* "booktabs" style (no vertical lines) */
-table.docutils.booktabs {
-  border: 0px;
-  border-top: 2px solid;
-  border-bottom: 2px solid;
-  border-collapse: collapse;
-}
-table.docutils.booktabs * {
-  border: 0px;
-}
-table.docutils.booktabs th {
-  border-bottom: thin solid;
-  text-align: left;
-}
-
-h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
-h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
-  font-size: 100% }
-
-ul.auto-toc {
-  list-style-type: none }
-
-</style>
-</head>
-<body>
-<div class="document" id="deltatech-stock-valuation-area">
-<h1 class="title">Deltatech Stock Valuation Area</h1>
-
-<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!! This file is generated by oca-gen-addon-readme !!
-!! changes will be overwritten.                   !!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!! source digest: sha256:43283e9117ba791881c0fff94c40956cc85b658753b73dc766a05a47cc1b178c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
-<p><a class="reference external image-reference" href="https://odoo-community.org/page/development-status"><img alt="Beta" src="https://img.shields.io/badge/maturity-Beta-yellow.png" /></a> <a class="reference external image-reference" href="http://www.gnu.org/licenses/lgpl-3.0-standalone.html"><img alt="License: LGPL-3" src="https://img.shields.io/badge/licence-LGPL--3-blue.png" /></a> <a class="reference external image-reference" href="https://github.com/dhongu/deltatech_stock_valuation/tree/18.0/deltatech_valuation_area"><img alt="dhongu/deltatech_stock_valuation" src="https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github" /></a></p>
-<div class="section" id="deltatech-valuation-area">
-<h1>Deltatech Valuation Area</h1>
-<p>This module extends Odoo’s inventory valuation capabilities by
-introducing the concept of Valuation Areas.</p>
-<div class="section" id="features">
-<h2>Features</h2>
-<ul class="simple">
-<li>Define separate valuation areas within the same company</li>
-<li>Each valuation area has a unique code and name</li>
-<li>Associate dedicated stock journals with valuation areas</li>
-<li>Use valuation areas for more granular inventory accounting</li>
-<li>Supports account determination through short codes</li>
+<div class="mx-auto px-3" style="max-width:1100px;font-family:'Segoe UI','Avenir Next','Helvetica Neue',Arial,sans-serif;color:#212529;font-weight:400;">
+<!-- tb-gen v1 -->
+<div class="text-white text-center rounded-4 shadow px-4 py-5 mt-2 mb-4" style="background-color:#006F42;">
+  <span class="d-inline-block rounded-pill fw-bold text-uppercase mb-4"
+    style="background-color:#00432a;color:#9be8b6;letter-spacing:1.5px;padding:7px 18px;font-size:11px;">Odoo Partner &nbsp;&bull;&nbsp; Terrabit</span>
+  <div class="mb-3"><span class="d-inline-block rounded-3 p-2" style="background-color:#ffffff;"><img src="icon.png" alt="Deltatech Stock Valuation Area" style="width:72px;height:72px;border:none;"/></span></div>
+  <h1 class="text-white fw-bold mb-3" style="font-size:42px;line-height:1.08;letter-spacing:-0.5px;border:none;">Deltatech Stock Valuation Area</h1>
+  <p class="mx-auto mb-4" style="font-size:19px;color:#cdeccf;max-width:620px;line-height:1.5;">Stock Valuation Area Management</p>
+  <div>
+    <span class="d-inline-block rounded-pill fw-bold m-1" style="background-color:#57B952;color:#04331f;padding:8px 16px;font-size:12px;">Odoo 18.0</span>
+    <span class="d-inline-block rounded-pill fw-semibold text-white m-1" style="background-color:#00432a;padding:8px 16px;font-size:12px;">Valuation/Valuation</span>
+    <span class="d-inline-block rounded-pill fw-semibold text-white m-1" style="background-color:#00432a;padding:8px 16px;font-size:12px;">LGPL-3</span>
+    <span class="d-inline-block rounded-pill fw-semibold text-white m-1" style="background-color:#00432a;padding:8px 16px;font-size:12px;">Online &bull; Odoo.sh &bull; On-premise</span>
+  </div>
+</div>
+
+<div class="tab-pane fade show active py-2" id="tb-panel-overview" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
+<h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Overview</h2>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Deltatech Valuation Area</h2>
+<p class="mb-4" style="font-size:19px;line-height:1.6;max-width:780px;">Modul pentru definirea &#537;i gestionarea <strong>ariilor de evaluare</strong> a stocului, inspirat din conceptul SAP
+de <strong>Valuation Area</strong> (nivel de evaluare per depozit sau loca&#539;ie).</p>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Func&#539;ionalit&#259;&#539;i principale</h3>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Activare per companie</span><div class="mt-1">&#8212; func&#539;ionalitatea poate fi activat&#259; sau dezactivat&#259; individual pentru fiecare companie</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Definire arii de evaluare</span><div class="mt-1">cu cod scurt, nume &#537;i jurnal contabil dedicat</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Asociere la nivel de companie, depozit sau loca&#539;ie</span><div class="mt-1">&#8212; flexibilitate maxim&#259; &#238;n organizarea evalu&#259;rii</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Propagare automat&#259;</span><div class="mt-1">a ariei de evaluare pe liniile contabile (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">account.move.line</code>) generate din mi&#537;c&#259;rile de stoc</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Arie obligatorie</span><div class="mt-1">pentru produse stocabile (dac&#259; este activat&#259; pe companie) &#8212; validare prin metod&#259; extensibil&#259;</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Editare manual&#259;</span><div class="mt-1">permis&#259; pe linia contabil&#259; (pentru corec&#539;ii excep&#539;ionale)</div></div></li></ul>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Modele extinse</h3>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">valuation.area</code> &#8212; modelul principal: cod, nume, companie, jurnal stoc</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">res.company</code> &#8212; c&#226;mpuri <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">use_valuation_area</code> (activare) &#537;i <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">valuation_area_id</code> (arie implicit&#259;)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock.warehouse</code> &#8212; c&#226;mp <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">valuation_area_id</code> (arie per depozit)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock.location</code> &#8212; c&#226;mp <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">valuation_area_id</code> (arie per loca&#539;ie, prioritate maxim&#259;)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">account.move.line</code> &#8212; c&#226;mp <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">valuation_area_id</code> (stocat, calculat automat din mi&#537;c&#259;rile de stoc) &#537;i metod&#259; de validare <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">_is_valuation_area_required</code></div></div></li></ul>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Logica de determinare a ariei (prioritate)</h3>
+<p>La generarea liniilor contabile dintr-o mi&#537;care de stoc, aria se determin&#259; &#238;n ordinea:</p>
+<ol>
+<li><strong>Loca&#539;ia destina&#539;ie</strong> (dac&#259; este intern&#259;) &#8212; prioritate maxim&#259;</li>
+<li><strong>Loca&#539;ia surs&#259;</strong> (dac&#259; este intern&#259;)</li>
+<li><strong>Depozitul</strong> asociat mi&#537;c&#259;rii</li>
+<li><strong>Compania</strong> &#8212; fallback implicit</li>
+</ol>
+<blockquote>
+<p>&#9888;&#65039; <strong>Constr&#226;ngere:</strong> Transferurile interne &#238;ntre loca&#539;ii cu arii de evaluare diferite nu sunt permise.
+Sursa &#537;i destina&#539;ia trebuie s&#259; apar&#539;in&#259; aceleia&#537;i arii de evaluare.</p>
+</blockquote>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Propagarea ariei pe liniile contabile</h3>
+<pre class="border rounded-3 p-3 my-3" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;overflow-x:auto;"><code>res.company.valuation_area_id       &#8592; fallback implicit
+stock.warehouse.valuation_area_id   &#8592; per depozit
+stock.location.valuation_area_id    &#8592; per loca&#539;ie (prioritate maxim&#259;)
+        &#8595;
+stock.move._get_valuation_area()    &#8592; determin&#259; aria din loca&#539;ii
+        &#8595;
+account.move.line.valuation_area_id &#8592; stocat pe linia contabil&#259;
+</code></pre>
+<p>Metoda <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">_prepare_account_move_line</code> este extins&#259; pentru a injecta automat <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">valuation_area_id</code>
+pe fiecare linie contabil&#259; generat&#259; din mi&#537;c&#259;rile de stoc.</p>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Configurare</h3>
+<p>Ariile de evaluare se configureaz&#259; din meniul <strong>Inventar &gt; Configurare &gt; Arii de Evaluare</strong>.
+Pentru fiecare arie se specific&#259;:</p>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Nume</span><div class="mt-1">&#8212; denumire descriptiv&#259;</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Cod</span><div class="mt-1">&#8212; cod scurt utilizat &#238;n determinarea conturilor contabile</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Companie</span><div class="mt-1">&#8212; compania c&#259;reia &#238;i apar&#539;ine aria</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Jurnal stoc</span><div class="mt-1">&#8212; jurnalul contabil pentru tranzac&#539;iile de stoc din aceast&#259; arie</div></div></li></ul>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Metod&#259; de evaluare suportat&#259;</h3>
+<blockquote>
+<p>&#9888;&#65039; <strong>Important:</strong> Acest modul este proiectat pentru metoda de evaluare <strong>AVCO (cost mediu ponderat)</strong>.
+Nu este compatibil cu produsele configurate cu metoda <strong>FIFO</strong>.</p>
+</blockquote>
+<p>Ariile de evaluare agregeaz&#259; liniile contabile (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">account.move.line</code>) per produs &#537;i arie, calcul&#226;nd un cost mediu ponderat.
+Metoda FIFO necesit&#259; urm&#259;rirea straturilor individuale de cost, informa&#539;ie care se pierde prin aceast&#259; agregare.</p>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Dependen&#539;e</h3>
+<ul>
+<li><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock_account</code> &#8212; evaluare stoc standard Odoo</li>
 </ul>
 </div>
-<div class="section" id="usage">
-<h2>Usage</h2>
-<p>Valuation areas allow companies to manage inventory valuation separately
-for different physical locations, departments, or business units. This
-is particularly useful for organizations with complex inventory
-operations or those required to maintain separate valuation methods for
-different parts of their business.</p>
+
+<div class="row text-center mt-4 mb-1 g-3">
+  <div class="col-md-6">
+    <div class="border rounded-3 p-4 h-100">
+      <div class="fw-bold" style="font-size:2.2rem;color:#006F42;line-height:1;">350+</div>
+      <div class="mt-2" style="font-size:0.9rem;color:#3d4752;">Modules published on Odoo Apps</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="border rounded-3 p-4 h-100">
+      <div class="fw-bold" style="font-size:2.2rem;color:#006F42;line-height:1;">Silver</div>
+      <div class="mt-2" style="font-size:0.9rem;color:#3d4752;">Odoo Partner &mdash; implementation &amp; support</div>
+    </div>
+  </div>
 </div>
-<div class="section" id="configuration">
-<h2>Configuration</h2>
-<p>Configure valuation areas from the Inventory &gt; Configuration menu. For
-each valuation area, you need to specify:</p>
-<ul class="simple">
-<li>Name: A descriptive name for the valuation area</li>
-<li>Code: A short code used in account determination</li>
-<li>Company: The company to which this valuation area belongs</li>
-<li>Stock Journal: The accounting journal for inventory transactions in
-this area</li>
-</ul>
-<p><strong>Table of contents</strong></p>
+
+
+<div class="text-white text-center rounded-4 px-4 pt-5 pb-4 mt-4 mb-3" style="background-color:#00432a;">
+  <h2 class="text-white fw-bold mb-2" style="font-size:26px;letter-spacing:-0.3px;border:none;">Need help getting started?</h2>
+  <p class="mx-auto mb-4" style="color:#bfe3cc;max-width:660px;line-height:1.6;font-size:16px;">
+     Our 350+ apps on the Odoo Apps Store are used in Odoo implementations across Europe,
+     the Americas, Asia and Africa &mdash; by companies we have never even met. That is the
+     advantage of building modules that simply work.</p>
+  <a href="https://www.terrabit.ro/contactus" target="_blank" rel="noopener"
+     class="d-inline-block fw-bold text-decoration-none rounded-3"
+     style="background-color:#57B952;color:#04331f;padding:14px 32px;font-size:15px;">Contact Terrabit &rarr;</a>
 </div>
+
+
+<section class="rounded-4 p-4 mb-3 border">
+  <h2 class="text-center fw-bold mb-1" style="font-size:24px;border:none;">More apps by Terrabit</h2>
+  <p class="text-center mb-4" style="color:#3d4752;">Other modules from the same publisher, built to work together.
+    <a href="https://apps.odoo.com/apps/browse?author=Terrabit" target="_blank" rel="noopener"
+       class="fw-semibold" style="color:#006F42;">All apps &rarr;</a></p>
+  <div class="row g-3">
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/18.0/deltatech_obyc" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block text-center text-white fw-bold rounded me-2 flex-shrink-0"
+                  style="width:40px;height:40px;line-height:40px;font-size:14px;background-color:#006F42;">OA</span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:14px;line-height:1.2;">Deltatech OBYC - Account Determination</span>
+              <span class="d-block" style="font-size:11px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:12px;color:#3d4752;">Implementare OBYC-style account mapping pentru tranzac&#539;ii de stoc</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/18.0/deltatech_stock_valuation" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block text-center text-white fw-bold rounded me-2 flex-shrink-0"
+                  style="width:40px;height:40px;line-height:40px;font-size:14px;background-color:#006F42;">PV</span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:14px;line-height:1.2;">Product Valuation</span>
+              <span class="d-block" style="font-size:11px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:12px;color:#3d4752;">Product Stock Valuation</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
 </div>
-<div class="section" id="bug-tracker">
-<h1>Bug Tracker</h1>
-<p>Bugs are tracked on <a class="reference external" href="https://www.terrabit.ro/helpdesk">Terrabit Issues</a>.
-In case of trouble, please check there if your issue has already been reported.</p>
-<p>Do not contact contributors directly about support or help with technical issues.</p>
-</div>
-<div class="section" id="credits">
-<h1>Credits</h1>
-<div class="section" id="authors">
-<h2>Authors</h2>
-<ul class="simple">
-<li>Terrabit</li>
-<li>Dorin Hongu</li>
-</ul>
-</div>
-<div class="section" id="maintainers">
-<h2>Maintainers</h2>
-<p>Current maintainer:</p>
-<p><a class="reference external image-reference" href="https://github.com/dhongu"><img alt="dhongu" src="https://github.com/dhongu.png?size=40px" /></a></p>
-<p>This module is part of the <a class="reference external" href="https://github.com/dhongu/deltatech_stock_valuation/tree/18.0/deltatech_valuation_area">dhongu/deltatech_stock_valuation</a> project on GitHub.</p>
-<p>You are welcome to contribute.</p>
-</div>
-</div>
-</div>
-</body>
-</html>
