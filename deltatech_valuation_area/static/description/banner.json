@@ -1,0 +1,11 @@
+{
+  "title": "Valuation Areas",
+  "summary": "SAP-style valuation areas per warehouse",
+  "icon": "grid",
+  "lang": "en",
+  "features": [
+    "Per warehouse or location assignment",
+    "Auto-propagates to accounting lines",
+    "Required on lines for storable products"
+  ]
+}

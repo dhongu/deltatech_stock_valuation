@@ -1,0 +1,342 @@
+# © 2025 Deltatech
+# See README.rst file on addons root folder for license details
+
+from odoo.exceptions import UserError
+from odoo.fields import Command
+from odoo.tests import tagged
+
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+
+
+@tagged("post_install", "-at_install")
+class TestValuationArea(AccountTestInvoicingCommon):
+    @classmethod
+    def setUpClass(cls):
+        # Reuse accounting common to have journals/partners/products ready
+        super().setUpClass()
+
+        cls.env.company.use_valuation_area = True
+
+        # Ensure no default valuation area on company to begin with
+        cls.env.company.valuation_area_id = False
+
+        # Create one valuation area to use in tests
+        cls.valuation_area = cls.env["valuation.area"].create(
+            {
+                "name": "Main Warehouse",
+                "code": "MW",
+                "company_id": cls.env.company.id,
+            }
+        )
+
+    def test_display_name_format(self):
+        # display_name should be in format: [CODE] Name
+        self.assertEqual(self.valuation_area.display_name, "[MW] Main Warehouse")
+
+    def test_invoice_line_requires_valuation_area_when_product(self):
+        # With company valuation area unset, creating a stockable product line should
+        # trigger the constraint that valuation_area_id is required.
+        self.env.company.valuation_area_id = False
+        self.env.company.use_valuation_area = True
+
+        # Ensure the product used is stockable to trigger the constraint
+        self.product_a.is_storable = True
+
+        # Prepare a minimal customer invoice using existing fixtures
+        invoice_vals = {
+            "move_type": "out_invoice",
+            "partner_id": self.partner_a.id,
+            "invoice_line_ids": [
+                Command.create(
+                    {
+                        "product_id": self.product_a.id,  # stockable product
+                        "quantity": 1.0,
+                        "price_unit": 100.0,
+                        "valuation_area_id": self.valuation_area.id,
+                    }
+                )
+            ],
+        }
+        # create the move to get the lines and their accounts
+        move = self.env["account.move"].create(invoice_vals)
+        for line in move.invoice_line_ids:
+            if line.product_id:
+                # line.account_id.is_for_stock_valuation = True
+                with self.assertRaises(UserError):
+                    line.valuation_area_id = False
+
+    def test_valuation_area_inactive(self):
+        # When use_valuation_area is False, no error should be raised even if valuation_area_id is False
+        self.env.company.use_valuation_area = False
+        self.env.company.valuation_area_id = False
+        self.product_a.is_storable = True
+
+        invoice_vals = {
+            "move_type": "out_invoice",
+            "partner_id": self.partner_a.id,
+            "invoice_line_ids": [
+                Command.create(
+                    {
+                        "product_id": self.product_a.id,
+                        "quantity": 1.0,
+                        "price_unit": 100.0,
+                    }
+                )
+            ],
+        }
+        # This should not raise UserError because use_valuation_area is False
+        move = self.env["account.move"].create(invoice_vals)
+        self.assertFalse(move.invoice_line_ids[0].valuation_area_id)
+
+    def test_invoice_line_gets_company_valuation_area(self):
+        # When company has a valuation area defined, invoice line should compute it
+        self.env.company.valuation_area_id = self.valuation_area
+
+        # Ensure the product used is stockable
+        self.product_a.is_storable = True
+
+        move = self.env["account.move"].create(
+            {
+                "move_type": "out_invoice",
+                "partner_id": self.partner_a.id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.product_a.id,
+                            "quantity": 2.0,
+                            "price_unit": 50.0,
+                        }
+                    )
+                ],
+            }
+        )
+
+        line = move.invoice_line_ids[:1]
+        self.assertEqual(line.valuation_area_id, self.valuation_area)
+
+    def test_stock_move_accounting_sets_valuation_area(self):
+        """
+        Validate a real-time valued stock move generates accounting entries and
+        our stock.move override sets valuation_area_id on the move lines.
+        """
+        company = self.env.company
+        # Ensure valuation area is set so _get_valuation_area() doesn't raise.
+        company.valuation_area_id = self.valuation_area
+
+        # Use a stockable product
+        self.product_a.is_storable = True
+
+        stock_valuation_account = self.env["account.account"].create(
+            {
+                "name": "Stock Valuation",
+                "code": "SV0001",
+                "account_type": "asset_current",
+            }
+        )
+
+        cogs_account = self.env["account.account"].create(
+            {
+                "name": "COGS",
+                "code": "COGS01",
+                "internal_group": "expense",
+                "account_type": "asset_current",
+            }
+        )
+
+        stock_journal = self.env["account.journal"].create({"name": "Stock Journal", "type": "general", "code": "STK"})
+
+        # Create a product category with real-time valuation and proper accounts
+        categ = self.env["product.category"].create(
+            {
+                "name": "Valued Cat",
+                "property_valuation": "real_time",
+                "property_cost_method": "standard",
+                "property_stock_valuation_account_id": stock_valuation_account.id,
+                "property_stock_journal": stock_journal.id,
+                # Some DBs also use expense account on category for dropship/cogs; harmless here
+                "property_account_expense_categ_id": cogs_account.id,
+            }
+        )
+        self.product_a.categ_id = categ
+        # Set a standard cost to avoid zero-cost edge cases
+        self.product_a.standard_price = 10.0
+
+        # Get warehouse and locations
+        warehouse = self.env["stock.warehouse"].search([("company_id", "=", company.id)], limit=1)
+        self.assertTrue(warehouse, "No warehouse found for the current company")
+        stock_location = warehouse.lot_stock_id
+        customer_location = self.env.ref("stock.stock_location_customers")
+
+        # Put some stock on hand via quant adjustment
+        self.env["stock.quant"]._update_available_quantity(self.product_a, stock_location, 5.0)
+
+        # Create an outgoing picking to customer
+        picking = self.env["stock.picking"].create(
+            {
+                "picking_type_id": warehouse.out_type_id.id,
+                "location_id": stock_location.id,
+                "location_dest_id": customer_location.id,
+                "move_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.product_a.id,
+                            "product_uom_qty": 2.0,
+                            "uom_id": self.product_a.uom_id.id,
+                            "location_id": stock_location.id,
+                            "location_dest_id": customer_location.id,
+                        }
+                    )
+                ],
+            }
+        )
+
+        picking.action_confirm()
+        picking.move_ids._set_quantity_done(2.0)
+
+        res = picking.button_validate()
+        if isinstance(res, dict) and res.get("res_model") == "stock.immediate.transfer":
+            wiz = self.env[res["res_model"]].browse(res["res_id"])
+            wiz.process()
+
+        # in 19 livrare nu genereaza nota contabila la o miscare de stoc
+
+        # # Fetch the accounting moves generated for this picking's stock moves
+        # account_moves = self.env["account.move"].search([("stock_move_ids", "in", picking.move_ids.ids)])
+        # self.assertTrue(account_moves, "No account moves generated for stock move")
+        #
+        # # All move lines for our product should carry the valuation area
+        # for ml in account_moves.mapped("line_ids"):
+        #     if ml.product_id == self.product_a:
+        #         self.assertEqual(
+        #             ml.valuation_area_id,
+        #             self.valuation_area,
+        #             "valuation_area_id on account.move.line should be set from stock.move _get_valuation_area",
+        #         )
+
+    def _make_valued_move(self, location, location_dest, qty):
+        move = self.env["stock.move"].create(
+            {
+                "is_inventory": True,
+                "inventory_name": "VA/TEST",
+                "product_id": self.product_a.id,
+                "product_uom_qty": qty,
+                "uom_id": self.product_a.uom_id.id,
+                "location_id": location.id,
+                "location_dest_id": location_dest.id,
+            }
+        )
+        move._action_confirm()
+        move._action_assign()
+        move.quantity = qty
+        move.picked = True
+        move._action_done()
+        return move
+
+    def test_stock_account_move_lines_values(self):
+        """
+        Nota contabilă generată de o mișcare valorizată (locație cu cont de evaluare):
+        valorile și conturile rămân cele din core, iar override-ul adaugă cantitatea
+        semnată, UoM-ul produsului și aria de evaluare pe ambele linii.
+        """
+        company = self.env.company
+        company.valuation_area_id = self.valuation_area
+        area_stock = self.env["valuation.area"].create({"name": "Stock", "code": "ST", "company_id": company.id})
+
+        stock_valuation_account = self.env["account.account"].create(
+            {"name": "Stock Valuation", "code": "SV0002", "account_type": "asset_current"}
+        )
+        inventory_account = self.env["account.account"].create(
+            {"name": "Inventory Variation", "code": "IV0001", "account_type": "expense"}
+        )
+        if not company.account_stock_journal_id:
+            company.account_stock_journal_id = self.env["account.journal"].create(
+                {"name": "Stock Journal", "type": "general", "code": "STJ"}
+            )
+        categ = self.env["product.category"].create(
+            {
+                "name": "Valued Cat RT",
+                "property_valuation": "real_time",
+                "property_cost_method": "standard",
+                "property_stock_valuation_account_id": stock_valuation_account.id,
+            }
+        )
+        self.product_a.write({"is_storable": True, "categ_id": categ.id, "standard_price": 10.0})
+
+        warehouse = self.env["stock.warehouse"].search([("company_id", "=", company.id)], limit=1)
+        stock_location = warehouse.lot_stock_id
+        stock_location.valuation_area_id = area_stock
+        inventory_location = self.env["stock.location"].search(
+            [("usage", "=", "inventory"), ("company_id", "=", company.id)], limit=1
+        )
+        inventory_location.valuation_account_id = inventory_account
+
+        # intrare 3 buc x 10 = 30: Dr cont stoc / Cr cont variație
+        move_in = self._make_valued_move(inventory_location, stock_location, 3.0)
+        self.assertTrue(move_in.account_move_id)
+        self.assertRecordValues(
+            move_in.account_move_id.line_ids.sorted("debit"),
+            [
+                {
+                    "account_id": inventory_account.id,
+                    "debit": 0.0,
+                    "credit": 30.0,
+                    "quantity": -3.0,
+                    "product_uom_id": self.product_a.uom_id.id,
+                    "valuation_area_id": area_stock.id,
+                },
+                {
+                    "account_id": stock_valuation_account.id,
+                    "debit": 30.0,
+                    "credit": 0.0,
+                    "quantity": 3.0,
+                    "product_uom_id": self.product_a.uom_id.id,
+                    "valuation_area_id": area_stock.id,
+                },
+            ],
+        )
+
+        # ieșire 2 buc x 10 = 20: Dr cont variație / Cr cont stoc
+        move_out = self._make_valued_move(stock_location, inventory_location, 2.0)
+        self.assertTrue(move_out.account_move_id)
+        self.assertRecordValues(
+            move_out.account_move_id.line_ids.sorted("debit"),
+            [
+                {
+                    "account_id": stock_valuation_account.id,
+                    "debit": 0.0,
+                    "credit": 20.0,
+                    "quantity": -2.0,
+                    "valuation_area_id": area_stock.id,
+                },
+                {
+                    "account_id": inventory_account.id,
+                    "debit": 20.0,
+                    "credit": 0.0,
+                    "quantity": 2.0,
+                    "valuation_area_id": area_stock.id,
+                },
+            ],
+        )
+
+    def test_internal_move_between_valuation_areas_raises(self):
+        """Transferul intern între locații cu arii de evaluare diferite este blocat."""
+        company = self.env.company
+        company.valuation_area_id = self.valuation_area
+        area_other = self.env["valuation.area"].create({"name": "Other", "code": "OT", "company_id": company.id})
+        warehouse = self.env["stock.warehouse"].search([("company_id", "=", company.id)], limit=1)
+        location_a = warehouse.lot_stock_id
+        location_b = self.env["stock.location"].create(
+            {"name": "Shelf B", "usage": "internal", "location_id": warehouse.view_location_id.id}
+        )
+        location_b.valuation_area_id = area_other
+        move = self.env["stock.move"].create(
+            {
+                "product_id": self.product_a.id,
+                "product_uom_qty": 1.0,
+                "uom_id": self.product_a.uom_id.id,
+                "location_id": location_a.id,
+                "location_dest_id": location_b.id,
+            }
+        )
+        with self.assertRaises(UserError):
+            move._get_valuation_area()
