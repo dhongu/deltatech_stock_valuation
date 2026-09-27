@@ -1,6 +1,6 @@
 ## 19.0.1.0.1 (2026-08-19)
 
-- Fix: mișcările dropship (supplier -> customer) pentru produsele cu clasă de evaluare OBYC nu
-  erau valorizate — `stock.move.value` rămânea 0, deoarece core-ul `stock_account` completează
-  acest câmp doar pentru mișcările `is_in`, nu și pentru `is_dropship`. Nota contabilă generată
-  imediat după era postată cu debit=0/credit=0 — aparent înregistrată, dar fără valoare.
+- Fix: dropship moves (supplier -> customer) for products with an OBYC valuation class were
+  not valued — `stock.move.value` stayed 0, because the `stock_account` core fills this
+  field only for `is_in` moves, not for `is_dropship` ones. The journal entry generated
+  right after was posted with debit=0/credit=0 — apparently recorded, but with no value.
