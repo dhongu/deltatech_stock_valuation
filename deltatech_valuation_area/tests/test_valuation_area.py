@@ -181,7 +181,7 @@ class TestValuationArea(AccountTestInvoicingCommon):
                         {
                             "product_id": self.product_a.id,
                             "product_uom_qty": 2.0,
-                            "product_uom": self.product_a.uom_id.id,
+                            "uom_id": self.product_a.uom_id.id,
                             "location_id": stock_location.id,
                             "location_dest_id": customer_location.id,
                         }
@@ -212,3 +212,131 @@ class TestValuationArea(AccountTestInvoicingCommon):
         #             self.valuation_area,
         #             "valuation_area_id on account.move.line should be set from stock.move _get_valuation_area",
         #         )
+
+    def _make_valued_move(self, location, location_dest, qty):
+        move = self.env["stock.move"].create(
+            {
+                "is_inventory": True,
+                "inventory_name": "VA/TEST",
+                "product_id": self.product_a.id,
+                "product_uom_qty": qty,
+                "uom_id": self.product_a.uom_id.id,
+                "location_id": location.id,
+                "location_dest_id": location_dest.id,
+            }
+        )
+        move._action_confirm()
+        move._action_assign()
+        move.quantity = qty
+        move.picked = True
+        move._action_done()
+        return move
+
+    def test_stock_account_move_lines_values(self):
+        """
+        Nota contabilă generată de o mișcare valorizată (locație cu cont de evaluare):
+        valorile și conturile rămân cele din core, iar override-ul adaugă cantitatea
+        semnată, UoM-ul produsului și aria de evaluare pe ambele linii.
+        """
+        company = self.env.company
+        company.valuation_area_id = self.valuation_area
+        area_stock = self.env["valuation.area"].create({"name": "Stock", "code": "ST", "company_id": company.id})
+
+        stock_valuation_account = self.env["account.account"].create(
+            {"name": "Stock Valuation", "code": "SV0002", "account_type": "asset_current"}
+        )
+        inventory_account = self.env["account.account"].create(
+            {"name": "Inventory Variation", "code": "IV0001", "account_type": "expense"}
+        )
+        if not company.account_stock_journal_id:
+            company.account_stock_journal_id = self.env["account.journal"].create(
+                {"name": "Stock Journal", "type": "general", "code": "STJ"}
+            )
+        categ = self.env["product.category"].create(
+            {
+                "name": "Valued Cat RT",
+                "property_valuation": "real_time",
+                "property_cost_method": "standard",
+                "property_stock_valuation_account_id": stock_valuation_account.id,
+            }
+        )
+        self.product_a.write({"is_storable": True, "categ_id": categ.id, "standard_price": 10.0})
+
+        warehouse = self.env["stock.warehouse"].search([("company_id", "=", company.id)], limit=1)
+        stock_location = warehouse.lot_stock_id
+        stock_location.valuation_area_id = area_stock
+        inventory_location = self.env["stock.location"].search(
+            [("usage", "=", "inventory"), ("company_id", "=", company.id)], limit=1
+        )
+        inventory_location.valuation_account_id = inventory_account
+
+        # intrare 3 buc x 10 = 30: Dr cont stoc / Cr cont variație
+        move_in = self._make_valued_move(inventory_location, stock_location, 3.0)
+        self.assertTrue(move_in.account_move_id)
+        self.assertRecordValues(
+            move_in.account_move_id.line_ids.sorted("debit"),
+            [
+                {
+                    "account_id": inventory_account.id,
+                    "debit": 0.0,
+                    "credit": 30.0,
+                    "quantity": -3.0,
+                    "product_uom_id": self.product_a.uom_id.id,
+                    "valuation_area_id": area_stock.id,
+                },
+                {
+                    "account_id": stock_valuation_account.id,
+                    "debit": 30.0,
+                    "credit": 0.0,
+                    "quantity": 3.0,
+                    "product_uom_id": self.product_a.uom_id.id,
+                    "valuation_area_id": area_stock.id,
+                },
+            ],
+        )
+
+        # ieșire 2 buc x 10 = 20: Dr cont variație / Cr cont stoc
+        move_out = self._make_valued_move(stock_location, inventory_location, 2.0)
+        self.assertTrue(move_out.account_move_id)
+        self.assertRecordValues(
+            move_out.account_move_id.line_ids.sorted("debit"),
+            [
+                {
+                    "account_id": stock_valuation_account.id,
+                    "debit": 0.0,
+                    "credit": 20.0,
+                    "quantity": -2.0,
+                    "valuation_area_id": area_stock.id,
+                },
+                {
+                    "account_id": inventory_account.id,
+                    "debit": 20.0,
+                    "credit": 0.0,
+                    "quantity": 2.0,
+                    "valuation_area_id": area_stock.id,
+                },
+            ],
+        )
+
+    def test_internal_move_between_valuation_areas_raises(self):
+        """Transferul intern între locații cu arii de evaluare diferite este blocat."""
+        company = self.env.company
+        company.valuation_area_id = self.valuation_area
+        area_other = self.env["valuation.area"].create({"name": "Other", "code": "OT", "company_id": company.id})
+        warehouse = self.env["stock.warehouse"].search([("company_id", "=", company.id)], limit=1)
+        location_a = warehouse.lot_stock_id
+        location_b = self.env["stock.location"].create(
+            {"name": "Shelf B", "usage": "internal", "location_id": warehouse.view_location_id.id}
+        )
+        location_b.valuation_area_id = area_other
+        move = self.env["stock.move"].create(
+            {
+                "product_id": self.product_a.id,
+                "product_uom_qty": 1.0,
+                "uom_id": self.product_a.uom_id.id,
+                "location_id": location_a.id,
+                "location_dest_id": location_b.id,
+            }
+        )
+        with self.assertRaises(UserError):
+            move._get_valuation_area()

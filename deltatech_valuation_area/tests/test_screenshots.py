@@ -10,8 +10,8 @@
 # de stoc postată pe contul 371 cu aria de evaluare completată pe linia produsului.
 #
 # Rulare:
-#   ./odoo/odoo-bin -c odoo.conf -d test19 -u deltatech_valuation_area \
-#       --test-tags=fise_screenshots --stop-after-init --http-port=8170
+#   ./odoo/odoo-bin -c odoo.conf -d test20 -u deltatech_valuation_area \
+#       --test-tags=fise_screenshots --stop-after-init --http-port=8070
 import unittest
 
 from odoo import fields
@@ -35,7 +35,7 @@ class TestValuationAreaScreenshots(AccountTestInvoicingCommon, ScreenshotCase or
         if ScreenshotCase is None:
             raise unittest.SkipTest("l10n_ro_doc_screenshots indisponibil")
         super().setUpClass()
-        cls.prepare_ro_company(name="RO Company")  # RON, drepturi contabile, limba RO, light theme
+        cls.prepare_ro_company(name="Demo Arii Evaluare SRL")  # RON, drepturi contabile, limba RO, light theme
         company = cls.env.company
         cls.env.ref("base.user_admin").write({"company_ids": [(4, company.id)], "company_id": company.id})
 

@@ -36,7 +36,7 @@ class StockMove(models.Model):
         """
         Inject the valuation area, quantity and UoM into the account move line values.
 
-        Nota: în Odoo 19 hook-ul core este `_get_account_move_line_vals` (vechiul
+        Nota: din Odoo 19 (și în 20) hook-ul core este `_get_account_move_line_vals` (vechiul
         `_prepare_account_move_line` nu mai există), iar liniile generate de core nu
         poartă cantitate/UoM — fără ele evaluarea ar pierde cantitățile pe notele
         de stoc.

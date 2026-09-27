@@ -1,0 +1,3 @@
+id,name,model_id,group_id/id,operation,domain
+access_valuation_area_manager,Access Valuation Area,valuation.area,account.group_account_manager,crud,
+access_valuation_area_user,Access Valuation Area,valuation.area,base.group_user,r,
