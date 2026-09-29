@@ -1,3 +1,7 @@
+## 19.0.0.0.8 (2026-09-30)
+
+- Own module icon in the flat style of the other modules.
+
 ### 19.0.0.0.7
 
 * **[FIX]** Re-inverted the UoM conversion introduced in 19.0.0.0.6. That change was a
