@@ -1,3 +1,7 @@
+## 19.0.1.0.2 (2026-09-30)
+
+- Own module icon in the flat style of the other modules.
+
 ## 19.0.1.0.1 (2026-08-19)
 
 - Fix: dropship moves (supplier -> customer) for products with an OBYC valuation class were
