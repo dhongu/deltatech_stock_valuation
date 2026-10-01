@@ -1,3 +1,10 @@
+## 19.0.1.0.3 (2026-10-01)
+
+- Fix: validating a landed cost on a product with an OBYC valuation class crashed with
+  `AttributeError: 'int' object has no attribute 'id'`. `_get_product_accounts` returned
+  account ids instead of `account.account` records, which the core (fiscal position
+  `map_account`, landed cost entries) expects.
+
 ## 19.0.1.0.2 (2026-09-30)
 
 - Own module icon in the flat style of the other modules.
