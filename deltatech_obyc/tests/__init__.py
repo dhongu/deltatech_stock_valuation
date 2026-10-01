@@ -7,3 +7,4 @@ from . import test_account_move_line
 from . import test_nc_generation
 from . import test_dropship_valuation
 from . import test_screenshots
+from . import test_obyc_entries
