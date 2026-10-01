@@ -7,6 +7,7 @@ from odoo import api, fields, models
 from odoo.exceptions import UserError
 
 from .product_valuation import (
+    _PARAM_COMPANY,
     _PARAM_LAST_DURATION,
     _PARAM_LAST_RUN,
     _PARAM_LAST_STEP,
@@ -78,6 +79,25 @@ class ResConfigSettings(models.TransientModel):
         if not self.env.user.has_group("base.group_system"):
             raise UserError(self.env._("Only System Administrator can do this action!"))
 
+    def _check_refresh_company(self, step):
+        """Pașii și cursorul ciclului sunt globali: un ciclu început pentru o companie
+        nu poate fi continuat din alta și nu se amestecă cu cel din fundal."""
+        cron = self.env.ref(_CRON_XMLID, raise_if_not_found=False)
+        if cron and cron.sudo().active:
+            raise UserError(self.env._("A background recompute is already running."))
+        ICP = self.env["ir.config_parameter"].sudo()
+        company_id = int(ICP.get_param(_PARAM_COMPANY) or 0)
+        company = self.env["res.company"].sudo().browse(company_id).exists()
+        if step != 1 and company and company != self.company_id:
+            raise UserError(
+                self.env._(
+                    "A refresh cycle was started for company %(company)s. "
+                    "Switch to that company to continue it, or reset it to Step 1.",
+                    company=company.name,
+                )
+            )
+        ICP.set_param(_PARAM_COMPANY, str(self.company_id.id))
+
     def refresh_stock_valuation(self):
         if self.valuation_area_level != "company":
             return
@@ -85,14 +105,16 @@ class ResConfigSettings(models.TransientModel):
 
         ICP = self.env["ir.config_parameter"].sudo()
         step = int(ICP.get_param(_PARAM_STEP, "1"))
+        self._check_refresh_company(step)
+        History = self.env["product.valuation.history"].with_company(self.company_id)
 
         if step in (1, 2, 3, 4, 6):
-            self.env["product.valuation.history"]._recompute_all_amount(execute_step=[step])
+            History._recompute_all_amount(execute_step=[step])
             next_step = step + 1
             ICP.set_param(_PARAM_STEP, str(next_step))
         elif step == 5:
             last_pid = int(ICP.get_param(_PARAM_STEP5_LAST_PID, "0"))
-            next_pid = self.env["product.valuation.history"]._recompute_step5_batch(product_id_start=last_pid)
+            next_pid = History._recompute_step5_batch(product_id_start=last_pid)
             if next_pid is not None:
                 ICP.set_param(_PARAM_STEP5_LAST_PID, str(next_pid))
                 next_step = 5  # stay at step 5 until all products done
@@ -101,9 +123,10 @@ class ResConfigSettings(models.TransientModel):
                 next_step = 6
                 ICP.set_param(_PARAM_STEP, str(next_step))
         elif step == 7:
-            self.env["product.valuation"]._recompute_all_amount()
+            History.env["product.valuation"]._recompute_all_amount()
             next_step = 1
             ICP.set_param(_PARAM_STEP, str(next_step))
+            ICP.set_param(_PARAM_COMPANY, "")
         else:
             next_step = 1
             ICP.set_param(_PARAM_STEP, str(next_step))
@@ -140,6 +163,7 @@ class ResConfigSettings(models.TransientModel):
         ICP = self.env["ir.config_parameter"].sudo()
         ICP.set_param(_PARAM_STEP, "1")
         ICP.set_param(_PARAM_STEP5_LAST_PID, "0")
+        ICP.set_param(_PARAM_COMPANY, "")
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
@@ -156,7 +180,7 @@ class ResConfigSettings(models.TransientModel):
             return
         if not self.env.user.has_group("base.group_system"):
             raise UserError(self.env._("Only System Administrator can do this action!"))
-        self.env["product.valuation"]._recompute_all_amount()
+        self.env["product.valuation"].with_company(self.company_id)._recompute_all_amount()
 
     def action_recompute_in_background(self):
         """Single-click background recompute: restart the cycle at step 1 and let the
@@ -181,6 +205,8 @@ class ResConfigSettings(models.TransientModel):
         ICP.set_param(_PARAM_STEP, "1")
         ICP.set_param(_PARAM_STEP5_LAST_PID, "0")
         ICP.set_param(_PARAM_NOTIFY_UID, str(self.env.uid))
+        # cronul nu are context de companie: se reține compania pentru tot ciclul
+        ICP.set_param(_PARAM_COMPANY, str(self.company_id.id))
 
         if cron:
             # Activate and trigger promptly instead of waiting for the next schedule.
@@ -194,6 +220,9 @@ class ResConfigSettings(models.TransientModel):
         self._check_refresh_access()
         ICP = self.env["ir.config_parameter"].sudo()
         ICP.set_param(_PARAM_NOTIFY_UID, str(self.env.uid))
+        # reluarea continuă ciclul companiei care l-a început; un ciclu nou e al companiei curente
+        if ICP.get_param(_PARAM_STEP, "1") == "1" or not ICP.get_param(_PARAM_COMPANY):
+            ICP.set_param(_PARAM_COMPANY, str(self.company_id.id))
         cron = self.env.ref(_CRON_XMLID, raise_if_not_found=False)
         if cron:
             cron.sudo().active = True

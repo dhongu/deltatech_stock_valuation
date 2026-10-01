@@ -27,6 +27,11 @@
        style="padding:10px 22px;">Overview</a>
   </li>
   <li class="nav-item mx-1 mb-2">
+    <a class="nav-link fw-semibold rounded-pill border" id="tb-tab-configure"
+       data-bs-toggle="pill" data-bs-target="#tb-panel-configure" href="#tb-panel-configure"
+       style="padding:10px 22px;">Configuration</a>
+  </li>
+  <li class="nav-item mx-1 mb-2">
     <a class="nav-link fw-semibold rounded-pill border" id="tb-tab-usage"
        data-bs-toggle="pill" data-bs-target="#tb-panel-usage" href="#tb-panel-usage"
        style="padding:10px 22px;">Usage</a>
@@ -40,27 +45,30 @@
 <div class="tab-content">
 <div class="tab-pane fade show active py-2" id="tb-panel-overview" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Overview</h2>
-<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Product Stock Valuation</h2>
+<h1 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Product Stock Valuation</h1>
 <p class="mb-4" style="font-size:16px;line-height:1.65;max-width:780px;">Modul pentru calculul &#537;i urm&#259;rirea evalu&#259;rii stocului de produse pe arie de evaluare &#537;i cont contabil,
 inspirat din conceptul SAP Material Valuation (MBEW &amp; MBEWH).</p>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Func&#539;ionalit&#259;&#539;i principale</h3>
-<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Cost mediu ponderat</span><div class="mt-1">calculat per produs, arie de evaluare &#537;i cont contabil</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Evaluare din note contabile</span><div class="mt-1">&#8212; valorile sunt determinate direct din &#238;nregistr&#259;rile contabile, nu din mi&#537;c&#259;rile de stoc</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Istoric lunar</span><div class="mt-1">al evalu&#259;rilor (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.valuation.history</code>) pentru urm&#259;rirea evolu&#539;iei &#238;n timp</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Conturi contabile dedicate</span><div class="mt-1">&#8212; se marcheaz&#259; conturile utilizate la evaluarea stocului (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">is_for_stock_valuation</code>)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Validare inteligent&#259;</span><div class="mt-1">&#8212; aria de evaluare devine obligatorie pe liniile contabile doar pentru conturile marcate pentru evaluare stoc</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Configurare nivel arie de evaluare</span><div class="mt-1">per companie (ex. nivel companie)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Recalculare manual&#259;</span><div class="mt-1">a evalu&#259;rilor din interfa&#539;a de configurare (doar pentru administratori de sistem)</div></div></li></ul>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Modele introduse</h3>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Func&#539;ionalit&#259;&#539;i principale</h2>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Cost mediu ponderat</span><div class="mt-1">calculat per produs, arie de evaluare &#537;i cont contabil</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Evaluare din note contabile</span><div class="mt-1">&#8212; valorile sunt determinate direct din &#238;nregistr&#259;rile contabile, nu din mi&#537;c&#259;rile de stoc</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Istoric lunar</span><div class="mt-1">al evalu&#259;rilor (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.valuation.history</code>) pentru urm&#259;rirea evolu&#539;iei &#238;n timp</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Conturi contabile dedicate</span><div class="mt-1">&#8212; se marcheaz&#259; conturile utilizate la evaluarea stocului (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">is_for_stock_valuation</code>)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Arie de evaluare pe linii</span><div class="mt-1">&#8212; aria e obligatorie pe orice linie contabil&#259; cu produs stocabil (regula vine din <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_valuation_area</code>) &#537;i se completeaz&#259; automat cu aria companiei</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Configurare nivel arie de evaluare</span><div class="mt-1">per companie (nivelul suportat de recalculare este Company)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Recalculare complet&#259; &#238;n fundal</span><div class="mt-1">, per companie, din set&#259;ri (doar pentru administratori de sistem)</div></div></li></ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Modele introduse</h2>
 <ul>
 <li><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.valuation</code> &#8212; evaluarea curent&#259; a unui produs pe arie de evaluare, cont &#537;i companie (pre&#539;, cantitate, valoare)</li>
 <li><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.valuation.history</code> &#8212; istoricul lunar al evalu&#259;rilor (cantitate ini&#539;ial&#259;, intr&#259;ri, ie&#537;iri, final&#259; &#537;i valori aferente)</li>
 </ul>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Modele extinse</h3>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Modele extinse</h2>
 <ul>
 <li><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">account.account</code> &#8212; ad&#259;ugat c&#226;mpul <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">is_for_stock_valuation</code> pentru a marca conturile ce particip&#259; la evaluare</li>
-<li><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">account.move.line</code> &#8212; extins&#259; metoda <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">_is_valuation_area_required</code> pentru a impune aria de evaluare doar pe conturile de stoc marcate</li>
+<li><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">account.move</code> &#8212; la postare, de-postare, schimbarea datei sau &#537;tergere se recalculeaz&#259; istoricul &#537;i evaluarea curent&#259; a combina&#539;iilor afectate</li>
 </ul>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Ini&#539;ializare</h3>
-<p>La prima instalare sau dup&#259; import de date, este necesar&#259; recalcularea complet&#259; a evalu&#259;rilor printr-o ac&#539;iune server:</p>
-<pre class="border rounded-3 p-3 my-3" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;overflow-x:auto;"><code class="language-python">env[&quot;product.valuation&quot;].recompute_all_amount()
-env[&quot;product.valuation.history&quot;].recompute_all_amount()
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Ini&#539;ializare</h2>
+<p>La prima instalare sau dup&#259; import de date, este necesar&#259; recalcularea complet&#259; a evalu&#259;rilor, din fiecare
+companie: <strong>Inventar &#8594; Configurare &#8594; Set&#259;ri &#8594; Evaluare &#8594; Recompute All (Background)</strong>. Alternativ, un
+administrator de sistem poate rula ac&#539;iunea server <strong>Recompute All Stock Valuation</strong>, care apeleaz&#259;, &#238;n
+aceast&#259; ordine:</p>
+<pre class="border rounded-3 p-3 my-3" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;overflow-x:auto;"><code class="language-python">env[&quot;product.valuation.history&quot;]._recompute_all_amount()
+env[&quot;product.valuation&quot;]._recompute_all_amount()
 </code></pre>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Evaluare &#238;n paralel cu Odoo standard</h3>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Evaluare &#238;n paralel cu Odoo standard</h2>
 <p>Modulul nu &#238;nlocuie&#537;te mecanismul standard Odoo (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock_account</code>), ci adaug&#259; un strat suplimentar de raportare
 <strong>garantat consistent cu balan&#539;a contabil&#259;</strong>, util &#238;n contexte cu ajust&#259;ri contabile manuale sau cerin&#539;e de
 raportare pe centre de cost/depozite.</p>
@@ -103,14 +111,14 @@ raportare pe centre de cost/depozite.</p>
 <blockquote>
 <p><strong>Not&#259; Odoo 19:</strong> Modelul <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock.valuation.layer</code> a fost eliminat &#238;n Odoo 19. Evaluarea stocului standard se bazeaz&#259; acum direct pe <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock.move</code>. Modulul <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_stock_valuation</code> r&#259;m&#226;ne independent de aceast&#259; schimbare, deoarece folose&#537;te <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">account.move.line</code> ca surs&#259; de adev&#259;r.</p>
 </blockquote>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Conven&#539;ia de cantitate pe notele contabile</h3>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Conven&#539;ia de cantitate pe notele contabile</h2>
 <p>Pe liniile notelor de tip <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">entry</code> (note de stoc), cantitatea este <strong>semnat&#259;</strong>:
 pozitiv&#259; pe linia de debit (intrare), negativ&#259; pe linia de credit (ie&#537;ire).
 Conven&#539;ia este cea folosit&#259; istoric de notele generate de Odoo/OCA (validat&#259; pe
 baze de client) &#537;i este respectat&#259; automat de liniile generate de
 <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_valuation_area</code>/<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code>. La &#238;nregistrarea manual&#259; a notelor
 de stoc, introduce&#539;i cantitatea cu semn.</p>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Limit&#259;ri</h3>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Limit&#259;ri</h2>
 <blockquote>
 <p>&#9888;&#65039; <strong>Limitare:</strong> Modulul suport&#259; exclusiv metoda de evaluare <strong>AVCO (cost mediu ponderat)</strong>. Nu este compatibil cu produsele configurate cu metoda <strong>FIFO</strong>. Utilizarea cu produse FIFO va produce rezultate incorecte.</p>
 </blockquote>
@@ -141,138 +149,242 @@ de stoc, introduce&#539;i cantitatea cu semn.</p>
 </tr>
 </tbody>
 </table>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Dependen&#539;e</h3>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Dependen&#539;e</h2>
 <ul>
 <li><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock_account</code> &#8212; evaluare stoc standard Odoo</li>
 <li><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_valuation_area</code> &#8212; definirea ariilor de evaluare</li>
 </ul>
 </div>
+<div class="tab-pane fade py-2" id="tb-panel-configure" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
+<h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Configuration</h2>
+<p>Configuration requires the <strong>System Administrator</strong> group.</p>
+<ol>
+<li><strong>Valuation area.</strong> Go to <strong>Inventory &#8594; Configuration &#8594; Settings</strong>, section <strong>Valuation</strong>, and
+   tick <strong>Use Valuation Area</strong> (it comes from <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_valuation_area</code>). Choose the <strong>Valuation
+   Area</strong> of the company, or leave it empty: it is created automatically when you save.</li>
+<li><strong>Area level.</strong> In the same block, set <strong>Valuation Area Level</strong> to <strong>Company</strong>. This is the only
+   level supported by the full recompute from the interface.</li>
+<li><strong>Save the settings.</strong> On saving, the module:<ul>
+<li>creates the valuation area of the company, if missing;</li>
+<li>ticks <strong>Stock Valuation</strong> on the stock account of every product category;</li>
+<li>moves the existing journal lines of the marked accounts to the area of the company.</li>
+</ul>
+</li>
+</ol>
+<p>Settings are saved <strong>per company</strong>: repeat the configuration for each company, from that company.
+   On a database with a lot of history, save the settings outside working hours.
+4. <strong>Valuation accounts.</strong> In <strong>Accounting &#8594; Configuration &#8594; Chart of Accounts</strong>, check that every
+   relevant stock account has <strong>Stock Valuation</strong> ticked. An unmarked account is not valued.
+5. <strong>Product categories.</strong> In <strong>Inventory &#8594; Configuration &#8594; Product Categories</strong>, check that the
+   <strong>Costing Method</strong> is <strong>Average Cost (AVCO)</strong> and the <strong>Inventory Valuation</strong> is <strong>Automated</strong>.
+   Optionally tick <strong>Use Valuation Area Price</strong> (AVCO only; not compatible with FIFO).
+6. <strong>With <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code></strong> (recommended for Romanian companies), every storable product needs a
+   <strong>Valuation Class</strong>.
+7. <strong>Without <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code></strong>, set <strong>Loss Account</strong> on the virtual inventory locations (inventory
+   adjustments, scrap); otherwise adjustments and scrap post no entries.
+8. <strong>Initial recompute.</strong> After the first installation or a data import, run the full recompute
+   (see <em>Usage</em>, step 7), once for each company.</p>
+</div>
 <div class="tab-pane fade py-2" id="tb-panel-usage" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Usage</h2>
-<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Mod de utilizare</h2>
-<p>Modulul calculeaz&#259; evaluarea stocului direct din notele contabile postate, pe combina&#539;ia
-<strong>produs &#215; arie de evaluare &#215; cont contabil</strong>. Mai jos sunt pa&#537;ii de configurare &#537;i fluxul de lucru.</p>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">1. Configurare ini&#539;ial&#259; (o singur&#259; dat&#259;)</h3>
-<p>To&#539;i pa&#537;ii necesit&#259; drepturi de <strong>Administrator de sistem</strong>.</p>
-<ol>
-<li>
-<p><strong>Activeaz&#259; aria de evaluare</strong>
-   Mergi la <strong>Inventar &#8594; Configurare &#8594; Set&#259;ri</strong>, sec&#539;iunea <em>Valuation</em>.</p>
-<ul>
-<li>Bifeaz&#259; <em>Use Valuation Area</em>.</li>
-<li>Seteaz&#259; <em>Valuation Area Level</em> pe <strong>Company</strong> (singurul nivel suportat complet &#238;n acest moment).</li>
-<li>C&#226;mpul <em>Valuation Area</em> se completeaz&#259; automat la salvare (se creeaz&#259; o arie pentru companie).</li>
-</ul>
-</li>
-<li>
-<p><strong>Marcheaz&#259; conturile de evaluare a stocului</strong>
-   La salvarea set&#259;rilor, conturile de evaluare a stocului din categoriile de produse
-   (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">property_stock_valuation_account_id</code>) sunt marcate automat cu <em>Stock Valuation</em>
-   (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">is_for_stock_valuation</code>).
-   Po&#539;i marca/demarca manual orice cont din <strong>Contabilitate &#8594; Configurare &#8594; Plan de conturi</strong>,
-   deschiz&#226;nd contul &#537;i bif&#226;nd caseta <strong>Stock Valuation</strong>.</p>
-</li>
-</ol>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">How to use</h2>
+<p><strong>Before you start:</strong> complete the initial setup described in <em>Configuration</em> (valuation area, valuation
+accounts, product categories).</p>
+<p>This module computes stock valuation straight from the <strong>posted journal entries</strong>, per
+<strong>product &#215; valuation area &#215; account</strong>. It does not create any accounting entries itself: it reads the
+ones posted by Odoo, by other modules or by your accountant. You do not have to do anything extra in
+daily work; the valuation follows the accounting.</p>
 <blockquote>
-<p>Doar mi&#537;c&#259;rile de pe conturile marcate intr&#259; &#238;n evaluare. Pe aceste conturi, aria de
-evaluare devine <strong>obligatorie</strong> pe liniile contabile ale produselor stocabile.</p>
+<p><strong>Romanian companies:</strong> we recommend installing <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code> together with this module. Without
+it, Odoo moves the stock accounts (for example 371) only when the vendor or customer <strong>invoice</strong> is
+posted. Receipts and deliveries that are not yet invoiced are then missing from the stock accounts
+at month end. With <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code>, stock entries are posted when the receipt or the delivery is
+validated, so the valuation and the stock accounts stay aligned.</p>
 </blockquote>
-<ol start="3">
-<li><em>(Op&#539;ional)</em> <strong>Desc&#259;rcare de gestiune la cost mediu</strong>
-   Dac&#259; vrei ca ie&#537;irile din stoc s&#259; fie valorizate la costul mediu din <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.valuation</code>
-   (&#238;n loc de pre&#539;ul standard), deschide categoria de produse
-   (<strong>Inventar &#8594; Configurare &#8594; Categorii de produse</strong>) &#537;i bifeaz&#259; <strong>Use Valuation Area Price</strong>.<ul>
-<li>Caseta este disponibil&#259; doar pentru categoriile cu metod&#259; <strong>AVCO</strong> (cost mediu).</li>
-<li>Este <strong>incompatibil&#259; cu FIFO</strong> &#8212; activarea pe o categorie FIFO ridic&#259; eroare.</li>
-</ul>
-</li>
-</ol>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">2. Fluxul zilnic</h3>
-<p>Nu este nevoie de opera&#539;ii suplimentare: la <strong>postarea</strong> oric&#259;rei note contabile (factur&#259; furnizor,
-factur&#259; client, retur, not&#259; manual&#259;) care con&#539;ine linii pe un cont de evaluare a stocului,
-modulul recalculeaz&#259; automat:</p>
+<p><strong>Step 1 &#8212; Mark the stock accounts for valuation</strong></p>
+<p>Go to <strong>Accounting &#8594; Configuration &#8594; Chart of Accounts</strong>, open the stock account (for example
+371000 Merchandise) and tick <strong>Stock Valuation</strong>. Only the lines of the marked accounts enter the
+valuation. When you save the valuation settings, the stock accounts of your product categories are
+marked automatically; you can also tick the box by hand.</p>
+<p><img alt="Account form with the Stock Valuation box ticked" src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation/stock_valuation_account.png" /></p>
+<p><strong>Step 2 &#8212; Set up the product category</strong></p>
+<p>Go to <strong>Inventory &#8594; Configuration &#8594; Product Categories</strong> and open the category. Check that the
+<strong>Costing Method</strong> is <strong>Average Cost (AVCO)</strong> and the <strong>Inventory Valuation</strong> is <strong>Automated</strong>
+(perpetual). Optionally tick <strong>Use Valuation Area Price</strong>.</p>
+<p>With <strong>Use Valuation Area Price</strong>, stock <strong>outgoing from internal locations</strong> is valued at the price
+shown in <strong>Product Valuation</strong> for the product's area and stock account, instead of the standard
+price.</p>
 <ul>
-<li>linia curent&#259; din <strong>Product Valuation</strong> (cantitate, valoare, pre&#539; mediu);</li>
-<li>linia lunii respective din <strong>Product Valuation History</strong>.</li>
+<li>Use it only with <strong>AVCO</strong>. It is not available for FIFO categories, and activating it on a FIFO
+  category (by import or code) is refused.</li>
+<li>Lot-valuated products are excluded and keep the valuation per lot.</li>
+<li>If there is no valuation for the area yet, or its price is zero, the standard price is used.</li>
 </ul>
-<p>Semnul mi&#537;c&#259;rilor este dedus din tipul documentului:</p>
+<p><img alt="AVCO category with Use Valuation Area Price" src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation/stock_valuation_category_area_price.png" /></p>
+<p><strong>Step 3 &#8212; Check the valuation settings</strong></p>
+<p>Go to <strong>Inventory &#8594; Configuration &#8594; Settings</strong>, section <strong>Valuation</strong>. You should see <strong>Use Valuation
+Area</strong> ticked, <strong>Valuation Area Level</strong> set to <strong>Company</strong> and the area of your company. On the
+right you will find the <strong>Recompute All (Background)</strong> button and the <strong>Next step</strong> indicator, with
+the state of the last run.</p>
+<p><img alt="Inventory settings, Valuation section" src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation/stock_valuation_settings.png" /></p>
+<p><strong>Step 4 &#8212; Post your stock entries</strong></p>
+<p>Journal entries are posted as usual, in <strong>Accounting &#8594; Accounting &#8594; Journal Entries</strong> (the app is
+called <strong>Invoicing</strong> without Enterprise). On every posting the module updates, automatically:</p>
+<ul>
+<li>the current row in <strong>Product Valuation</strong> (quantity, amount, average price);</li>
+<li>the month row in <strong>Product Valuation History</strong>.</li>
+</ul>
+<p>The valuation is also updated when an entry is set back to draft, cancelled, deleted, reversed, or
+when its accounting date changes (both the old and the new month are recomputed).</p>
+<p>Only lines that have a <strong>product</strong>, sit on a <strong>marked account</strong> and belong to a <strong>posted</strong> entry
+are counted. The <strong>valuation area is required on every journal line with a storable product</strong>; it is
+filled in automatically with the area of the company. The quantity on the line is converted to the
+unit of measure of the product (2 Dozens on a product kept in Units count as 24 Units).</p>
+<p>The direction of the movement comes from the document type:</p>
 <table class="table table-bordered" style="font-size:14px;">
 <thead>
 <tr>
-<th>Tip document</th>
-<th>Efect asupra cantit&#259;&#539;ii</th>
+<th>Document</th>
+<th>Effect on quantity</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Factur&#259; furnizor (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">in_invoice</code>)</td>
-<td>+ intrare</td>
+<td>Vendor bill (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">in_invoice</code>)</td>
+<td>+ incoming</td>
 </tr>
 <tr>
-<td>Retur la furnizor (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">in_refund</code>)</td>
-<td>&#8722; ie&#537;ire</td>
+<td>Vendor refund (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">in_refund</code>)</td>
+<td>&#8722; outgoing</td>
 </tr>
 <tr>
-<td>Factur&#259; client (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">out_invoice</code>)</td>
-<td>&#8722; ie&#537;ire</td>
+<td>Customer invoice (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">out_invoice</code>)</td>
+<td>&#8722; outgoing</td>
 </tr>
 <tr>
-<td>Retur de la client (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">out_refund</code>)</td>
-<td>+ intrare</td>
+<td>Customer credit note (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">out_refund</code>)</td>
+<td>net effect + (incoming)</td>
 </tr>
 </tbody>
 </table>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">3. Vizualizarea evalu&#259;rii</h3>
+<p>On stock entries (type <em>entry</em>), the signed quantity is <strong>positive on the debit line</strong> (incoming) and
+<strong>negative on the credit line</strong> (outgoing). Entries generated by Odoo or by <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code> follow
+this automatically. For manual stock entries (corrections, opening balances), load the lines with
+product, unit of measure and quantity by import or integration, and respect the sign.</p>
+<p><img alt="Posted receipt entry, Dr 371 / Cr 408" src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation/stock_valuation_receipt_entry.png" /></p>
+<p><img alt="Journal lines with the signed quantity" src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation/stock_valuation_signed_quantity.png" /></p>
+<p>Good to know:</p>
 <ul>
-<li><strong>Inventar &#8594; Opera&#539;iuni &#8594; Product Valuation</strong> &#8212; soldul curent (pre&#539; mediu, cantitate, valoare)
-  per produs / arie / cont. Exist&#259; &#537;i vizualizare <em>pivot</em>.</li>
-<li><strong>Inventar &#8594; Opera&#539;iuni &#8594; Product Valuation History</strong> &#8212; istoricul lunar: sold ini&#539;ial, intr&#259;ri,
-  ie&#537;iri, debit, credit, sold final. Util pentru reconcilierea cu balan&#539;a contabil&#259; pe fiecare lun&#259;.</li>
+<li><strong>Reversing a stock entry</strong> cancels its effect on the valuation, with or without the <em>storno</em>
+  accounting option. Without storno, the quantity sign is reversed together with the side
+  (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_valuation_area</code> 19.0.1.0.3 or later), so the quantity is cancelled as well.</li>
+<li><strong>Value-only adjustments</strong> (an entry with an amount but no quantity, for example an average cost
+  correction) change the <strong>amount and the average price</strong>, not the quantity. On 10 pcs / 1,000, a
+  +50 correction gives 10 pcs / 1,050 / price 105.00.</li>
+<li>With <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code>, the cost of a delivery appears on the delivery entry, at the delivery date,
+  and the customer invoice has no cost lines. Without it, the cost appears on the customer invoice.
+  Either way, the outgoing quantity is counted once.</li>
 </ul>
-<p>&#206;nregistr&#259;rile sunt <strong>doar pentru citire</strong> (nu se creeaz&#259;/&#537;terg manual) &#8212; ele reflect&#259; notele contabile.</p>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">4. Recalculare complet&#259;</h3>
-<p>Necesar&#259; dup&#259; <strong>prima instalare</strong>, dup&#259; <strong>import de date</strong> sau dup&#259; corec&#539;ii contabile retroactive.
-Disponibil&#259; &#238;n <strong>Inventar &#8594; Configurare &#8594; Set&#259;ri</strong>, sec&#539;iunea <em>Valuation</em> (doar Administrator de sistem).</p>
-<p><strong>Recomandat &#8212; un singur clic:</strong></p>
+<p><strong>Step 5 &#8212; Review the current balance</strong></p>
+<p>Go to <strong>Inventory &#8594; Products &#8594; Product Valuation</strong>. Each row shows the product, the valuation area,
+the account, the <strong>Price</strong>, the <strong>Quantity</strong> and the <strong>Amount</strong>. A pivot view is also available.
+After a receipt of 10 pcs / 1,000 and a delivery of 4 pcs / 400, you will see <strong>Quantity</strong> 6.00,
+<strong>Amount</strong> 600.00 and <strong>Price</strong> 100.00. The total of the <strong>Amount</strong> column on an account equals the
+account balance, as long as all lines of that account have a product and an area.</p>
+<p>The records are <strong>read-only</strong>: they are created and updated from the journal entries.</p>
+<p><img alt="Product Valuation, current balance" src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation/stock_valuation_list.png" /></p>
+<p><strong>Step 6 &#8212; Review the monthly history</strong></p>
+<p>Go to <strong>Inventory &#8594; Products &#8594; Product Valuation History</strong>. Each row is one month (format YYYYMM)
+for a product &#215; area &#215; account, with the initial balance, the movements of the month and the final
+balance. <strong>Quantity In</strong>, <strong>Debit</strong>, <strong>Quantity Out</strong> and <strong>Credit</strong> are hidden by default: show
+them from the optional columns menu in the list header. Use this view to reconcile with the
+accounting balance month by month: <strong>Final Amount</strong> is the closing balance of the month.</p>
+<p><img alt="Product Valuation History" src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation/stock_valuation_history.png" /></p>
+<p><strong>Step 7 &#8212; Recompute the whole valuation (only when needed)</strong></p>
+<p>A full recompute is needed after the first installation, after a data import or after large
+retroactive accounting corrections. It is not needed in daily work. Only a <strong>System Administrator</strong>
+can run it.</p>
+<p>Go to <strong>Inventory &#8594; Configuration &#8594; Settings</strong>, section <strong>Valuation</strong>, press <strong>Recompute All
+(Background)</strong> and confirm the message.</p>
 <ul>
-<li><strong>Recompute All (Background)</strong> &#8212; reporne&#537;te ciclul de la primul pas &#537;i las&#259; un cron s&#259; execute
-  automat to&#539;i cei <strong>7 pa&#537;i</strong>, unul c&#226;te unul, f&#259;r&#259; interven&#539;ia utilizatorului. Cron-ul re&#539;ine &#238;n
-  parametri pasul curent, deci &#8222;&#537;tie" mereu ce mai are de executat. Dup&#259; fiecare pas prime&#537;ti o
-  <strong>notificare</strong> (toast) cu pasul executat &#537;i durata, iar &#238;n set&#259;ri vezi indicatorii <em>Next step</em> &#537;i
-  <em>Last refresh progress</em>. C&#226;nd termin&#259;, cron-ul se opre&#537;te singur.
-  C&#226;t ruleaz&#259;, butonul devine <strong>Stop Background Refresh</strong> &#537;i apare indicatorul <em>Running&#8230;</em>.</li>
+<li>A scheduled action runs the 7 steps one by one, without any further click, and stops by itself at
+  the end. Allow at least 12&#8211;14 minutes; on large databases step 5 runs in batches and takes several
+  runs.</li>
+<li>While it runs, the <strong>Running&#8230;</strong> badge is shown and the button becomes <strong>Stop Background Refresh</strong>.
+  A second start is blocked.</li>
+<li>The user who started the run receives a notification after each step (step and duration) and a
+  final "Stock valuation refresh complete" message. In the settings, <strong>Next step</strong> shows the next
+  step and the line below shows the last step run, when and how long it took.</li>
+<li>The recompute is done <strong>per company</strong>: start it from the company you want to recompute and repeat
+  it for each company.</li>
 </ul>
-<p>Cei 7 pa&#537;i: &#537;tergere istoric &#8594; calcul mi&#537;c&#259;ri lunare &#8594; completare luni lips&#259; &#8594; sold ultima lun&#259; &#8594;
-propagare solduri &#8594; &#537;tergere linii goale &#8594; evaluare curent&#259;. Pasul 5 (propagarea) se execut&#259; &#238;n
-loturi, &#238;n mai multe reprize, pentru a nu bloca bazele de date mari.</p>
-<p><strong>Manual (avansat / depanare):</strong></p>
+<p>The 7 steps: (1) clear the history; (2) compute the monthly movements; (3) fill in the missing
+months; (4) compute the final balance of the current month; (5) propagate the balances over the
+previous months, in batches of products; (6) delete the empty rows; (7) recompute <strong>Product
+Valuation</strong>.</p>
+<p>For targeted checks, in developer mode, the <strong>Action</strong> menu offers <strong>Recompute Amount</strong> on the
+selected rows of Product Valuation / Product Valuation History and <strong>Recompute Valuation</strong> on the
+selected products.</p>
+<p><strong>Step 8 &#8212; See the valuation on the product</strong></p>
+<p>Open a product (<strong>Inventory &#8594; Products &#8594; Products</strong>) and go to the <strong>Accounting</strong> tab. Under the
+income and expense accounts you will find the valuation table of the product: variant, area,
+account, price, quantity and amount. The table is <strong>read-only</strong>: rows come from the journal entries
+and cannot be added by hand.</p>
+<p><img alt="Product form, valuation table on the Accounting tab" src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation/stock_valuation_product_tab.png" /></p>
+<p><strong>How the price is computed</strong></p>
+<p>On every posting, set-back-to-draft, cancellation or deletion of an entry, the price in <strong>Product
+Valuation</strong> is:</p>
 <ul>
-<li><strong>Execute Next Step</strong> &#8212; execut&#259; un singur pas (cele 7 click-uri manuale).</li>
-<li><strong>Reset to Step 1</strong> &#8212; reporne&#537;te ciclul de la primul pas.</li>
-<li><strong>Recompute Product Valuation</strong> &#8212; recalculeaz&#259; doar soldul curent din ultima lun&#259; de istoric.</li>
+<li><strong>Final Amount / Final Quantity</strong> of the last history month, if there is a final stock;</li>
+<li>if the final stock is zero but there were receipts in that month: <strong>Debit / Quantity In</strong>;</li>
+<li>otherwise the <strong>previous price is kept</strong>.</li>
 </ul>
-<p>Echivalent programatic (ex. din shell sau ac&#539;iune server):</p>
-<pre class="border rounded-3 p-3 my-3" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;overflow-x:auto;"><code class="language-python"># Reconstruie&#537;te istoricul lunar din notele contabile, apoi soldul curent
-env[&quot;product.valuation.history&quot;]._recompute_all_amount()
-env[&quot;product.valuation&quot;]._recompute_all_amount()
-</code></pre>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">5. Verificarea consisten&#539;ei cu contabilitatea</h3>
-<p>Pentru o lun&#259; dat&#259;, suma <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">amount_final</code> din <strong>Product Valuation History</strong> pe un cont de evaluare
-trebuie s&#259; corespund&#259; soldului contabil al acelui cont (modulul folose&#537;te <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">account.move.line</code>
-ca surs&#259; de adev&#259;r, deci consisten&#539;a este garantat&#259; prin construc&#539;ie).</p>
-<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">6. Mesaje &#537;i depanare frecvente</h3>
-<ul>
-<li><strong>&#8222;Valuation Area is required for stockable products"</strong> &#8212; produsul este stocabil &#537;i linia
-  contabil&#259; este pe un cont de evaluare, dar nu are arie de evaluare. Verific&#259; nivelul ariei pe
-  companie &#537;i c&#259; documentul are o arie valid&#259;.</li>
-<li><strong>&#8222;Use Valuation Area Price is not compatible with FIFO"</strong> &#8212; schimb&#259; metoda categoriei pe AVCO
-  sau dezactiveaz&#259; <em>Use Valuation Area Price</em>.</li>
-<li><strong>Linii excluse din evaluare (UoM produs lips&#259;)</strong> &#8212; la recalcularea complet&#259;, liniile cu produse
-  f&#259;r&#259; unitate de m&#259;sur&#259; pe &#537;ablon sunt ignorate; un avertisment &#238;n log indic&#259; num&#259;rul &#537;i valoarea lor.</li>
-</ul>
+<p>After a full recompute, rows with zero final stock get price 0. Quantities below the rounding
+threshold of the unit of measure are treated as zero.</p>
+<p>During the full recompute, lines of products without a unit of measure on the template are left
+out; a warning in the server log gives their number and amount.</p>
 </div>
 <div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Versions</h2>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.0.0.11 (2026-10-01)</h2>
+<ul>
+<li>Fix: the recompute at posting counts the stock lines without a unit of measure (product unit),
+  like the full recompute (SV-001).</li>
+<li>Fix: saving the settings and the full recompute move to the company area only the journal items of
+  the current company, including the ones with no area (SV-002).</li>
+<li>Fix: the background recompute runs on the company it was started from, for the whole cycle; a
+  manual step-by-step cycle cannot be continued from another company (SV-003).</li>
+<li>Fix: steps 2, 3, 4 and 6 of the full recompute no longer read or change the history of other
+  companies (SV-009).</li>
+<li>Fix: the valuation table on the product is read-only; internal users only read the valuation,
+  write access goes to the accounting manager; posting still updates it (SV-004).</li>
+<li>Fix: new valuation rows take the currency of their company; the migration corrects existing
+  rows (SV-006).</li>
+<li>Fix: the Recompute All Stock Valuation server action calls the current methods and is restricted
+  to the system administrator (SV-007).</li>
+<li>Docs: <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">USAGE.md</code> rebuilt from the consultant sheet, <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">CONFIGURE.md</code> added, <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">DESCRIPTION.md</code> and the
+  consultant sheet updated; product tab screenshot regenerated (SV-005).</li>
+</ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.0.0.10 (2026-10-01)</h2>
+<ul>
+<li>Test: reversing a stock journal entry on a company without storno leaves the stock
+  valuation at zero (the fix is in <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_valuation_area</code> 19.0.1.0.3).</li>
+<li>Test: with storno, reversing a stock entry leaves the valuation at zero, including a
+  zero-value line (move at cost 0).</li>
+<li>Docs: consultant sheet corrected after the accounting audit: OBYC recommended for Romanian
+  clients and a month-end procedure for receipts and deliveries not invoiced without OBYC;
+  a value-only adjustment changes the value and the average price; reversal with and without
+  storno; month-end and stock count reconciliation; legal basis (OMFP 1802/2014, Fiscal Code);
+  firm warning for multi-company databases. <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/bugs.md</code>: SV-005 updated, SV-008 added.</li>
+<li>Docs: the screenshot test puts a supplier on the receipt entry; screenshots regenerated.</li>
+</ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.0.0.9 (2026-10-01)</h2>
+<ul>
+<li>Docs: consultant sheet updated to the current code (11-section structure), screenshots
+  regenerated in Romanian on the Romanian chart of accounts; the screenshot test now posts
+  real stock entries and checks them before taking the screenshots.</li>
+<li>Docs: known bugs listed in <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/bugs.md</code> (SV-001..007).</li>
+</ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.0.0.8 (2026-09-30)</h2>
 <ul>
 <li>Own module icon in the flat style of the other modules.</li>
