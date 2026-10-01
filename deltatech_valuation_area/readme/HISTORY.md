@@ -7,6 +7,10 @@
   the line stays on the same side (negative amount) and the quantity is unchanged.
 - Fix: with storno, reversing a zero-value stock entry line (a move at cost 0) doubled the
   quantity: the line has no amount sign to cancel it, so its quantity is now inverted too.
+- Docs: consultant sheet revised after the accounting audit: legal basis, receipt / delivery /
+  invoice gaps, inventory difference accounts per stock class, shortages (VAT and profit tax),
+  reconciliation per area, transfers between areas and the sign convention on reversals; new
+  known bugs VA-005 and VA-006 in `readme/bugs.md`; D300 from tax tags for the month-end entries.
 
 ## 19.0.1.0.2 (2026-10-01)
 
