@@ -1,6 +1,25 @@
+## 19.0.1.0.6 (2026-10-01)
+
+- Fix (OBYC-005): the inventory adjustment keys were swapped — a gain used the
+  `inventory_adjustment_minus` rule and a loss the `inventory_adjustment_plus` rule. A gain
+  now uses `inventory_adjustment_plus` and a loss `inventory_adjustment_minus`. **Rules
+  configured around the old behavior must swap their keys**; the update logs a warning for
+  each rule that looks configured that way and does not change it.
+- Fix (OBYC-006): stock entries were created for products with a valuation class even
+  without real-time valuation, for consumables and for stock owned by a third party, and a
+  missing rule blocked the validation of these moves. The core checks (storable product,
+  real-time valuation, non-zero quantity, no third-party owner) now come before the rule
+  lookup; a move the core does not value and whose locations have no transaction key gets no
+  entry instead of an error.
+- Fix (OBYC-007): the "No account
+  determination rule found" message shows the transaction key in the user's language; the rule
+  title shows the key label and no "None" for an empty account modifier.
+- Docs: `readme/bugs.md` (OBYC-002/003 with the analysis of the core accrued revenue wizard and
+  of the consignment flow, OBYC-004 lowered to P3), `DESCRIPTION.md` and the consultant sheet.
+
 ## 19.0.1.0.5 (2026-10-01)
 
-- Fix: the "Transaction key could not be determined" error showed the literal placeholders
+- Fix (OBYC-007): the "Transaction key could not be determined" error showed the literal placeholders
   `{source_usage}` / `{dest_usage}` instead of the location usages — `env._()` interpolates
   `%(name)s` placeholders, not `{name}`. The message now names the actual source and destination
   usages (e.g. `internal` to `consume`), in the English text and in the Romanian translation.
