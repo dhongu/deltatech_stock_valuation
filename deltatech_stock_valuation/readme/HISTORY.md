@@ -1,3 +1,12 @@
+## 20.0.0.0.9 (2026-10-01)
+
+- Docs: consultant sheet brought to Odoo 20 from the 19.0 sheet (11-section structure):
+  negative value of outgoing moves, the *Keep move value on retroactive recompute* setting
+  of `deltatech_valuation_area`, Odoo 20 labels; screenshots regenerated in Romanian on
+  the Romanian chart of accounts. The screenshot test now posts real stock entries and
+  checks the resulting valuation before taking the screenshots.
+- Docs: known bugs confirmed on the 20.0 code listed in `readme/bugs.md` (SV-001..007).
+
 ## 20.0.0.0.8 (2026-10-01)
 
 - Migration to Odoo 20.0.
