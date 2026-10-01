@@ -1,3 +1,10 @@
+## 19.0.1.0.5 (2026-10-01)
+
+- Fix: the "Transaction key could not be determined" error showed the literal placeholders
+  `{source_usage}` / `{dest_usage}` instead of the location usages — `env._()` interpolates
+  `%(name)s` placeholders, not `{name}`. The message now names the actual source and destination
+  usages (e.g. `internal` to `consume`), in the English text and in the Romanian translation.
+
 ## 19.0.1.0.4 (2026-10-01)
 
 - Fix (OBYC-001): the product line of a customer invoice, a vendor bill or a credit note
