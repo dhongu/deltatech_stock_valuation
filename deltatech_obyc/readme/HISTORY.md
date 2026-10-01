@@ -9,6 +9,9 @@
   of the invoice without a transaction key. With OBYC the cost of goods sold is already
   booked at delivery (`stock_delivery` key), so the invoice now gets no COGS lines for
   these products; other products keep the standard behavior.
+- Fix: an invoice with two or more products with an OBYC valuation class failed with
+  "Expected singleton". `account.move.line._compute_account_id` read the product,
+  account modifier and company from all the lines (`self`) instead of the current line.
 
 ## 19.0.1.0.2 (2026-09-30)
 

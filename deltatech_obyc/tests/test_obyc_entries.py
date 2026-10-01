@@ -260,3 +260,41 @@ class TestObycEntries(TestCommon):
                 {"account_id": self.account_valuation.id, "debit": 0.0, "credit": 200.0},
             ],
         )
+
+    def test_07_sale_invoice_two_obyc_products(self):
+        """Factură cu două produse OBYC din clase de evaluare diferite: fiecare linie își
+        ia contul din regula clasei ei. Înainte de fix, `_compute_account_id` citea
+        `self.product_id` (toate liniile) → „Expected singleton"."""
+        valuation_class_b = self.env["product.valuation.class"].create({"name": "Test Class B", "code": "TCB"})
+        account_income_b = self.env["account.account"].create(
+            {"name": "Test Income B", "code": "TINC02", "account_type": "income"}
+        )
+        self.env["product.account.determination"].create(
+            {
+                "transaction_key": "stock_income",
+                "valuation_class_id": valuation_class_b.id,
+                "valuation_area_id": self.valuation_area.id,
+                "company_id": self.env.company.id,
+                "acc_dest_id": account_income_b.id,
+                "acc_valuation_id": self.account_valuation.id,
+            }
+        )
+        product_b = self.env["product.product"].create(
+            {
+                "name": "Test Product B",
+                "is_storable": True,
+                "categ_id": self.product_category.id,
+                "valuation_class_id": valuation_class_b.id,
+            }
+        )
+        invoice = self._out_invoice([(self.product, 1.0, 100.0), (product_b, 2.0, 40.0)])
+        invoice.action_post()
+        self.assertEqual(invoice.state, "posted")
+        self.assertRecordValues(
+            self._sorted_lines(invoice),
+            [
+                {"account_id": self.account_income.id, "product_id": self.product.id, "debit": 0.0, "credit": 100.0},
+                {"account_id": account_income_b.id, "product_id": product_b.id, "debit": 0.0, "credit": 80.0},
+                {"account_id": self.account_receivable.id, "product_id": False, "debit": 180.0, "credit": 0.0},
+            ],
+        )
