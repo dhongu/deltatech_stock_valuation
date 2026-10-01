@@ -34,9 +34,10 @@ class StockMove(models.Model):
     def _check_internal_move_valuation_area(self):
         """Mișcările între două locații interne trebuie să rămână în aceeași arie.
 
-        Verificarea rulează la validarea mișcării: în Odoo 19 o mișcare intern→intern nu
-        generează notă contabilă, deci nu se poate baza pe generarea liniilor contabile.
-        Trecerea între arii se face printr-o locație de tranzit.
+        Verificarea rulează la validarea mișcării: o mișcare intern→intern nu generează
+        notă contabilă, deci nu se poate baza pe generarea liniilor contabile. Locațiile
+        de tranzit nu sunt verificate, dar ruta prin tranzit nu e o trecere validată între
+        arii (vezi OBYC-009 în deltatech_obyc).
         """
         for move in self:
             if not move.company_id.use_valuation_area:
