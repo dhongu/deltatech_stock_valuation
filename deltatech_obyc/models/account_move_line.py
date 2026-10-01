@@ -39,11 +39,14 @@ class AccountMoveLine(models.Model):
                 account_modifier=account_modifier,
                 company=line.company_id,
             )
-            line.account_id = rule.acc_valuation_id
-            if line.debit:
-                line.account_id = rule.acc_src_id
-            elif line.credit:
-                line.account_id = rule.acc_dest_id
+            # contul se alege după tipul documentului, nu după debit/credit: la creare
+            # compute-ul rulează înainte ca linia să aibă sold. Nota de credit folosește
+            # același cont ca factura (Odoo inversează doar partea).
+            if transaction_key == "stock_income":
+                account = rule.acc_dest_id
+            else:
+                account = rule.acc_src_id
+            line.account_id = account or rule.acc_valuation_id
 
             line.valuation_area_id = valuation_area
 
