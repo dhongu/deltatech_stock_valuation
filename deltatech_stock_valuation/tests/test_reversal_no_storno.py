@@ -7,17 +7,17 @@ from odoo.tests import tagged
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
 
-@tagged("post_install", "-at_install", "deltatech_stock_valuation")
-class TestReversalNoStorno(AccountTestInvoicingCommon):
-    """Inversarea unei note de stoc pe o companie fără storno: nucleul trece suma pe
-    partea opusă și copiază cantitatea cu același semn. Evaluarea trebuie să ajungă
-    la zero, nu să dubleze cantitatea."""
+class ReversalCommon(AccountTestInvoicingCommon):
+    """Inversarea unei note de stoc trebuie să aducă evaluarea la zero, nu să dubleze
+    cantitatea, cu și fără storno."""
+
+    account_storno = False
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.env.company.valuation_area_level = "company"
-        cls.env.company.account_storno = False
+        cls.env.company.account_storno = cls.account_storno
         cls.env.company.set_stock_valuation_at_company_level()
         cls.valuation_area = cls.env.company.valuation_area_id
         cls.account_stock_val = cls.env["account.account"].create(
@@ -74,6 +74,12 @@ class TestReversalNoStorno(AccountTestInvoicingCommon):
             limit=1,
         )
 
+
+@tagged("post_install", "-at_install", "deltatech_stock_valuation")
+class TestReversalNoStorno(ReversalCommon):
+    """Fără storno, nucleul trece suma pe partea opusă și copiază cantitatea cu același
+    semn; cantitatea trebuie inversată odată cu partea."""
+
     def test_reversal_without_storno_cancels_quantity(self):
         receipt = self._post_receipt(1000.0, 10.0)
         reversal = receipt._reverse_moves(cancel=True)
@@ -100,3 +106,28 @@ class TestReversalNoStorno(AccountTestInvoicingCommon):
             ]
         )
         self.assertFalse(sum(valuation.mapped("quantity")))
+
+
+@tagged("post_install", "-at_install", "deltatech_stock_valuation")
+class TestReversalStorno(ReversalCommon):
+    """Cu storno, linia inversată rămâne pe aceeași parte cu sumă negativă, iar semnul
+    sumei anulează intrarea. O linie de valoare zero (mișcare la cost 0) nu are semn
+    de sumă, deci cantitatea ei trebuie inversată."""
+
+    account_storno = True
+
+    def test_reversal_with_storno_cancels_quantity(self):
+        receipt = self._post_receipt(1000.0, 10.0)
+        reversal = receipt._reverse_moves(cancel=True)
+        line = self._stock_line(reversal)
+        self.assertEqual(line.debit, -1000.0)
+        self.assertEqual(line.quantity, 10.0)
+        history = self._history()
+        self.assertFalse(history.quantity_final)
+        self.assertFalse(history.amount_final)
+
+    def test_zero_value_reversal_with_storno(self):
+        receipt = self._post_receipt(0.0, 4.0)
+        receipt._reverse_moves(cancel=True)
+        history = self._history()
+        self.assertFalse(history.quantity_final, "inversarea unei mișcări la cost 0 trebuie să anuleze cantitatea")

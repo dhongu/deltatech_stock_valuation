@@ -5,6 +5,8 @@
   quantity with the same sign; the quantity of the entry lines is signed (positive on
   debit, negative on credit), so it is now inverted together with the side. With storno
   the line stays on the same side (negative amount) and the quantity is unchanged.
+- Fix: with storno, reversing a zero-value stock entry line (a move at cost 0) doubled the
+  quantity: the line has no amount sign to cancel it, so its quantity is now inverted too.
 
 ## 20.0.1.0.4 (2026-10-01)
 
