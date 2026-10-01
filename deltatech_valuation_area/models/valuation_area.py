@@ -7,11 +7,17 @@ from odoo import api, fields, models
 class ValuationArea(models.Model):
     _name = "valuation.area"
     _description = "Valuation Area"
+    _check_company_auto = True
 
     name = fields.Char(required=True)
-    code = fields.Char(required=True, help="Short code used in account determination")
+    code = fields.Char(required=True, help="Short code shown in front of the area name, as [CODE] Name.")
     company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
-    stock_journal_id = fields.Many2one("account.journal", string="Stock Journal")
+    stock_journal_id = fields.Many2one(
+        "account.journal",
+        string="Stock Journal",
+        domain=[("type", "=", "general")],
+        check_company=True,
+    )
 
     @api.depends("code", "name")
     def _compute_display_name(self):
