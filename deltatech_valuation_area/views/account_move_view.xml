@@ -6,9 +6,32 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form" />
         <field name="arch" type="xml">
+            <xpath expr="//page[@id='aml_tab']//field[@name='line_ids']//list/field[@name='name']" position="after">
+                <!-- produs, cantitate semnată și UM pe notele manuale de stoc (corecții, solduri inițiale) -->
+                <field name="product_id" optional="hide" column_invisible="parent.move_type != 'entry'" />
+                <field name="quantity" optional="hide" column_invisible="parent.move_type != 'entry'" />
+                <field
+                    name="product_uom_id"
+                    optional="hide"
+                    groups="uom.group_uom"
+                    column_invisible="parent.move_type != 'entry'"
+                />
+            </xpath>
             <xpath expr="//page[@id='aml_tab']//field[@name='line_ids']//list" position="inside">
                 <field name="valuation_area_id" optional="hide" />
             </xpath>
+        </field>
+    </record>
+
+    <record id="view_move_line_tree" model="ir.ui.view">
+        <field name="name">account.move.line.list.valuation.area</field>
+        <field name="model">account.move.line</field>
+        <field name="inherit_id" ref="account.view_move_line_tree" />
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="quantity" optional="hide" readonly="1" />
+                <field name="valuation_area_id" optional="hide" readonly="1" />
+            </field>
         </field>
     </record>
 
