@@ -41,7 +41,7 @@ class AccountMoveLine(models.Model):
             )
             # contul se alege după tipul documentului, nu după debit/credit: la creare
             # compute-ul rulează înainte ca linia să aibă sold. Nota de credit folosește
-            # același cont ca factura (Odoo inversează doar partea).
+            # același cont ca factura.
             if transaction_key == "stock_income":
                 account = rule.acc_dest_id
             else:

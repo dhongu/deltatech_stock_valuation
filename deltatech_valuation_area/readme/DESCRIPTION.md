@@ -35,8 +35,8 @@ depozit de aprovizionare) iau aria depozitului chiar dacă locația de stoc nu a
 
 > ⚠️ **Constrângere:** Transferurile interne între locații cu arii de evaluare diferite nu sunt permise.
 > Verificarea se face la validarea mișcării (inclusiv pe liniile ei, de exemplu la putaway pe o
-> sublocație), indiferent dacă se generează sau nu notă contabilă. Trecerea dintre arii se face printr-o
-> locație de tranzit.
+> sublocație), indiferent dacă se generează sau nu notă contabilă. Ruta printr-o locație de tranzit
+> nu este o trecere validată între arii (vezi OBYC-009 în `deltatech_obyc`).
 
 ### Propagarea ariei pe liniile contabile
 

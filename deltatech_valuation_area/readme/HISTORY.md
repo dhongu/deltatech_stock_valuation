@@ -1,3 +1,20 @@
+## 20.0.1.0.5 (2026-10-01)
+
+- Fix: reversing a stock journal entry on a company without storno doubled the quantity
+  instead of cancelling it. The core moves the amount to the opposite side but copies the
+  quantity with the same sign; the quantity of the entry lines is signed (positive on
+  debit, negative on credit), so it is now inverted together with the side. With storno
+  the line stays on the same side (negative amount) and the quantity is unchanged.
+- Fix: with storno, reversing a zero-value stock entry line (a move at cost 0) doubled the
+  quantity: the line has no amount sign to cancel it, so its quantity is now inverted too.
+- Docs: consultant sheet corrected after the accounting audit: legal basis, receipt / delivery /
+  invoice gaps (VAT of the goods delivered not invoiced due in the month of the delivery, D300
+  computed from tax tags, so the month-end entries need tags), inventory difference accounts per
+  stock class, shortages (imputation without VAT, VAT adjustment, profit tax), monthly
+  reconciliation of the stock account per area, transfers between areas (the transit route is not
+  a validated workaround) and the sign convention on reversals; `readme/bugs.md`: impact on VA-001
+  and VA-003, new VA-005 and VA-006 (open) and VA-007 (reversals, fixed in this version).
+
 ## 20.0.1.0.4 (2026-10-01)
 
 - Fix (VA-001): the area of a stock move is taken from the warehouse of its internal location when

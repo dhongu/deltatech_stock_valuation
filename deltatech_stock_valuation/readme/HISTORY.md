@@ -1,3 +1,22 @@
+## 20.0.0.0.11 (2026-10-01)
+
+- Test: reversing a stock journal entry on a company without storno leaves the stock
+  valuation at zero (the fix is in `deltatech_valuation_area` 20.0.1.0.5).
+- Test: with storno, reversing a stock entry leaves the valuation at zero, including a
+  zero-value line (move at cost 0).
+- Docs: consultant sheet corrected after the accounting audit: OBYC recommended for Romanian
+  clients and a month-end procedure for receipts and deliveries not invoiced without OBYC (VAT of
+  the delivery Dr 418 / Cr 707 + Cr 4428, then Dr 4428 / Cr 4427 in the month of the delivery,
+  4428 kept for VAT on cash basis; closing entries reversed on day 1 of the next month; tax tags on
+  707 and 4427 for the D300); a value-only adjustment changes the value and the average price;
+  reversal with and without storno (`deltatech_valuation_area` 20.0.1.0.5); shortages (imputation
+  Dr 4282 / 461 = Cr 7581 without VAT, VAT adjustment Dr 635 = Cr 4426); monthly reconciliation of
+  the stock account per valuation area and stock count checks; legal basis (OMFP 1802/2014,
+  Fiscal Code); the transit route is not a validated workaround. `readme/bugs.md`: SV-005 updated,
+  SV-008 added.
+- Docs: the screenshot test puts a supplier on the receipt entry and a partner column in the
+  journal items list (screenshots 04 and 05 to be regenerated).
+
 ## 20.0.0.0.10 (2026-10-01)
 
 - Fix: the recompute at posting counts the stock lines without a unit of measure (product unit),
