@@ -17,8 +17,8 @@
 - Docs: consultant sheet updated to the current code (cost of goods sold at delivery, landed
   cost, storno returns, journal per valuation area), 10 screenshots regenerated in Romanian;
   the screenshot test checks the journal entries before taking the screenshots. Known bugs
-  OBYC-005 (inventory adjustment keys swapped) and OBYC-006 (OBYC entry without real-time
-  valuation) added to `readme/bugs.md`.
+  OBYC-005 (inventory adjustment keys swapped), OBYC-006 (OBYC entry without real-time
+  valuation) and OBYC-007 (smaller defects) added to `readme/bugs.md`.
 
 ## 19.0.1.0.2 (2026-09-30)
 

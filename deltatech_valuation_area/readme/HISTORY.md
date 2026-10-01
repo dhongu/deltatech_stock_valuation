@@ -3,6 +3,7 @@
 - Docs: consultant sheet updated to the current code (11-section structure), screenshots
   regenerated in Romanian on the Romanian chart of accounts; the screenshot test now posts
   real stock entries and checks them before taking the screenshots.
+- Docs: known bugs listed in `readme/bugs.md`.
 
 ## 19.0.1.0.1 (2026-09-30)
 

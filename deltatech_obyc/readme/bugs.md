@@ -72,3 +72,13 @@ Review date: 2026-10-01. Target version: Odoo 19.
 - **Impact:** Unexpected stock entries for products valued manually.
 - **Suggested fix:** Combine the core conditions with the OBYC rule check (without the core's location valuation account condition, which OBYC replaces).
 - **Validation needed:** A test with a product with a valuation class in a manual-valuation category: no journal entry.
+
+## OBYC-007 — P3: Smaller defects found while updating the consultant sheet
+
+- **Status:** Open.
+- **Error message without the location types:** `models/stock_move.py`, `_compute_transaction_key()` (line 132) uses `{source_usage}` / `{dest_usage}`, but `env._()` formats with `%`, so the message shows the braces literally. The `RedirectWarning` of `_get_rule_account` also shows the transaction key label in English.
+- **Wrong examples in DESCRIPTION.md:** the "Typical Account Mappings" table (e.g. `stock_delivery` with source 371, destination 607, valuation 378) would generate Dr 378 / Cr 371. It also does not say that the destination account is ignored when the source account is set.
+- **Storno on products without a valuation class:** the storno inversion in `_get_account_move_line_vals()` also applies to the core lines of products without a valuation class (rare case).
+- **Rule title:** `_compute_display_name` shows the technical transaction key and "None" for an empty modifier.
+- **Landed cost on goods partly delivered:** the core `stock_landed_costs` capitalizes only the part still in stock; the account of the cost line (408 in the demo) for the delivered part must be checked with the accountant. Core behavior, documented in the consultant sheet.
+
