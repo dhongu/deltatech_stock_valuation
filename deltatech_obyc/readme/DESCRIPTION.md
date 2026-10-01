@@ -292,3 +292,6 @@ the module; they stay on the GR/IR account (408) and are regularized manually.
     Valuation Account 371.01; entry Dr 371.09 / Cr 371.01
   - In (area of the receiving location): Source Account 371.09, Valuation Account 371.02;
     entry Dr 371.02 / Cr 371.09
+  - Not a validated route: in Odoo 20 the stock → transit move gets no value, so these entries
+    are expected to be posted at 0 (`readme/bugs.md`, OBYC-009). Do not use it for transfers
+    between valuation areas until OBYC-009 is fixed.

@@ -1,3 +1,30 @@
+## 20.0.1.0.6 (2026-10-01)
+
+Port of the 19.0 documentation fixes after the accounting audit and the OBYC-001 fix,
+adapted to Odoo 20.
+
+- Docs: consultant sheet (`readme/FISA_CONSULTANT.md`): legal basis completed (OMFP items 53,
+  69, 283 (2), 310; Fiscal Code art. 281, 282, 319 (16), 304, 25); invoice accounts per
+  document type, credit notes with storno and the valuation area of the invoice line;
+  configuration for finished products, raw materials and production; the same 408 on
+  receipt, dropship and dropship return; vendor bill on 408 (new step 6b and screenshot 11);
+  landed cost account = the account of the transport bill; inventory differences (shortages
+  imputed without VAT, VAT adjustment Dr 635 / Cr 4426, profit tax); price and exchange
+  differences left on 408; month-end procedure for deliveries not invoiced (OBYC-002): Dr 418
+  / Cr 707 + 4428 and Dr 4428 / Cr 4427 in the month of the delivery, with the D300 tax tags
+  on the 707 and 4427 lines (the D300 is computed from tax tags) and a reversal on day 1 of
+  the next month; monthly reconciliation of the stock account per valuation area; the transit
+  route between areas is no longer suggested (OBYC-009); error messages updated to the
+  OBYC-007 fix; Odoo 20 menus.
+- Docs: `readme/bugs.md`: OBYC-002 procedure and core wizard analysis, OBYC-008 (down payment
+  wizard) and OBYC-009 (transit route at 0) checked in the Odoo 20 code; `DESCRIPTION.md`:
+  the transit route is marked as not validated.
+- Tests: the screenshot test seeds the income rule with 707 only in the destination account,
+  uses the Romanian payable account (401) for the supplier, posts a vendor bill, checks the
+  product line accounts of the customer invoice and of the vendor bill, and captures the vendor
+  bill (`11_vendor_bill_408.png`).
+- Code comment on credit notes corrected.
+
 ## 20.0.1.0.5 (2026-10-01)
 
 Port of the 19.0 fixes (19.0.1.0.4 to 19.0.1.0.6).
