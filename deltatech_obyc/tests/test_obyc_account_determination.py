@@ -138,7 +138,8 @@ class TestOBYCAccountDetermination(TestCommon):
             self.assertEqual(found_rule.id, rule.id)
 
     def test_05_display_name_computation(self):
-        """Test the display name computation"""
+        """The rule title uses the label of the transaction key and leaves out an empty
+        account modifier, instead of the technical key and "None" (OBYC-007)."""
         rule = self.env["product.account.determination"].create(
             {
                 "transaction_key": "stock_receipt",
@@ -146,35 +147,19 @@ class TestOBYCAccountDetermination(TestCommon):
                 "valuation_area_id": self.valuation_area.id,
                 "account_modifier_id": self.account_modifier.id,
                 "company_id": self.env.company.id,
-                "acc_src_id": self.account_src.id,
-                "acc_dest_id": self.account_dest.id,
-                "acc_valuation_id": self.account_valuation.id,
             }
         )
+        self.assertEqual(rule.display_name, "Stock Receipt from Supplier - Test Class - Test Area - Test Modifier")
 
-        rule._compute_display_name()
-        expected_name = (
-            f"stock_receipt - {self.valuation_class.name} - {self.valuation_area.name} - {self.account_modifier.name}"
-        )
-        self.assertEqual(rule.display_name, expected_name)
-
-        # Test without account modifier
         rule_no_modifier = self.env["product.account.determination"].create(
             {
                 "transaction_key": "stock_delivery",
                 "valuation_class_id": self.valuation_class.id,
                 "valuation_area_id": self.valuation_area.id,
-                "account_modifier_id": False,
                 "company_id": self.env.company.id,
-                "acc_src_id": self.account_src.id,
-                "acc_dest_id": self.account_dest.id,
-                "acc_valuation_id": self.account_valuation.id,
             }
         )
-
-        rule_no_modifier._compute_display_name()
-        expected_name_no_modifier = f"stock_delivery - {self.valuation_class.name} - {self.valuation_area.name} - None"
-        self.assertEqual(rule_no_modifier.display_name, expected_name_no_modifier)
+        self.assertEqual(rule_no_modifier.display_name, "Stock Delivery - Test Class - Test Area")
 
     def test_06_display_area_name_computation(self):
         """Test the display name computation for valuation area"""
@@ -270,3 +255,17 @@ class TestOBYCAccountDetermination(TestCommon):
         public_accounts = product_template.get_product_accounts()
         self.assertEqual(public_accounts["stock_valuation"], rule.acc_valuation_id)
         self.assertEqual(public_accounts["expense"], rule.acc_dest_id)
+
+    def test_10_missing_rule_message_translated(self):
+        """The missing rule message shows the transaction key in the user's language (OBYC-007)."""
+        self.env["res.lang"]._activate_lang("ro_RO")
+        self.env["ir.module.module"]._load_module_terms(["deltatech_obyc"], ["ro_RO"], overwrite=True)
+        with self.assertRaises(RedirectWarning) as err:
+            self.env["product.account.determination"].with_context(lang="ro_RO")._get_rule_account(
+                valuation_area=self.valuation_area,
+                valuation_class=self.valuation_class,
+                transaction_key="stock_delivery",
+                account_modifier=self.account_modifier,
+                company=self.env.company,
+            )
+        self.assertIn("Livrare stoc", err.exception.args[0])

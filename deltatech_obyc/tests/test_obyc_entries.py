@@ -41,15 +41,24 @@ class TestObycEntries(TestCommon):
         cls.account_lc_expense = cls.env["account.account"].create(
             {"name": "Test Landed Cost Expense", "code": "TLCE01", "account_type": "expense"}
         )
+        cls.account_inventory_gain = cls.env["account.account"].create(
+            {"name": "Test Inventory Gain", "code": "TINVG1", "account_type": "income_other"}
+        )
+        cls.account_inventory_loss = cls.env["account.account"].create(
+            {"name": "Test Inventory Loss", "code": "TINVL1", "account_type": "expense"}
+        )
         # recepție: Dr valuation / Cr src; livrare (doar acc_dest): Dr dest / Cr valuation;
         # retur de la client: Dr valuation / Cr src; cost de achiziție: Dr valuation;
-        # venit (factura de vânzare): Cr dest
+        # venit (factura de vânzare): Cr dest; plus de inventar: Dr valuation / Cr src;
+        # minus de inventar: Dr dest / Cr valuation
         for key, src, dest in [
             ("stock_receipt", cls.account_src, False),
             ("stock_delivery", False, cls.account_dest),
             ("return_from_customer", cls.account_customer, False),
             ("landed_cost", False, False),
             ("stock_income", cls.account_income_debit, cls.account_income),
+            ("inventory_adjustment_plus", cls.account_inventory_gain, False),
+            ("inventory_adjustment_minus", False, cls.account_inventory_loss),
         ]:
             cls.env["product.account.determination"].create(
                 {
@@ -78,6 +87,15 @@ class TestObycEntries(TestCommon):
         )
         cls.sale_journal = cls.env["account.journal"].create(
             {"name": "Test Sale Journal", "code": "TSJ2", "type": "sale", "company_id": cls.env.company.id}
+        )
+        cls.account_payable = cls.env["account.account"].create(
+            {"name": "Test Payable", "code": "TPAY02", "account_type": "liability_payable", "reconcile": True}
+        )
+        cls.vendor = cls.env["res.partner"].create(
+            {"name": "Test Vendor OBYC", "property_account_payable_id": cls.account_payable.id}
+        )
+        cls.purchase_journal = cls.env["account.journal"].create(
+            {"name": "Test Purchase Journal", "code": "TPJ2", "type": "purchase", "company_id": cls.env.company.id}
         )
 
     def _picking(self, picking_type, location, location_dest, qty):
@@ -129,24 +147,23 @@ class TestObycEntries(TestCommon):
         self._validate(return_picking)
         return return_picking
 
-    def _out_invoice(self, lines):
-        invoice = self.env["account.move"].create(
+    def _invoice(self, move_type, lines):
+        is_sale = move_type.startswith("out_")
+        return self.env["account.move"].create(
             {
-                "move_type": "out_invoice",
+                "move_type": move_type,
                 "invoice_date": "2026-01-15",
-                "partner_id": self.partner.id,
-                "journal_id": self.sale_journal.id,
+                "partner_id": (self.partner if is_sale else self.vendor).id,
+                "journal_id": (self.sale_journal if is_sale else self.purchase_journal).id,
                 "invoice_line_ids": [
                     Command.create({"product_id": product.id, "quantity": qty, "price_unit": price, "tax_ids": []})
                     for product, qty, price in lines
                 ],
             }
         )
-        # OBYC-001 (readme/bugs.md): la creare, `_compute_account_id` rulează înainte
-        # de debit/credit și pune linia pe `acc_valuation_id`; recalculul pe toate
-        # liniile odată (ca în `test_account_move_line`) dă contul de venit al regulii
-        invoice.invoice_line_ids._compute_account_id()
-        return invoice
+
+    def _out_invoice(self, lines):
+        return self._invoice("out_invoice", lines)
 
     def test_01_receipt(self):
         lines = self._lines(self._receipt(10.0))
@@ -295,3 +312,161 @@ class TestObycEntries(TestCommon):
                 {"account_id": self.account_receivable.id, "product_id": False, "debit": 180.0, "credit": 0.0},
             ],
         )
+
+    def test_08_customer_credit_note(self):
+        """Nota de credit către client folosește același cont de venit ca factura
+        (`acc_dest_id` al regulii `stock_income`), cu partea inversată. Contul se alege
+        la creare, fără recalcul (OBYC-001)."""
+        credit_note = self._invoice("out_refund", [(self.product, 1.0, 150.0)])
+        credit_note.action_post()
+        self.assertRecordValues(
+            self._sorted_lines(credit_note),
+            [
+                {"account_id": self.account_income.id, "debit": 150.0, "credit": 0.0},
+                {"account_id": self.account_receivable.id, "debit": 0.0, "credit": 150.0},
+            ],
+        )
+
+    def test_09_vendor_bill(self):
+        """Factura de furnizor după recepție: linia de produs stinge contul de
+        recepții nefacturate al regulii `stock_receipt` (`acc_src_id`), nu debitează
+        din nou stocul. Înainte de fix, linia lua `acc_valuation_id` și stocul se
+        dubla valoric (OBYC-001)."""
+        receipt = self._receipt(10.0)
+        bill = self._invoice("in_invoice", [(self.product, 10.0, 100.0)])
+        bill.action_post()
+        self.assertRecordValues(
+            self._sorted_lines(bill),
+            [
+                {"account_id": self.account_payable.id, "debit": 0.0, "credit": 1000.0},
+                {"account_id": self.account_src.id, "debit": 1000.0, "credit": 0.0},
+            ],
+        )
+        # stocul rămâne debitat o singură dată, de nota recepției
+        stock_lines = self.env["account.move.line"].search(
+            [("account_id", "=", self.account_valuation.id), ("parent_state", "=", "posted")]
+        )
+        self.assertEqual(stock_lines.move_id, receipt.move_ids.account_move_id)
+        self.assertEqual(sum(stock_lines.mapped("balance")), 1000.0)
+
+    def test_10_vendor_credit_note(self):
+        """Nota de credit de la furnizor folosește același cont ca factura
+        (`acc_src_id` al regulii `stock_receipt`), cu partea inversată."""
+        credit_note = self._invoice("in_refund", [(self.product, 2.0, 100.0)])
+        credit_note.action_post()
+        self.assertRecordValues(
+            self._sorted_lines(credit_note),
+            [
+                {"account_id": self.account_payable.id, "debit": 200.0, "credit": 0.0},
+                {"account_id": self.account_src.id, "debit": 0.0, "credit": 200.0},
+            ],
+        )
+
+    def _inventory_move(self, counted_qty):
+        """Ajustare de inventar pe locația de stoc; întoarce mișcarea generată."""
+        quant = (
+            self.env["stock.quant"]
+            .with_context(inventory_mode=True)
+            .create(
+                {
+                    "product_id": self.product.id,
+                    "location_id": self.stock_location.id,
+                    "inventory_quantity": counted_qty,
+                }
+            )
+        )
+        quant.action_apply_inventory()
+        return self.env["stock.move"].search(
+            [("product_id", "=", self.product.id), ("is_inventory", "=", True)], order="id desc", limit=1
+        )
+
+    def test_11_inventory_gain(self):
+        """Plusul de inventar (locație de inventar → stoc) folosește regula
+        `inventory_adjustment_plus`: Dr stoc / Cr contul de plus. Înainte de fix se folosea
+        regula `inventory_adjustment_minus` (OBYC-005)."""
+        move = self._inventory_move(5.0)
+        self.assertEqual(move._compute_transaction_key(), "inventory_adjustment_plus")
+        self.assertRecordValues(
+            self._sorted_lines(move.account_move_id),
+            [
+                {"account_id": self.account_inventory_gain.id, "debit": 0.0, "credit": 500.0, "quantity": -5.0},
+                {"account_id": self.account_valuation.id, "debit": 500.0, "credit": 0.0, "quantity": 5.0},
+            ],
+        )
+
+    def test_12_inventory_loss(self):
+        """Minusul de inventar (stoc → locație de inventar) folosește regula
+        `inventory_adjustment_minus`: Dr contul de minus / Cr stoc (OBYC-005)."""
+        self._receipt(10.0)
+        move = self._inventory_move(7.0)
+        self.assertEqual(move._compute_transaction_key(), "inventory_adjustment_minus")
+        self.assertRecordValues(
+            self._sorted_lines(move.account_move_id),
+            [
+                {"account_id": self.account_inventory_loss.id, "debit": 300.0, "credit": 0.0, "quantity": 3.0},
+                {"account_id": self.account_valuation.id, "debit": 0.0, "credit": 300.0, "quantity": -3.0},
+            ],
+        )
+
+    def test_13_periodic_valuation_no_entry(self):
+        """Produs cu clasă de evaluare într-o categorie cu evaluare periodică: recepția nu
+        generează notă OBYC, ca în nucleu. Înainte de fix nota se crea oricum (OBYC-006)."""
+        self.product_category.property_valuation = "periodic"
+        receipt = self._receipt(10.0)
+        self.assertEqual(receipt.state, "done")
+        self.assertFalse(receipt.move_ids.account_move_id)
+
+    def test_14_consumable_without_rules(self):
+        """Produs consumabil (nestocabil) cu o clasă de evaluare fără reguli: livrarea se
+        validează fără notă. Înainte de fix validarea cădea cu „No account determination
+        rule found" (OBYC-006)."""
+        valuation_class = self.env["product.valuation.class"].create({"name": "Test Class C", "code": "TCC"})
+        consumable = self.env["product.product"].create(
+            {
+                "name": "Test Consumable",
+                "type": "consu",
+                "is_storable": False,
+                "categ_id": self.product_category.id,
+                "valuation_class_id": valuation_class.id,
+            }
+        )
+        self.product = consumable
+        delivery = self._delivery(2.0)
+        self.assertEqual(delivery.state, "done")
+        self.assertFalse(delivery.move_ids.account_move_id)
+
+    def test_15_owner_stock_no_entry(self):
+        """Marfă primită în custodie (proprietar terț): nucleul nu o evaluează, deci nici
+        OBYC nu face notă. Înainte de fix se posta o notă cu valoare 0 (OBYC-006)."""
+        picking = self.env["stock.picking"].create(
+            {
+                "picking_type_id": self.picking_type_in.id,
+                "location_id": self.supplier_location.id,
+                "location_dest_id": self.stock_location.id,
+                "owner_id": self.vendor.id,
+                "move_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.product.id,
+                            "product_uom_qty": 3.0,
+                            "uom_id": self.product.uom_id.id,
+                            "location_id": self.supplier_location.id,
+                            "location_dest_id": self.stock_location.id,
+                        }
+                    )
+                ],
+            }
+        )
+        self._validate(picking)
+        self.assertEqual(picking.state, "done")
+        self.assertEqual(picking.move_ids.move_line_ids.owner_id, self.vendor)
+        self.assertFalse(picking.move_ids.account_move_id)
+
+    def test_16_unmapped_locations_not_valued(self):
+        """Mișcare între două locații pe care nici nucleul nu le evaluează (furnizor →
+        inventar), fără cheie de tranzacție: se validează fără notă. Înainte de fix
+        validarea cădea cu „Transaction key could not be determined" (OBYC-006)."""
+        inventory_location = self.product.property_stock_inventory
+        picking = self._picking(self.picking_type_in, self.supplier_location, inventory_location, 2.0)
+        self.assertEqual(picking.state, "done")
+        self.assertFalse(picking.move_ids.account_move_id)

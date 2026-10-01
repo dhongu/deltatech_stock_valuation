@@ -98,11 +98,11 @@ Conturi folosite în exemplele din fișă (planul de conturi RO):
 | toate cele trei conturi goale | nu se generează notă |
 
 *Linia de produs de pe factură* (regula **Venituri** la vânzare, **Recepție stoc de la furnizor**
-la cumpărare): comportamentul urmărit este linie în credit (factură client) → **Cont destinație**,
-linie în debit (factură de furnizor, notă de credit client) → **Cont sursă**. **Efectiv azi**, din
-cauza limitării OBYC-001 (secțiunea 9), linia rămâne pe **Contul de evaluare** al regulii. Până
-la rezolvare, la regula **Venituri** completați 707 în toate cele trei câmpuri (ca în baza demo),
-astfel încât factura de vânzare să ajungă pe 707.
+la cumpărare): contul se alege după tipul documentului — factura și nota de credit către client →
+**Cont destinație** al regulii **Venituri** (707); factura și nota de credit de la furnizor →
+**Cont sursă** al regulii **Recepție stoc de la furnizor** (408); **Contul de evaluare** doar când
+acel cont e gol. Nota de credit folosește același cont ca factura. Înainte de 20.0.1.0.5 linia
+rămânea pe Contul de evaluare (OBYC-001, secțiunea 9).
 
 *Costul de achiziție (landed cost)*: Dr **Cont de evaluare** al regulii **Costuri Adiționale
 Stoc** / Cr contul completat pe linia de cost; Contul sursă și Contul destinație nu se folosesc.
@@ -150,12 +150,20 @@ Date minime pentru demo:
    | Livrare directă (dropship) | 408 | — | 607 | Dr 607 / Cr 408 |
    | Retur dropshipping (client → furnizor) | 607 | — | 408 | Dr 408 / Cr 607 (cu storno: Dr 607 −V / Cr 408 −V) |
    | Transfer intern (aceeași arie) | — | — | — | fără notă (valoarea stocului nu se schimbă) |
-   | Lipsă la inventar (gestiune → inventar) — cheia **Ajustare inventar plus** | — | 607 | 371 | Dr 607 / Cr 371 |
-   | Plus la inventar (inventar → gestiune) — cheia **Ajustare inventar minus** | 607 (sau alt cont stabilit prin politica contabilă) | — | 371 | Dr 371 / Cr 607 |
+   | Ajustare inventar plus (plusuri, inventar → gestiune) | 607 | — | 371 | Dr 371 / Cr 607 |
+   | Ajustare inventar minus (lipsuri, gestiune → inventar) | — | 607 | 371 | Dr 607 / Cr 371 |
 
    Pentru produse finite, regula **Livrare stoc** are Cont destinație 711 și Cont de evaluare 345
-   (Dr 711 / Cr 345). Sensul inversat al cheilor de ajustare de inventar este o limitare a codului
-   (OBYC-005, secțiunea 9); conturile pentru lipsuri și plusuri le stabilește contabilul.
+   (Dr 711 / Cr 345).
+
+   Plusul la inventar (locația de inventar → gestiune) folosește cheia **Ajustare inventar plus**,
+   lipsa (gestiune → locația de inventar) cheia **Ajustare inventar minus**; până la versiunea
+   20.0.1.0.5 cheile erau inversate (OBYC-005, secțiunea 9). Plusurile de inventar se înregistrează
+   pe seama contului de cheltuială (607 la mărfuri, 601 la materii prime) sau a contului 711 la
+   produse finite, după funcțiunea contului de stoc din OMFP 1802/2014 (la 371: „constatate plus la
+   inventar … (607, 758)", unde 758 privește bunurile primite cu titlu gratuit). Plusurile se
+   evaluează la valoarea justă (pct. 75 alin. (1) lit. d)); verificați costul produsului înainte de
+   ajustare. Imputarea și TVA-ul lipsurilor se fac manual.
 7. **Storno:** *Facturare (sau Contabilitate) → Configurare → Setări*, blocul **Contabilitate
    storno** → verificați că **Contabilitate storno** este bifat (la firmele RO este bifat implicit).
 8. **Valoarea mișcărilor validate:** *Inventar → Configurare → Setări*, blocul **Evaluare** →
@@ -324,9 +332,9 @@ Observații:
   nota „neagră" a regulii de retur devine tranzacția inițială cu sume negative. De aceea regula
   de retur trebuie să fie oglinda regulii operațiunii inițiale.
 - **Factura de furnizor:** linia de produs se caută în regula **Recepție stoc de la furnizor**.
-  Comportamentul urmărit este linie în debit → Cont sursă (408), adică Dr 408 + Dr 4426 = Cr 401
-  (linia de TVA vine din taxă, OBYC nu o schimbă); în prezent, din cauza limitării OBYC-001, linia
-  de produs rămâne pe Contul de evaluare (371) — verificați contul înainte de confirmare.
+  Linia de produs ia Contul sursă (408), adică Dr 408 + Dr 4426 = Cr 401 (linia de TVA vine din
+  taxă, OBYC nu o schimbă); stocul nu se mai debitează a doua oară (OBYC-001, reparat în
+  20.0.1.0.5).
 - **Valoarea mișcării în Odoo 20:** în Odoo 20 câmpul de valoare al mișcării de stoc este
   **negativ pe ieșiri** (livrare, retur la furnizor) și pozitiv pe intrări. Nota OBYC folosește
   valoarea absolută, deci sumele Dr/Cr sunt pozitive, ca în tabelul de mai sus. Semnul negativ
@@ -388,7 +396,7 @@ Observații:
 - [ ] costul de achiziție: Dr 371 / Cr contul liniei de cost; valoarea recepției crește cu suma costului
 - [ ] livrarea directă furnizor → client are notă cu valoare (nu 0) și nu modifică stocul propriu
 - [ ] liniile notelor de stoc au produs, cantitate semnată (pozitivă pe debit, negativă pe credit) și unitate de măsură
-- [ ] la ajustările de inventar, sensul cheilor plus/minus a fost verificat pe o mișcare reală (OBYC-005)
+- [ ] la ajustările de inventar, plusul folosește regula **Ajustare inventar plus** și lipsa regula **Ajustare inventar minus**; la bazele actualizate de la o versiune anterioară 20.0.1.0.5, regulile au fost verificate (OBYC-005)
 - [ ] costul de achiziție este pe jurnalul ales în document; recepția avea toată marfa în stoc sau partea livrată a fost tratată manual
 - [ ] setarea **Păstrează valoarea mișcării la recalcularea retroactivă** este bifată (Inventar → Configurare → Setări, blocul Evaluare)
 - [ ] după mutarea în trecut a unei recepții, valoarea livrărilor validate ulterior nu s-a schimbat și este egală cu suma din nota lor OBYC
@@ -408,12 +416,14 @@ Observații:
 
 **Limitări cunoscute** (detaliate în `readme/bugs.md`; nu sunt funcționalități):
 
-- **OBYC-001 — linia de produs de pe factură ia Contul de evaluare.** La crearea facturii, contul
-  liniei se alege înainte de completarea sumei, deci rămâne pe Contul de evaluare al regulii:
-  venitul facturii de vânzare poate ajunge pe 371 în loc de 707, iar factura de furnizor pe 371
-  în loc de 408. Nota este echilibrată, deci nu apare nicio eroare. Ocolire pentru vânzări:
-  completați 707 în toate cele trei conturi ale regulii **Venituri**. Pentru facturile de furnizor
-  nu există ocolire prin configurare — verificați contul liniei înainte de confirmare.
+- **OBYC-001 — reparat în 20.0.1.0.5.** Înainte de această versiune, linia de produs de pe
+  factură lua Contul de evaluare al regulii: venitul facturii de vânzare putea ajunge pe 371, iar
+  factura de furnizor debita din nou 371 (în loc de 408), lăsând 408 nestins. **Facturile postate
+  înainte de 20.0.1.0.5 rămân cu contul greșit**: după actualizare, comparați soldul 371 cu
+  raportul de evaluare a stocului pe arie și soldul 408 cu recepțiile nefacturate, apoi corectați
+  diferențele prin notă contabilă. Dacă regula **Venituri** fusese configurată cu 707 în toate cele
+  trei conturi (ocolirea veche), se poate lăsa așa; configurarea recomandată are 707 doar în Cont
+  destinație.
 - **OBYC-002 — fără venituri de facturat (418 Clienți – facturi de întocmit) pentru livrat
   nefacturat.** Livrarea din luna M înregistrează costul în M, venitul apare doar la factura din
   M+1. La sfârșitul lunii M se înregistrează manual Dr 418 = Cr 707 + Cr 4427 (sau Cr 4428, urmat
@@ -427,19 +437,28 @@ Observații:
 - **OBYC-004 — factura emisă înainte de livrare.** O factură integrală (nu de avans) postată
   înainte de livrare înregistrează venitul pe 707, deși ar trebui tratată ca avans (Dr 4111 /
   Cr 419 + 4427). Folosiți facturi de avans până la livrare.
-- **OBYC-005 — ajustări de inventar cu cheile inversate.** Ieșirea din gestiune spre locația de
-  inventar (lipsă la inventar) folosește cheia **Ajustare inventar plus**, iar intrarea (plus la
-  inventar) cheia **Ajustare inventar minus**. Configurați conturile după sensul real al mișcării
-  (exemplul din secțiunea 5) și verificați pe o ajustare de test.
-- **OBYC-006 — notă OBYC și pentru produsele fără evaluare în timp real.** Pentru un produs cu
-  clasă de evaluare, nota mișcării se generează chiar dacă categoria are evaluare manuală. Puneți
-  clasa de evaluare doar pe produse din categorii cu evaluare în timp real.
-- **OBYC-007 — mesaje și exemple neclare.** Mesajul „Cheia de tranzacție nu a putut fi determinată…"
-  afișează acoladele în loc de tipurile de locații; exemplele din descrierea tehnică a modulului
-  (tabelul de mapări tipice) nu respectă convenția din secțiunea 4 — configurați după tabelul din
-  secțiunea 5; titlul unei reguli arată cheia tehnică și „None" pentru modificator gol; inversarea
-  storno a retururilor se aplică și produselor fără clasă de evaluare (caz rar; nota rămâne pe
-  aceleași conturi, cu sume negative).
+- **OBYC-005 — reparat în 20.0.1.0.5.** Înainte de această versiune, lipsa la inventar folosea
+  cheia **Ajustare inventar plus**, iar plusul cheia **Ajustare inventar minus**. **La actualizare**,
+  regulile configurate după comportamentul vechi (o regulă „plus" care debitează cheltuiala, o
+  regulă „minus" care debitează stocul) trebuie să-și schimbe cheia între ele, altfel plusurile se
+  înregistrează ca lipsuri și invers; actualizarea modulului le semnalează în jurnalul serverului
+  („OBYC-005: account determination rule …"), fără să le modifice.
+- **OBYC-006 — reparat în 20.0.1.0.5.** Nota OBYC se generează doar pentru produsele stocabile
+  din categorii cu evaluare în timp real, cu cantitate nenulă și fără proprietar terț (marfa în
+  custodie nu se evaluează), ca în Odoo standard. Pentru celelalte mișcări nu se mai cere regulă,
+  iar o mișcare pe care nici Odoo standard nu o evaluează (de exemplu furnizor → locația de
+  inventar) se validează fără notă. Lipsa regulii la o mișcare evaluată în timp real oprește în
+  continuare validarea, cu trimitere la configurare. Marfa cu proprietar terț (custodie,
+  consignație primită) nu se înregistrează în 371: se ține în afara bilanțului, în contul 8033,
+  prin notă manuală (OMFP 1802/2014, pct. 284 alin. (2) lit. a)). Pentru produsele cu evaluare
+  periodică (inventar intermitent, pct. 291), intrările se înregistrează pe cheltuieli la factura
+  furnizorului, iar stocul se regularizează la inventarul de la sfârșitul perioadei.
+- **OBYC-007 — reparat în 20.0.1.0.5:** mesajul „Cheia de tranzacție nu a putut fi determinată…"
+  arată tipurile de locații, titlul regulii arată eticheta cheii, fără „None" pentru modificator
+  gol, iar mesajul „regulă lipsă" arată cheia în limba utilizatorului; exemplele din descrierea
+  tehnică a modulului respectă convenția din secțiunea 4. Nu este defect: inversarea storno a
+  retururilor se aplică și produselor fără clasă de evaluare (retururile se înregistrează în roșu
+  la toate produsele firmelor cu storno).
 - **Setarea de păstrare a valorii debifată.** Dacă **Păstrează valoarea mișcării la recalcularea
   retroactivă** este debifată, recalcularea standard Odoo 20 rescrie valoarea livrărilor deja
   validate, dar notele OBYC postate rămân neschimbate: valoarea stocului și soldul 371 se pot
@@ -452,7 +471,7 @@ Observații:
 - **Diferența de preț / recepție reevaluată fără notă.** O factură de furnizor cu alt preț decât
   recepția, sau o cantitate editată pe o recepție validată, schimbă valoarea recepției în Odoo,
   dar OBYC nu postează nicio notă pentru diferență: valoarea stocului din Odoo nu mai corespunde
-  soldului 371, iar dacă linia facturii este pe 408 (ocolirea OBYC-001), 408 rămâne nestins cu
+  soldului 371, iar dacă linia facturii este pe 408 (după reparația OBYC-001), 408 rămâne nestins cu
   diferența. Înregistrați manual diferența: pentru partea aflată încă în stoc Dr 371 / Cr 408
   (sau invers, la preț mai mic; la o corectură de cantitate, contul stabilit de contabil, după
   cauza corecției), pentru partea deja livrată pe 607 (711 la produse finite), după politica
@@ -498,8 +517,9 @@ capturează ecranele. Se regenerează cu:
 - Limitările OBYC-001…007 trebuie prezentate ca atare, cu procedura manuală, până la rezolvarea
   lor; reverificați `readme/bugs.md` înainte de fiecare ediție a manualului.
 - Etichetele din interfață sunt în română („Zonă de evaluare" în meniu, „Arie de evaluare" pe
-  câmpuri); titlul formularului unei reguli afișează cheia tehnică și „None" pentru modificator gol
-  (de exemplu `stock_delivery - Marfă - Magazin central - None`).
+  câmpuri); de la 20.0.1.0.5 titlul formularului unei reguli afișează eticheta cheii, fără
+  modificatorul gol (de exemplu `Livrare stoc - Marfă - Magazin central`); capturile generate
+  înainte de această versiune arată încă titlul vechi.
 - În Odoo 20, butonul **Retur** creează direct transferul de retur (fără fereastra de selecție
   a cantităților din versiunile anterioare); descrieți fluxul de retur ca atare.
 - Unele etichete din nucleul Odoo apar netraduse sau ciudat traduse în capturi (grilele fiscale
