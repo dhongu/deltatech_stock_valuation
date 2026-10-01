@@ -35,7 +35,7 @@
                             <button
                                 type="object"
                                 name="action_recompute_in_background"
-                                icon="fa-rocket"
+                                icon="rocket_launch"
                                 string="Recompute All (Background)"
                                 class="btn-primary me-2"
                                 invisible="is_refresh_running"
@@ -44,7 +44,7 @@
                             <button
                                 type="object"
                                 name="stop_auto_refresh"
-                                icon="fa-stop-circle"
+                                icon="stop_circle"
                                 string="Stop Background Refresh"
                                 class="btn-danger me-2"
                                 invisible="not is_refresh_running"
@@ -72,21 +72,21 @@
                             <button
                                 type="object"
                                 name="refresh_stock_valuation"
-                                icon="fa-play"
+                                icon="play_arrow"
                                 string="Execute Next Step"
                                 class="btn-secondary me-2"
                             />
                             <button
                                 type="object"
                                 name="reset_refresh_valuation_step"
-                                icon="fa-undo"
+                                icon="undo"
                                 string="Reset to Step 1"
                                 class="btn-secondary me-2"
                             />
                             <button
                                 type="object"
                                 name="recompute_product_valuation"
-                                icon="fa-calculator"
+                                icon="calculate"
                                 string="Recompute Product Valuation"
                                 class="btn-link"
                             />

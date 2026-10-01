@@ -6,14 +6,14 @@
 {
     "name": "Product Valuation",
     "summary": "Product Stock Valuation",
-    "version": "19.0.0.0.8",
+    "version": "20.0.0.0.8",
     "author": "Terrabit, Dorin Hongu",
     "website": "https://www.terrabit.ro",
     "category": "Valuation/Valuation",
     "depends": ["stock_account", "deltatech_valuation_area"],
     "license": "OPL-1",
     "data": [
-        "security/ir.model.access.csv",
+        "security/ir.access.csv",
         "security/security.xml",
         "views/product_template_views.xml",
         "views/product_valuation_view.xml",

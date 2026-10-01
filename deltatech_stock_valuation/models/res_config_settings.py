@@ -41,19 +41,19 @@ class ResConfigSettings(models.TransientModel):
     @api.depends("valuation_area_level")
     def _compute_refresh_valuation_step_info(self):
         ICP = self.env["ir.config_parameter"].sudo()
-        step = int(ICP.get_param(_PARAM_STEP, "1"))
+        step = ICP.get_int(_PARAM_STEP, 1)
         label = STEP_LABELS.get(step, STEP_LABELS[1])
         if step == 5:
-            last_pid = int(ICP.get_param(_PARAM_STEP5_LAST_PID, "0"))
+            last_pid = ICP.get_int(_PARAM_STEP5_LAST_PID, 0)
             if last_pid:
                 label = f"{label} (from product {last_pid})"
 
         cron = self.env.ref(_CRON_XMLID, raise_if_not_found=False)
         running = bool(cron and cron.sudo().active)
 
-        last_step = ICP.get_param(_PARAM_LAST_STEP)
-        last_run = ICP.get_param(_PARAM_LAST_RUN)
-        last_duration = ICP.get_param(_PARAM_LAST_DURATION)
+        last_step = ICP.get_str(_PARAM_LAST_STEP)
+        last_run = ICP.get_str(_PARAM_LAST_RUN)
+        last_duration = ICP.get_str(_PARAM_LAST_DURATION)
         if last_step and last_run:
             progress = self.env._(
                 "Last: %(label)s at %(when)s (%(s)ss)",
@@ -84,35 +84,35 @@ class ResConfigSettings(models.TransientModel):
         self._check_refresh_access()
 
         ICP = self.env["ir.config_parameter"].sudo()
-        step = int(ICP.get_param(_PARAM_STEP, "1"))
+        step = ICP.get_int(_PARAM_STEP, 1)
 
         if step in (1, 2, 3, 4, 6):
             self.env["product.valuation.history"]._recompute_all_amount(execute_step=[step])
             next_step = step + 1
-            ICP.set_param(_PARAM_STEP, str(next_step))
+            ICP.set_int(_PARAM_STEP, next_step)
         elif step == 5:
-            last_pid = int(ICP.get_param(_PARAM_STEP5_LAST_PID, "0"))
+            last_pid = ICP.get_int(_PARAM_STEP5_LAST_PID, 0)
             next_pid = self.env["product.valuation.history"]._recompute_step5_batch(product_id_start=last_pid)
             if next_pid is not None:
-                ICP.set_param(_PARAM_STEP5_LAST_PID, str(next_pid))
+                ICP.set_int(_PARAM_STEP5_LAST_PID, next_pid)
                 next_step = 5  # stay at step 5 until all products done
             else:
-                ICP.set_param(_PARAM_STEP5_LAST_PID, "0")
+                ICP.set_int(_PARAM_STEP5_LAST_PID, 0)
                 next_step = 6
-                ICP.set_param(_PARAM_STEP, str(next_step))
+                ICP.set_int(_PARAM_STEP, next_step)
         elif step == 7:
             self.env["product.valuation"]._recompute_all_amount()
             next_step = 1
-            ICP.set_param(_PARAM_STEP, str(next_step))
+            ICP.set_int(_PARAM_STEP, next_step)
         else:
             next_step = 1
-            ICP.set_param(_PARAM_STEP, str(next_step))
+            ICP.set_int(_PARAM_STEP, next_step)
 
         label_done = STEP_LABELS.get(step, "")
         label_next = STEP_LABELS.get(next_step, STEP_LABELS[1])
 
         if step == 5 and next_step == 5:
-            last_pid = int(ICP.get_param(_PARAM_STEP5_LAST_PID, "0"))
+            last_pid = ICP.get_int(_PARAM_STEP5_LAST_PID, 0)
             msg = self.env._(
                 "%(done)s — processed up to product %(pid)s. Press again to continue.", done=label_done, pid=last_pid
             )
@@ -138,8 +138,8 @@ class ResConfigSettings(models.TransientModel):
     def reset_refresh_valuation_step(self):
         self._check_refresh_access()
         ICP = self.env["ir.config_parameter"].sudo()
-        ICP.set_param(_PARAM_STEP, "1")
-        ICP.set_param(_PARAM_STEP5_LAST_PID, "0")
+        ICP.set_int(_PARAM_STEP, 1)
+        ICP.set_int(_PARAM_STEP5_LAST_PID, 0)
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
@@ -178,9 +178,9 @@ class ResConfigSettings(models.TransientModel):
 
         ICP = self.env["ir.config_parameter"].sudo()
         # Restart a clean cycle and remember who should be notified.
-        ICP.set_param(_PARAM_STEP, "1")
-        ICP.set_param(_PARAM_STEP5_LAST_PID, "0")
-        ICP.set_param(_PARAM_NOTIFY_UID, str(self.env.uid))
+        ICP.set_int(_PARAM_STEP, 1)
+        ICP.set_int(_PARAM_STEP5_LAST_PID, 0)
+        ICP.set_str(_PARAM_NOTIFY_UID, str(self.env.uid))
 
         if cron:
             # Activate and trigger promptly instead of waiting for the next schedule.
@@ -193,7 +193,7 @@ class ResConfigSettings(models.TransientModel):
     def start_auto_refresh(self):
         self._check_refresh_access()
         ICP = self.env["ir.config_parameter"].sudo()
-        ICP.set_param(_PARAM_NOTIFY_UID, str(self.env.uid))
+        ICP.set_str(_PARAM_NOTIFY_UID, str(self.env.uid))
         cron = self.env.ref(_CRON_XMLID, raise_if_not_found=False)
         if cron:
             cron.sudo().active = True

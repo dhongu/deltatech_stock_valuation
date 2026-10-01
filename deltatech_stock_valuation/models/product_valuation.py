@@ -10,7 +10,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
-from odoo.tools import SQL, float_is_zero
+from odoo.tools import SQL
 
 _logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class ProductValuation(models.Model):
 
     price = fields.Float(string="Price", digits="Product Price")
 
-    quantity = fields.Float(string="Quantity", digits="Product Unit of Measure", default=0.0)
+    quantity = fields.Float(string="Quantity", digits="Product Unit", default=0.0)
 
     amount = fields.Monetary(string="Amount", default=0.0)
     account_id = fields.Many2one("account.account", string="Account", required=True, index=True)
@@ -106,13 +106,12 @@ class ProductValuation(models.Model):
     def _get_qty_epsilon(self):
         """
         Pragul sub care o cantitate e considerată reziduală (zero) la calculul prețului,
-        derivat din precizia zecimală globală „Product Unit of Measure".
-        În Odoo 19 `uom.uom.rounding` e câmp calculat (nestocat), deci nu poate fi
-        folosit direct în SQL.
+        derivat din precizia zecimală globală „Product Unit" (în 20 `uom.uom.rounding`
+        nu mai există; precizia cantităților e globală).
 
         :return: float, jumătate din pasul de rotunjire al cantităților
         """
-        digits = self.env["decimal.precision"].precision_get("Product Unit of Measure")
+        digits = self.env["decimal.precision"].precision_get("Product Unit")
         return (10**-digits) / 2
 
     @api.model
@@ -183,10 +182,10 @@ class ProductValuation(models.Model):
             if valuation:
                 price = item.price
                 # cantitățile reziduale (sub rotunjirea UoM) nu trebuie să producă prețuri aberante
-                rounding = item.product_id.uom_id.rounding or 0.01
-                if not float_is_zero(valuation.quantity_final, precision_rounding=rounding):
+                uom = item.product_id.uom_id
+                if not uom.is_zero(valuation.quantity_final):
                     price = valuation.amount_final / valuation.quantity_final
-                elif not float_is_zero(valuation.quantity_in, precision_rounding=rounding):
+                elif not uom.is_zero(valuation.quantity_in):
                     price = valuation.debit / valuation.quantity_in
 
                 item.write(
@@ -450,16 +449,16 @@ class ProductValuationHistory(models.Model):
     month = fields.Char(string="Month", required=True, index=True)
 
     amount_initial = fields.Monetary("Initial Amount", default=0.0)
-    quantity_initial = fields.Float("Initial Quantity", digits="Product Unit of Measure", default=0.0)
+    quantity_initial = fields.Float("Initial Quantity", digits="Product Unit", default=0.0)
 
-    quantity_in = fields.Float(string="Quantity In", digits="Product Unit of Measure", default=0.0)
-    quantity_out = fields.Float(string="Quantity Out", digits="Product Unit of Measure", default=0.0)
+    quantity_in = fields.Float(string="Quantity In", digits="Product Unit", default=0.0)
+    quantity_out = fields.Float(string="Quantity Out", digits="Product Unit", default=0.0)
     debit = fields.Monetary(string="Debit", default=0.0)
     credit = fields.Monetary(string="Credit", default=0.0)
 
     amount_final = fields.Monetary("Final Amount", compute="_compute_final", store=True, default=0.0)
     quantity_final = fields.Float(
-        "Final Quantity", digits="Product Unit of Measure", compute="_compute_final", store=True, default=0.0
+        "Final Quantity", digits="Product Unit", compute="_compute_final", store=True, default=0.0
     )
 
     # suprascrie constrângerea moștenită din product.valuation cu varianta pe lună;
@@ -1187,7 +1186,7 @@ class ProductValuationHistory(models.Model):
         at a time. The cron keeps the current step in `ir.config_parameter`, so it always
         knows what is left to execute. Records timing and notifies the initiating user."""
         ICP = self.env["ir.config_parameter"].sudo()
-        step = int(ICP.get_param(_PARAM_STEP, "1"))
+        step = ICP.get_int(_PARAM_STEP, 1)
 
         start = fields.Datetime.now()
         t0 = time.monotonic()
@@ -1195,18 +1194,18 @@ class ProductValuationHistory(models.Model):
 
         if step in (1, 2, 3, 4, 6):
             self._recompute_all_amount(execute_step=[step])
-            ICP.set_param(_PARAM_STEP, str(step + 1))
+            ICP.set_int(_PARAM_STEP, step + 1)
         elif step == 5:
-            last_pid = int(ICP.get_param(_PARAM_STEP5_LAST_PID, "0"))
+            last_pid = ICP.get_int(_PARAM_STEP5_LAST_PID, 0)
             next_pid = self._recompute_step5_batch(product_id_start=last_pid)
             if next_pid is not None:
-                ICP.set_param(_PARAM_STEP5_LAST_PID, str(next_pid))
+                ICP.set_int(_PARAM_STEP5_LAST_PID, next_pid)
             else:
-                ICP.set_param(_PARAM_STEP5_LAST_PID, "0")
-                ICP.set_param(_PARAM_STEP, "6")
+                ICP.set_int(_PARAM_STEP5_LAST_PID, 0)
+                ICP.set_int(_PARAM_STEP, 6)
         elif step == 7:
             self.env["product.valuation"]._recompute_all_amount()
-            ICP.set_param(_PARAM_STEP, "1")
+            ICP.set_int(_PARAM_STEP, 1)
             cron = self.env.ref(
                 "deltatech_stock_valuation.ir_cron_auto_refresh_valuation",
                 raise_if_not_found=False,
@@ -1217,21 +1216,21 @@ class ProductValuationHistory(models.Model):
             _logger.info("Auto refresh valuation cycle complete. Cron deactivated.")
 
         duration = round(time.monotonic() - t0, 2)
-        ICP.set_param(_PARAM_LAST_RUN, fields.Datetime.to_string(start))
-        ICP.set_param(_PARAM_LAST_DURATION, str(duration))
-        ICP.set_param(_PARAM_LAST_STEP, str(step))
+        ICP.set_str(_PARAM_LAST_RUN, fields.Datetime.to_string(start))
+        ICP.set_str(_PARAM_LAST_DURATION, str(duration))
+        ICP.set_int(_PARAM_LAST_STEP, step)
 
         label = STEP_LABELS.get(step, "")
         if finished:
             self._notify_refresh(self.env._("Stock valuation refresh complete (%(s)ss).", s=duration), "success")
-            ICP.set_param(_PARAM_NOTIFY_UID, "")
+            ICP.set_str(_PARAM_NOTIFY_UID, "")
         else:
             self._notify_refresh(self.env._("%(label)s done in %(s)ss.", label=label, s=duration), "info")
 
     def _notify_refresh(self, message, msg_type="info"):
         """Best-effort toast notification to the user who started the background refresh."""
         ICP = self.env["ir.config_parameter"].sudo()
-        uid = ICP.get_param(_PARAM_NOTIFY_UID)
+        uid = ICP.get_str(_PARAM_NOTIFY_UID)
         if not uid:
             return
         user = self.env["res.users"].browse(int(uid)).exists()
