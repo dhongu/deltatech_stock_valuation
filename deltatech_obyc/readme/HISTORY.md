@@ -1,3 +1,13 @@
+## 20.0.1.0.4 (2026-10-01)
+
+- Docs: consultant sheet (`readme/FISA_CONSULTANT.md`) brought to Odoo 20, with the
+  11-section structure from 19.0: cost of goods sold at delivery, sale invoice without COGS
+  lines, landed cost, return without the selection wizard, negative move value on outgoing
+  moves and the *Keep move value on retroactive recompute* setting.
+- Docs: screenshots regenerated from `tests/test_screenshots.py` (delivery entry, sale invoice
+  and landed cost entry added); the test checks the Dr/Cr of the entries before capturing.
+- Docs: known limitations OBYC-005 to OBYC-007 added to `readme/bugs.md`.
+
 ## 20.0.1.0.3 (2026-10-01)
 
 - Fix: validating a landed cost on a product with an OBYC valuation class crashed with
