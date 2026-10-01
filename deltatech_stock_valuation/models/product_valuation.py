@@ -20,6 +20,8 @@ _PARAM_NOTIFY_UID = "deltatech_stock_valuation.refresh_notify_uid"
 _PARAM_LAST_RUN = "deltatech_stock_valuation.refresh_last_run"
 _PARAM_LAST_DURATION = "deltatech_stock_valuation.refresh_last_duration"
 _PARAM_LAST_STEP = "deltatech_stock_valuation.refresh_last_step"
+# compania pentru care rulează ciclul de recalcul (pornit în fundal sau pas cu pas)
+_PARAM_COMPANY = "deltatech_stock_valuation.refresh_company_id"
 _STEP5_CLICK_BATCH = 2000  # products per button click / cron run
 _STEP5_SQL_BATCH = 500  # products per SQL window function query
 # Safety bound: a single accounting move with a wrong date (e.g. year 1561) must not
@@ -98,6 +100,8 @@ class ProductValuation(models.Model):
                     "valuation_area_id": valuation_area_id,
                     "account_id": account_id,
                     "company_id": company_id,
+                    # moneda companiei rândului, nu a companiei curente din mediu
+                    "currency_id": self.env["res.company"].browse(company_id).currency_id.id,
                 }
             )
         return valuation
@@ -333,8 +337,8 @@ class ProductValuation(models.Model):
                     LEFT JOIN account_move as m ON l.move_id=m.id
                     LEFT JOIN product_product product ON product.id = l.product_id
                     LEFT JOIN product_template template ON template.id = product.product_tmpl_id
-                    INNER JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
-                    INNER JOIN uom_uom uom_template ON uom_template.id = template.uom_id
+                    LEFT JOIN uom_uom uom_line ON uom_line.id = COALESCE(l.product_uom_id, template.uom_id)
+                    LEFT JOIN uom_uom uom_template ON uom_template.id = template.uom_id
                 WHERE
                     account_id in %(account_ids)s
                     AND m.state = 'posted'
@@ -523,6 +527,7 @@ class ProductValuationHistory(models.Model):
                     "account_id": account_id,
                     "month": month,
                     "company_id": company_id,
+                    "currency_id": self.env["res.company"].browse(company_id).currency_id.id,
                     "quantity_initial": quantity_initial,
                     "amount_initial": amount_initial,
                 }
@@ -663,7 +668,7 @@ class ProductValuationHistory(models.Model):
                 )
                 prev_valuation._compute_initial()
 
-    def _get_sql_select(self, account_ids, product_ids=None, valuation_area_ids=None, months=None):
+    def _get_sql_select(self, account_ids, product_ids=None, valuation_area_ids=None, months=None, company_id=None):
         """
         Returnează un obiect SQL care agregă mișcările contabile pe combinația
         (product_id, valuation_area_id, account_id, company_id, currency_id, month), calculând:
@@ -678,9 +683,10 @@ class ProductValuationHistory(models.Model):
         :param product_ids: tuple de ID-uri produse; None = fără filtru
         :param valuation_area_ids: tuple de ID-uri arii; None = fără filtru
         :param months: tuple de luni (format YYYYMM); None = fără filtru
+        :param company_id: ID-ul companiei; None = fără filtru (doar pentru ramura fără produse)
         :return: obiect SQL compus
         """
-        sub = self._get_sql_sub_select(account_ids, product_ids, valuation_area_ids, months)
+        sub = self._get_sql_sub_select(account_ids, product_ids, valuation_area_ids, months, company_id)
         in_case, out_case = self._get_quantity_in_out_sql()
         return SQL(
             """
@@ -698,7 +704,7 @@ class ProductValuationHistory(models.Model):
             out_case=out_case,
         )
 
-    def _get_sql_sub_select(self, account_ids, product_ids=None, valuation_area_ids=None, months=None):
+    def _get_sql_sub_select(self, account_ids, product_ids=None, valuation_area_ids=None, months=None, company_id=None):
         """
         Returnează un obiect SQL cu liniile individuale din `account_move_line`,
         filtrate după conturile de stoc și notele contabile postate, incluzând luna (YYYYMM).
@@ -716,9 +722,11 @@ class ProductValuationHistory(models.Model):
         :param product_ids: tuple de ID-uri produse; None = fără filtru
         :param valuation_area_ids: tuple de ID-uri arii; None = fără filtru
         :param months: tuple de luni YYYYMM; None = fără filtru
+        :param company_id: ID-ul companiei; None = fără filtru (doar pentru ramura fără produse)
         :return: obiect SQL compus
         """
         if product_ids is None:
+            company_filter = SQL("AND m.company_id = %s", company_id) if company_id else SQL()
             return SQL(
                 """
                 SELECT product_id, valuation_area_id, account_id, m.company_id, l.company_currency_id as currency_id,
@@ -735,8 +743,10 @@ class ProductValuationHistory(models.Model):
                         account_id in %(account_ids)s
                         AND m.state = 'posted'
                         AND l.product_id IS NOT NULL
+                        %(company_filter)s
             """,
                 account_ids=account_ids,
+                company_filter=company_filter,
             )
         return SQL(
             """
@@ -748,8 +758,8 @@ class ProductValuationHistory(models.Model):
                     LEFT JOIN account_move as m ON l.move_id=m.id
                     LEFT JOIN product_product product ON product.id = l.product_id
                     LEFT JOIN product_template template ON template.id = product.product_tmpl_id
-                    INNER JOIN uom_uom uom_line ON uom_line.id = l.product_uom_id
-                    INNER JOIN uom_uom uom_template ON uom_template.id = template.uom_id
+                    LEFT JOIN uom_uom uom_line ON uom_line.id = COALESCE(l.product_uom_id, template.uom_id)
+                    LEFT JOIN uom_uom uom_template ON uom_template.id = template.uom_id
                 WHERE
                     account_id in %(account_ids)s
                     AND m.state = 'posted'
@@ -891,26 +901,30 @@ class ProductValuationHistory(models.Model):
         row = self.env.cr.dictfetchone()
         if row and row["cnt"]:
             _logger.warning(
-                "deltatech_stock_valuation: %d linii contabile excluse din evaluare (UoM produs lipsă), valoare totală: %s",
+                "deltatech_stock_valuation: %d linii contabile cu produs fără UoM: valoarea intră în evaluare, "
+                "cantitatea nu (UoM produs lipsă), valoare totală: %s",
                 row["cnt"],
                 row["valoare"] or 0,
             )
 
         if 1 in execute_step:
             _logger.info("Stergere linii istoric")
+            # tot istoricul companiei, indiferent de arie: la nivel de companie există o singură
+            # arie, iar rândurile pe aria altei companii (scrise de versiunile dinainte de
+            # 19.0.0.0.11) nu trebuie să supraviețuiască recalculului
             self.env.cr.execute(
-                """
-                DELETE FROM product_valuation_history
-                WHERE company_id = %(company_id)s
-                  AND (valuation_area_id = %(valuation_area_id)s OR valuation_area_id IS NULL);
-            """,
-                params,
+                SQL(
+                    "DELETE FROM product_valuation_history WHERE company_id = %(company_id)s",
+                    company_id=params["company_id"],
+                )
             )
 
         if 2 in execute_step:
             _logger.info("Calculare linii istoric miscari lunare")
 
-            inner = self._get_sql_select(account_ids=params["account_ids"])
+            # doar liniile companiei curente: rândurile altor companii rămân ale lor
+            # (altfel INSERT-ul dă unique violation pe istoricul lor existent)
+            inner = self._get_sql_select(account_ids=params["account_ids"], company_id=params["company_id"])
             sql = SQL(
                 """
                 INSERT INTO product_valuation_history
@@ -972,7 +986,8 @@ class ProductValuationHistory(models.Model):
                 params,
             )
             self.env.cr.execute(
-                """
+                SQL(
+                    """
                 INSERT INTO product_valuation_history
                 (
                     product_id, valuation_area_id, account_id, company_id, currency_id,  month,
@@ -1000,10 +1015,16 @@ class ProductValuationHistory(models.Model):
 
                 FROM
                     calendar_temporal c
-                CROSS JOIN (SELECT DISTINCT product_id, account_id FROM product_valuation_history) pa
+                CROSS JOIN (
+                    SELECT DISTINCT product_id, account_id FROM product_valuation_history
+                    WHERE company_id = %(company_id)s
+                ) pa
                 ON CONFLICT (product_id, valuation_area_id, account_id, company_id, month) DO NOTHING
                 """,
-                params,
+                    valuation_area_id=params["valuation_area_id"],
+                    company_id=params["company_id"],
+                    currency_id=params["currency_id"],
+                )
             )
             _logger.info("Liniile lipsa au fost adaugate")
 
@@ -1036,6 +1057,7 @@ class ProductValuationHistory(models.Model):
                             LEFT JOIN uom_uom uom_template ON uom_template.id = template.uom_id
                         WHERE l.account_id IN %(account_ids)s
                             AND m.state = 'posted'
+                            AND m.company_id = %(company_id)s
                             AND l.product_id IS NOT NULL
                         GROUP BY l.product_id, COALESCE(l.valuation_area_id, %(valuation_area_id)s), l.account_id, m.company_id
                     ) AS aml
@@ -1045,6 +1067,7 @@ class ProductValuationHistory(models.Model):
                         AND pv.company_id = aml.company_id
                         AND pv.month = %(max_month)s;
                 """,
+                company_id=params["company_id"],
                 in_case=in_case,
                 out_case=out_case,
                 valuation_area_id=params["valuation_area_id"],
@@ -1078,9 +1101,11 @@ class ProductValuationHistory(models.Model):
         if 6 in execute_step:
             _logger.info("Sterge linii goale ")
             self.env.cr.execute(
-                """
+                SQL(
+                    """
                 DELETE FROM product_valuation_history
                 WHERE  valuation_area_id = %(valuation_area_id)s
+                    and company_id = %(company_id)s
                     and (quantity_initial is null or quantity_initial = 0)
                     and (quantity_final is null or quantity_final = 0)
                     and (quantity is null or quantity = 0)
@@ -1088,7 +1113,9 @@ class ProductValuationHistory(models.Model):
                     and (amount is null or amount = 0)
                     and (amount_final is null or amount_final = 0) ;
                 """,
-                params,
+                    valuation_area_id=params["valuation_area_id"],
+                    company_id=params["company_id"],
+                )
             )
 
         _logger.info("Calculare sold initial si final varianta Python")
@@ -1188,24 +1215,31 @@ class ProductValuationHistory(models.Model):
         ICP = self.env["ir.config_parameter"].sudo()
         step = ICP.get_int(_PARAM_STEP, 1)
 
+        # cronul nu are context de companie: ciclul rulează pe compania din care a fost
+        # pornit (sudo — utilizatorul cronului poate să nu aibă acces la ea)
+        company_id = ICP.get_int(_PARAM_COMPANY, 0)
+        company = self.env["res.company"].sudo().browse(company_id).exists() or self.env.company
+        model = self.sudo().with_company(company)
+
         start = fields.Datetime.now()
         t0 = time.monotonic()
         finished = False
 
         if step in (1, 2, 3, 4, 6):
-            self._recompute_all_amount(execute_step=[step])
+            model._recompute_all_amount(execute_step=[step])
             ICP.set_int(_PARAM_STEP, step + 1)
         elif step == 5:
             last_pid = ICP.get_int(_PARAM_STEP5_LAST_PID, 0)
-            next_pid = self._recompute_step5_batch(product_id_start=last_pid)
+            next_pid = model._recompute_step5_batch(product_id_start=last_pid)
             if next_pid is not None:
                 ICP.set_int(_PARAM_STEP5_LAST_PID, next_pid)
             else:
                 ICP.set_int(_PARAM_STEP5_LAST_PID, 0)
                 ICP.set_int(_PARAM_STEP, 6)
         elif step == 7:
-            self.env["product.valuation"]._recompute_all_amount()
+            model.env["product.valuation"]._recompute_all_amount()
             ICP.set_int(_PARAM_STEP, 1)
+            ICP.set_int(_PARAM_COMPANY, None)
             cron = self.env.ref(
                 "deltatech_stock_valuation.ir_cron_auto_refresh_valuation",
                 raise_if_not_found=False,
@@ -1249,3 +1283,62 @@ class ProductValuationHistory(models.Model):
             )
         except Exception:  # pragma: no cover - notification must never break the cron
             _logger.exception("Could not send stock valuation refresh notification")
+
+    @api.model
+    def _cleanup_cross_company_rows(self):
+        """
+        Repară datele scrise de versiunile dinainte de 19.0.0.0.11 / 20.0.0.0.10 pe bazele cu mai multe
+        companii (SV-002, SV-009): liniile contabile ale unei companii mutate pe aria altei
+        companii și rândurile de evaluare / istoric ale unei companii pe aria alteia.
+
+        - liniile de pe conturile de stoc ale companiilor la nivel „company" revin pe aria
+          propriei companii;
+        - rândurile de evaluare și istoric cu aria altei companii se șterg (sunt date derivate,
+          refăcute de recalculul complet al companiei).
+
+        :return: numărul de rânduri de istoric șterse
+        """
+        cr = self.env.cr
+        cr.execute(
+            SQL(
+                """
+                UPDATE account_move_line aml
+                SET valuation_area_id = c.valuation_area_id
+                FROM valuation_area va, res_company c, account_account acc
+                WHERE aml.valuation_area_id = va.id
+                  AND va.company_id != aml.company_id
+                  AND c.id = aml.company_id
+                  AND c.valuation_area_level = 'company'
+                  AND c.valuation_area_id IS NOT NULL
+                  AND acc.id = aml.account_id
+                  AND acc.is_for_stock_valuation
+                """
+            )
+        )
+        _logger.info("deltatech_stock_valuation: %d linii contabile readuse pe aria companiei", cr.rowcount)
+        removed = 0
+        for table in ("product_valuation_history", "product_valuation"):
+            cr.execute(
+                SQL(
+                    """
+                    DELETE FROM %(table)s pv
+                    USING valuation_area va
+                    WHERE pv.valuation_area_id = va.id
+                      AND va.company_id != pv.company_id
+                    """,
+                    table=SQL.identifier(table),
+                )
+            )
+            if table == "product_valuation_history":
+                removed = cr.rowcount
+            if cr.rowcount:
+                _logger.warning(
+                    "deltatech_stock_valuation: %d rânduri din %s pe aria altei companii au fost șterse; "
+                    "rulați Recompute All (Background) din fiecare companie.",
+                    cr.rowcount,
+                    table,
+                )
+        self.env["account.move.line"].invalidate_model(["valuation_area_id"])
+        self.env["product.valuation.history"].invalidate_model()
+        self.env["product.valuation"].invalidate_model()
+        return removed

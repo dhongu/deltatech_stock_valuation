@@ -5,7 +5,7 @@
 **Prioritate:** 🟡 Medie (strat de control peste evaluarea standard; necesar la clienții cu arii de evaluare sau cu corecții contabile manuale pe stocuri)
 
 > Fișă adusă pe Odoo 20 la 01.10.2026, pornind de la fișa versiunii 19.0 (structura cu 11
-> secțiuni), pe codul versiunii 20.0.0.0.9 a modulului.
+> secțiuni), pe codul versiunii 20.0.0.0.10 a modulului.
 
 ---
 
@@ -218,9 +218,8 @@ Ce mai trebuie știut la note:
   `deltatech_valuation_area`); se completează automat cu aria companiei.
 - **Unitatea de măsură** — cantitatea de pe linie se convertește în unitatea de măsură a
   produsului. O linie de 2 Dozens pe un produs gestionat în Units intră în evaluare ca 24 Units.
-  Unitatea de măsură este **obligatorie** pe linie: o linie fără unitate este ignorată de
-  actualizarea automată la postare și intră în evaluare abia la recalcularea completă (vezi
-  `readme/bugs.md`, SV-001).
+  O linie fără unitate de măsură (importată sau creată prin SQL) intră în evaluare cu unitatea
+  produsului, atât la postare, cât și la recalcularea completă.
 - **Sensul pe facturi**: factura și chitanța de furnizor = intrare; rambursarea de la furnizor =
   intrare cu minus; factura și chitanța de client = ieșire; rambursarea către client = ieșire cu
   minus.
@@ -274,8 +273,9 @@ secțiunea **Evaluare**, apăsați **Recompute All (Background)** și confirmaț
 - Ciclul repornește de la pasul 1 din 7, iar o acțiune planificată (la 2 minute) execută automat
   câte un pas la fiecare rulare și se oprește singură la final. Durata minimă este de circa 12–14
   minute; pasul 5 rulează în loturi de produse și poate cere mai multe rulări pe baze mari.
-- Recalcularea se face pentru compania implicită a utilizatorului acțiunii planificate (vezi
-  secțiunea 11 pentru bazele cu mai multe companii).
+- Recalcularea se face pentru **compania din care ați apăsat butonul**, pe tot ciclul, chiar dacă
+  acțiunea planificată rulează cu altă companie implicită. Pe o bază cu mai multe companii, porniți
+  recalcularea din fiecare companie, pe rând.
 - Cât rulează, apare **Running…**, iar butonul devine **Stop Background Refresh**. O a doua pornire
   este blocată.
 - Utilizatorul care a pornit ciclul primește o **notificare** după fiecare pas, cu pasul și durata,
@@ -298,10 +298,8 @@ captură proprie; ecranul de pornire este captura 03.
 
 Pe formularul produsului (**Inventar → Produse → Produse** → produsul), tab-ul **Contabilitate**
 afișează, sub conturile de venituri și cheltuieli, tabelul evaluărilor produsului: variantă, arie,
-cont, preț, cantitate, valoare. Cantitatea și valoarea nu se pot modifica; pe un rând cu cantitate
-zero se pot corecta varianta, aria, contul și prețul. Cu **Adaugă o linie** se poate crea un rând
-manual, dar recalcularea completă îl șterge; rămân doar rândurile care rezultă din note — nu îl
-folosiți pentru corecții.
+cont, preț, cantitate, valoare. Tabelul este **doar pentru citire**: rândurile rezultă din notele
+contabile și nu se pot adăuga sau modifica manual; corecțiile se fac prin note contabile.
 
 În captură, butonul **În stoc** arată 0,00: notele din exemplu sunt introduse direct în
 contabilitate, fără recepție și livrare în Inventar, deci nu există stoc fizic. Pe o bază reală, cu
@@ -456,15 +454,18 @@ standard a liniilor contabile nu o afișează). Pentru pasul 7 nu există captur
 - Recalcularea completă din interfață există doar pentru nivelul **Company**. Evaluarea pe depozit
   este planificată (vezi `readme/ROADMAP.md`) și nu este încă disponibilă.
 - Transferurile interne între arii de evaluare diferite nu sunt tratate.
-- **Mai multe companii:** recalcularea în fundal rulează pentru compania implicită a utilizatorului
-  acțiunii planificate, nu neapărat pentru compania din care ați apăsat butonul. Testați pe o copie
-  a bazei înainte de a o folosi pe o bază cu mai multe companii.
+- **Mai multe companii** (de la 20.0.0.0.10): salvarea setărilor și recalcularea completă (manuală
+  sau în fundal) lucrează doar pe compania curentă, respectiv pe compania din care a fost pornită;
+  un ciclu pas cu pas început într-o companie nu poate fi continuat din alta; rândurile noi de
+  evaluare primesc moneda companiei lor. Actualizarea readuce pe aria propriei companii liniile
+  contabile mutate de versiunea veche și șterge rândurile de evaluare / istoric rămase pe aria altei
+  companii; după actualizare: **Reset** la ciclul de fundal rămas în curs, apoi **Recompute All
+  (Background)** din fiecare companie. Configurarea și recalcularea se fac din fiecare companie.
 - Evaluarea depinde de calitatea notelor contabile: o notă cu produs greșit sau fără produs pe un
   cont de stoc creează diferențe față de balanță, pe care modulul nu le corectează singur.
-- Drepturile pe Product Valuation și Product Valuation History nu sunt restrânse pe grup: orice
-  utilizator intern cu acces la produs poate adăuga rânduri sau corecta prețul pe rândurile cu
-  cantitate zero din tabelul de pe produs (pasul 8), iar acel preț poate fi folosit la ieșiri prin
-  **Use Valuation Area Price**. Instruiți utilizatorii să nu folosească tabelul pentru corecții (vezi
-  `readme/bugs.md`, SV-004).
-- Salvarea setărilor de evaluare trece pe aria companiei liniile existente de pe conturile marcate
-  care au altă arie; pe o bază cu istoric mare, salvați setările în afara programului de lucru.
+- Utilizatorii interni au doar drept de citire pe Product Valuation și Product Valuation History;
+  scrierea directă e rezervată grupului **Contabilitate / Administrator**. Postarea notelor
+  actualizează evaluarea pentru orice utilizator care are drept să posteze.
+- Salvarea setărilor de evaluare trece pe aria companiei liniile existente ale companiei curente de
+  pe conturile marcate care au altă arie sau nu au arie; pe o bază cu istoric mare, salvați setările
+  în afara programului de lucru.

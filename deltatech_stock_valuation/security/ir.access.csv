@@ -1,3 +1,5 @@
 id,name,model_id,group_id/id,operation,domain
-access_product_valuation_history,access_product_valuation_history,product.valuation.history,base.group_user,crud,
-access_product_valuation,access_product_valuation,product.valuation,base.group_user,crud,
+access_product_valuation_history,access_product_valuation_history,product.valuation.history,base.group_user,r,
+access_product_valuation,access_product_valuation,product.valuation,base.group_user,r,
+access_product_valuation_history_manager,access_product_valuation_history_manager,product.valuation.history,account.group_account_manager,crud,
+access_product_valuation_manager,access_product_valuation_manager,product.valuation,account.group_account_manager,crud,

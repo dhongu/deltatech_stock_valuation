@@ -11,3 +11,4 @@ from . import test_unpost_recompute
 from . import test_valuation_pricing
 from . import test_config_settings
 from . import test_screenshots
+from . import test_known_bugs
