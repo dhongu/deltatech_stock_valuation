@@ -2,8 +2,9 @@
 # See README.rst file on addons root folder for license details
 #
 # Notele contabile OBYC (conturi Dr/Cr, sume, cantități semnate) pe scenariile de bază:
-# recepție, livrare, retur de la client (negru și storno). Aceleași valori ca în 19 —
-# în 20 `stock.move.value` e negativ pe ieșiri, nota OBYC trebuie să rămână pozitivă.
+# recepție, livrare, retur de la client (negru și storno) și cost de achiziție (landed cost).
+# Aceleași valori ca în 19 — în 20 `stock.move.value` e negativ pe ieșiri, nota OBYC trebuie
+# să rămână pozitivă.
 
 from odoo import Command
 from odoo.tests import tagged
@@ -22,7 +23,7 @@ class TestObycEntries(TestCommon):
         cls.product_category.write(
             {
                 "property_valuation": "real_time",
-                "property_cost_method": "standard",
+                "property_cost_method": "average",
                 "property_stock_valuation_account_id": cls.account_stock_valuation.id,
                 "property_stock_journal": cls.stock_journal.id,
             }
@@ -31,12 +32,16 @@ class TestObycEntries(TestCommon):
         cls.account_customer = cls.env["account.account"].create(
             {"name": "Test Customer Return Account", "code": "TCR001", "account_type": "asset_current"}
         )
+        cls.account_lc_expense = cls.env["account.account"].create(
+            {"name": "Test Landed Cost Expense", "code": "TLCE01", "account_type": "expense"}
+        )
         # recepție: Dr valuation / Cr src; livrare (doar acc_dest): Dr dest / Cr valuation;
-        # retur de la client: Dr valuation / Cr src
+        # retur de la client: Dr valuation / Cr src; cost de achiziție: Dr valuation
         for key, src, dest in [
             ("stock_receipt", cls.account_src, False),
             ("stock_delivery", False, cls.account_dest),
             ("return_from_customer", cls.account_customer, False),
+            ("landed_cost", False, False),
         ]:
             cls.env["product.account.determination"].create(
                 {
@@ -82,12 +87,15 @@ class TestObycEntries(TestCommon):
         picking.move_ids._set_quantity_done(picking.move_ids[0].product_uom_qty)
         picking.with_context(demo_mode=True).button_validate()
 
+    def _sorted_lines(self, account_move):
+        return account_move.line_ids.sorted(lambda line: (line.account_id.code, line.debit, line.credit))
+
     def _lines(self, picking):
         account_move = picking.move_ids.account_move_id
         self.assertEqual(len(account_move), 1)
         self.assertEqual(account_move.state, "posted")
         self.assertEqual(account_move.journal_id, self.stock_journal)
-        return account_move.line_ids.sorted(lambda line: (line.account_id.code, line.debit, line.credit))
+        return self._sorted_lines(account_move)
 
     def _receipt(self, qty):
         return self._picking(self.picking_type_in, self.supplier_location, self.stock_location, qty)
@@ -145,3 +153,41 @@ class TestObycEntries(TestCommon):
                 {"account_id": self.account_valuation.id, "debit": 0.0, "credit": -100.0, "quantity": -1.0},
             ],
         )
+
+    def test_05_landed_cost(self):
+        """Costul de achiziție pe o recepție OBYC: Dr contul de stoc din regula
+        `landed_cost` / Cr contul liniei de cost. Înainte de fix, validarea cădea cu
+        `AttributeError: 'int' object has no attribute 'id'` (conturile întoarse ca id-uri)."""
+        receipt = self._receipt(10.0)
+        cost_product = self.env["product.product"].create(
+            {"name": "Transport", "type": "service", "landed_cost_ok": True}
+        )
+        landed_cost = self.env["stock.landed.cost"].create(
+            {
+                "picking_ids": [Command.set(receipt.ids)],
+                "account_journal_id": self.stock_journal.id,
+                "cost_lines": [
+                    Command.create(
+                        {
+                            "name": "Transport",
+                            "product_id": cost_product.id,
+                            "price_unit": 50.0,
+                            "split_method": "by_quantity",
+                            "account_id": self.account_lc_expense.id,
+                        }
+                    )
+                ],
+            }
+        )
+        landed_cost.compute_landed_cost()
+        landed_cost.button_validate()
+        self.assertEqual(landed_cost.state, "done")
+        self.assertEqual(landed_cost.account_move_id.state, "posted")
+        self.assertRecordValues(
+            self._sorted_lines(landed_cost.account_move_id),
+            [
+                {"account_id": self.account_lc_expense.id, "debit": 0.0, "credit": 50.0},
+                {"account_id": self.account_valuation.id, "debit": 50.0, "credit": 0.0},
+            ],
+        )
+        self.assertAlmostEqual(receipt.move_ids.value, 1050.0)

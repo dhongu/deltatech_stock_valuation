@@ -259,8 +259,14 @@ class TestOBYCAccountDetermination(TestCommon):
             company=self.env.company,
         )
 
-        self.assertEqual(accounts["stock_valuation"], rule.acc_valuation_id.id)
-        self.assertEqual(accounts["income"], rule.acc_src_id.id)
-        self.assertEqual(accounts["expense"], rule.acc_dest_id.id)
-        self.assertEqual(accounts["stock_input"], rule.acc_src_id.id)
-        self.assertEqual(accounts["stock_output"], rule.acc_dest_id.id)
+        self.assertEqual(accounts["stock_valuation"], rule.acc_valuation_id)
+        self.assertEqual(accounts["income"], rule.acc_src_id)
+        self.assertEqual(accounts["expense"], rule.acc_dest_id)
+        self.assertEqual(accounts["stock_input"], rule.acc_src_id)
+        self.assertEqual(accounts["stock_output"], rule.acc_dest_id)
+
+        # varianta publică trece conturile prin poziția fiscală (`map_account`), care
+        # cere înregistrări `account.account`, nu id-uri
+        public_accounts = product_template.get_product_accounts()
+        self.assertEqual(public_accounts["stock_valuation"], rule.acc_valuation_id)
+        self.assertEqual(public_accounts["expense"], rule.acc_dest_id)
