@@ -1,106 +1,213 @@
-## Mod de utilizare
+## How to use
 
-Modulul calculează evaluarea stocului direct din notele contabile postate, pe combinația
-**produs × arie de evaluare × cont contabil**. Mai jos sunt pașii de configurare și fluxul de lucru.
+**Before you start:** complete the initial setup described in *Configuration* (valuation area, valuation
+accounts, product categories).
 
-### 1. Configurare inițială (o singură dată)
+This module computes stock valuation straight from the **posted journal entries**, per
+**product × valuation area × account**. It does not create any accounting entries itself: it reads the
+ones posted by Odoo, by other modules or by your accountant. You do not have to do anything extra in
+daily work; the valuation follows the accounting.
 
-Toți pașii necesită drepturi de **Administrator de sistem**.
+> **Romanian companies:** we recommend installing `deltatech_obyc` together with this module. Without
+> it, Odoo moves the stock accounts (for example 371) only when the vendor or customer **invoice** is
+> posted. Receipts and deliveries that are not yet invoiced are then missing from the stock accounts
+> at month end. With `deltatech_obyc`, stock entries are posted when the receipt or the delivery is
+> validated, so the valuation and the stock accounts stay aligned.
 
-1. **Activează aria de evaluare**
-   Mergi la **Inventar → Configurare → Setări**, secțiunea *Valuation*.
-   - Bifează *Use Valuation Area*.
-   - Setează *Valuation Area Level* pe **Company** (singurul nivel suportat complet în acest moment).
-   - Câmpul *Valuation Area* se completează automat la salvare (se creează o arie pentru companie).
+**Step 1 — Mark the stock accounts for valuation**
 
-2. **Marchează conturile de evaluare a stocului**
-   La salvarea setărilor, conturile de evaluare a stocului din categoriile de produse
-   (`property_stock_valuation_account_id`) sunt marcate automat cu *Stock Valuation*
-   (`is_for_stock_valuation`).
-   Poți marca/demarca manual orice cont din **Contabilitate → Configurare → Plan de conturi**,
-   deschizând contul și bifând caseta **Stock Valuation**.
+Go to **Accounting → Configuration → Accounting → Chart of Accounts**, open the stock account (for example
+371000 Merchandise) and tick **Stock Valuation**. Only the lines of the marked accounts enter the
+valuation. When you save the valuation settings, the stock accounts of your product categories are
+marked automatically; you can also tick the box by hand.
 
-   > Doar mișcările de pe conturile marcate intră în evaluare. Pe aceste conturi, aria de
-   > evaluare devine **obligatorie** pe liniile contabile ale produselor stocabile.
+![Account form with the Stock Valuation box ticked](https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_account.png)
 
-3. *(Opțional)* **Descărcare de gestiune la cost mediu**
-   Dacă vrei ca ieșirile din stoc să fie valorizate la costul mediu din `product.valuation`
-   (în loc de prețul standard), deschide categoria de produse
-   (**Inventar → Configurare → Categorii de produse**) și bifează **Use Valuation Area Price**.
-   - Caseta este disponibilă doar pentru categoriile cu metodă **AVCO** (cost mediu).
-   - Este **incompatibilă cu FIFO** — activarea pe o categorie FIFO ridică eroare.
+**Step 2 — Set up the product category**
 
-### 2. Fluxul zilnic
+Go to **Inventory → Configuration → Products → Product Categories** and open the category. Check that the
+**Costing Method** is **Average Cost (AVCO)** and the **Inventory Valuation** is **Perpetual (at
+invoicing)**, on the **Accounting** tab. Optionally tick **Use Valuation Area Price**.
 
-Nu este nevoie de operații suplimentare: la **postarea** oricărei note contabile (factură furnizor,
-factură client, retur, notă manuală) care conține linii pe un cont de evaluare a stocului,
-modulul recalculează automat:
+With **Use Valuation Area Price**, stock **outgoing from internal locations** is valued at the price
+shown in **Product Valuation** for the product's area and stock account, instead of the standard
+price.
 
-- linia curentă din **Product Valuation** (cantitate, valoare, preț mediu);
-- linia lunii respective din **Product Valuation History**.
+- Use it only with **AVCO**. It is not available for FIFO categories, and activating it on a FIFO
+  category (by import or code) is refused.
+- Lot-valuated products are excluded and keep the valuation per lot.
+- If there is no valuation for the area yet, or its price is zero, the standard product cost (the
+  average cost) is used, with a warning in the server log.
+- In Odoo 20 the value of an **outgoing** move is shown **with a minus** (for example −400.00 for 4
+  pcs at 100.00). The module follows this convention.
+- On a **retroactive correction** (the date of a move is changed, the quantity of a done move is
+  edited, a receipt is revalued after the stock was already issued), Odoo 20 recomputes the value
+  of the later moves of the product. With **Keep move value on retroactive recompute** ticked (the
+  default, see Step 3), outgoing moves valued at the area price keep their unit price, and a
+  quantity correction is valued at the same unit price: a delivery of 4 pcs at 100.00 corrected to
+  3 pcs becomes −300.00. With the setting unticked, the standard Odoo 20 recompute rewrites them at
+  the global average cost.
 
-Semnul mișcărilor este dedus din tipul documentului:
+![AVCO category with Use Valuation Area Price](https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_category_area_price.png)
 
-| Tip document | Efect asupra cantității |
+**Step 3 — Check the valuation settings**
+
+Go to **Inventory → Configuration → Settings**, section **Valuation**. You should see **Use Valuation
+Area** ticked and the area of your company. Under **Stock Valuation**, **Valuation Area Level** must
+be **Company**: otherwise the recompute button is not shown. On the left, **Keep move value on
+retroactive recompute** should be ticked (the default; it comes from `deltatech_valuation_area`
+and matters only for categories with **Use Valuation Area Price**). Below it you will find the
+**Recompute All (Background)** button and the **Next step** indicator, with the state of the last
+run.
+
+Leave **Keep move value on retroactive recompute** ticked. With it, outgoing moves valued at the
+area price keep their unit price after a retroactive correction, consistent with the journal
+entries already posted. Unticked, the standard Odoo 20 recompute rewrites those moves at the global
+average cost, but the posted journal entries are **not** corrected, so the stock value and the
+accounting can diverge.
+
+![Inventory settings, Valuation section](https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_settings.png)
+
+**Step 4 — Post your stock entries**
+
+Journal entries are posted as usual. You find them in **Accounting → Accounting → Transactions →
+Journal Entries** (the app is called **Invoicing** without Enterprise). Where they come from
+depends on your setup:
+
+- with `deltatech_obyc`: stock entries posted when the receipt or the delivery is validated, plus
+  vendor and customer invoices;
+- without it (standard Odoo 20, perpetual at invoicing): the vendor bill brings the receipt (at the
+  bill date) and the customer invoice brings the cost of the delivery (at the invoice date).
+  Receipts and deliveries themselves post no entries. Moves from or to a location that has a
+  valuation account (for example inventory adjustments or scrap) still post stock entries on
+  validation and enter the valuation;
+- entries typed in outside the stock flow.
+
+On every posting the module updates, automatically:
+
+- the current row in **Product Valuation** (quantity, amount, average price);
+- the month row in **Product Valuation History**.
+
+The valuation is also updated when an entry is set back to draft, cancelled, deleted, reversed, or
+when its accounting date changes (both the old and the new month are recomputed).
+
+Only lines that have a **product**, sit on a **marked account** and belong to a **posted** entry
+are counted. The **valuation area is required on every journal line with a storable product**; it is
+filled in automatically with the area of the company. The quantity on the line is converted to the
+unit of measure of the product (2 Dozens on a product kept in Units count as 24 Units). A line without a unit of measure (imported
+or created by SQL) is counted in the unit of the product, both on posting and in the full
+recompute.
+
+The direction of the movement comes from the document type:
+
+| Document | Effect on quantity |
 |---|---|
-| Factură furnizor (`in_invoice`) | + intrare |
-| Retur la furnizor (`in_refund`) | − ieșire |
-| Factură client (`out_invoice`) | − ieșire |
-| Retur de la client (`out_refund`) | + intrare |
+| Vendor bill (`in_invoice`) | + incoming |
+| Vendor refund (`in_refund`) | − outgoing |
+| Customer invoice (`out_invoice`) | − outgoing |
+| Customer credit note (`out_refund`) | net effect + (incoming) |
 
-### 3. Vizualizarea evaluării
+On stock entries (type *entry*), the signed quantity is **positive on the debit line** (incoming) and
+**negative on the credit line** (outgoing). Entries generated by Odoo or by `deltatech_obyc` follow
+this automatically. For manual stock entries (corrections, opening balances), load the lines with
+product, unit of measure and quantity by import or integration, and respect the sign: the
+standard journal entry form has no **Product** and **Quantity** columns on the **Journal Items**
+tab.
 
-- **Inventar → Operațiuni → Product Valuation** — soldul curent (preț mediu, cantitate, valoare)
-  per produs / arie / cont. Există și vizualizare *pivot*.
-- **Inventar → Operațiuni → Product Valuation History** — istoricul lunar: sold inițial, intrări,
-  ieșiri, debit, credit, sold final. Util pentru reconcilierea cu balanța contabilă pe fiecare lună.
+![Posted receipt entry, Dr 371 / Cr 408](https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_receipt_entry.png)
 
-Înregistrările sunt **doar pentru citire** (nu se creează/șterg manual) — ele reflectă notele contabile.
+![Journal lines with the signed quantity](https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_signed_quantity.png)
 
-### 4. Recalculare completă
+Good to know:
 
-Necesară după **prima instalare**, după **import de date** sau după corecții contabile retroactive.
-Disponibilă în **Inventar → Configurare → Setări**, secțiunea *Valuation* (doar Administrator de sistem).
+- **Reversing a stock entry** cancels its effect on the valuation, with or without the *storno*
+  accounting option. Without storno, the quantity sign is reversed together with the side
+  (done by `deltatech_valuation_area`), so the quantity is cancelled as well.
+- **Value-only adjustments** (an entry with an amount but no quantity, for example an average cost
+  correction) change the **amount and the average price**, not the quantity. On 10 pcs / 1,000, a
+  +50 correction gives 10 pcs / 1,050 / price 105.00.
+- With `deltatech_obyc`, the cost of a delivery appears on the delivery entry, at the delivery date,
+  and the customer invoice has no cost lines. Without it, the cost appears on the customer invoice.
+  Either way, the outgoing quantity is counted once. On 20.0 this needs `deltatech_obyc` 20.0.1.0.3
+  or later; with an older version, check on the first customer invoice that there is no second
+  Cr 371 line.
 
-**Recomandat — un singur clic:**
+**Step 5 — Review the current balance**
 
-- **Recompute All (Background)** — repornește ciclul de la primul pas și lasă un cron să execute
-  automat toți cei **7 pași**, unul câte unul, fără intervenția utilizatorului. Cron-ul reține în
-  parametri pasul curent, deci „știe" mereu ce mai are de executat. După fiecare pas primești o
-  **notificare** (toast) cu pasul executat și durata, iar în setări vezi indicatorii *Next step* și
-  *Last refresh progress*. Când termină, cron-ul se oprește singur.
-  Cât rulează, butonul devine **Stop Background Refresh** și apare indicatorul *Running…*.
+Go to **Inventory → Products → Product Valuation**. Each row shows the product, the valuation area,
+the account, the **Price**, the **Quantity** and the **Amount**. A pivot view is also available.
+After a receipt of 10 pcs / 1,000 and a delivery of 4 pcs / 400, you will see **Quantity** 6.00,
+**Amount** 600.00 and **Price** 100.00. The total of the **Amount** column on an account equals the
+account balance, as long as all lines of that account have a product and an area.
 
-Cei 7 pași: ștergere istoric → calcul mișcări lunare → completare luni lipsă → sold ultima lună →
-propagare solduri → ștergere linii goale → evaluare curentă. Pasul 5 (propagarea) se execută în
-loturi, în mai multe reprize, pentru a nu bloca bazele de date mari.
+The records are **read-only**: they are created and updated from the journal entries.
 
-**Manual (avansat / depanare):**
+![Product Valuation, current balance](https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_list.png)
 
-- **Execute Next Step** — execută un singur pas (cele 7 click-uri manuale).
-- **Reset to Step 1** — repornește ciclul de la primul pas.
-- **Recompute Product Valuation** — recalculează doar soldul curent din ultima lună de istoric.
+**Step 6 — Review the monthly history**
 
-Echivalent programatic (ex. din shell sau acțiune server):
+Go to **Inventory → Products → Product Valuation History**. Each row is one month (format YYYYMM)
+for a product × area × account, with the initial balance, the movements of the month and the final
+balance. **Quantity In**, **Debit**, **Quantity Out** and **Credit** are hidden by default: show
+them from the optional columns menu in the list header. Use this view to reconcile with the
+accounting balance month by month: **Final Amount** is the closing balance of the month.
 
-```python
-# Reconstruiește istoricul lunar din notele contabile, apoi soldul curent
-env["product.valuation.history"]._recompute_all_amount()
-env["product.valuation"]._recompute_all_amount()
-```
+![Product Valuation History](https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_history.png)
 
-### 5. Verificarea consistenței cu contabilitatea
+**Step 7 — Recompute the whole valuation (only when needed)**
 
-Pentru o lună dată, suma `amount_final` din **Product Valuation History** pe un cont de evaluare
-trebuie să corespundă soldului contabil al acelui cont (modulul folosește `account.move.line`
-ca sursă de adevăr, deci consistența este garantată prin construcție).
+A full recompute is needed after the first installation, after a data import or after large
+retroactive accounting corrections. It is not needed in daily work. Only a **System Administrator**
+can run it.
 
-### 6. Mesaje și depanare frecvente
+Go to **Inventory → Configuration → Settings**, section **Valuation**, press **Recompute All
+(Background)** and confirm the message.
 
-- **„Valuation Area is required for stockable products"** — produsul este stocabil și linia
-  contabilă este pe un cont de evaluare, dar nu are arie de evaluare. Verifică nivelul ariei pe
-  companie și că documentul are o arie validă.
-- **„Use Valuation Area Price is not compatible with FIFO"** — schimbă metoda categoriei pe AVCO
-  sau dezactivează *Use Valuation Area Price*.
-- **Linii excluse din evaluare (UoM produs lipsă)** — la recalcularea completă, liniile cu produse
-  fără unitate de măsură pe șablon sunt ignorate; un avertisment în log indică numărul și valoarea lor.
+- A scheduled action runs the 7 steps one by one, without any further click, and stops by itself at
+  the end. Allow at least 12–14 minutes; on large databases step 5 runs in batches and takes several
+  runs.
+- While it runs, the **Running…** badge is shown and the button becomes **Stop Background Refresh**.
+  A second start is blocked.
+- The user who started the run receives a notification after each step (step and duration) and a
+  final "Stock valuation refresh complete" message. In the settings, **Next step** shows the next
+  step and the line below shows the last step run, when and how long it took.
+- The recompute is done **per company**: start it from the company you want to recompute and repeat
+  it for each company.
+
+The 7 steps: (1) clear the history; (2) compute the monthly movements; (3) fill in the missing
+months; (4) compute the final balance of the current month; (5) propagate the balances over the
+previous months, in batches of products; (6) delete the empty rows; (7) recompute **Product
+Valuation**.
+
+For targeted checks, in developer mode, the **Action** menu offers **Recompute Amount** on the
+selected rows of Product Valuation / Product Valuation History and **Recompute Valuation** on the
+selected products.
+
+**Step 8 — See the valuation on the product**
+
+Open a product (**Inventory → Products → Products**) and go to the **Accounting** tab. Under the
+income and expense accounts you will find the valuation table of the product: variant, area,
+account, price, quantity and amount. The table is **read-only**: rows come from the journal entries
+and cannot be added or edited by hand; corrections are made through journal entries.
+
+On a database where the entries were typed directly in accounting, without receipts and deliveries
+in Inventory, the **On Hand** button of the product shows 0.00: there is no physical stock. With
+real receipts and deliveries (and `deltatech_obyc`), the quantity in the table matches the physical
+stock.
+
+![Product form, valuation table on the Accounting tab](https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_product_tab.png)
+
+**How the price is computed**
+
+On every posting, set-back-to-draft, cancellation or deletion of an entry, the price in **Product
+Valuation** is:
+
+- **Final Amount / Final Quantity** of the last history month, if there is a final stock;
+- if the final stock is zero but there were receipts in that month: **Debit / Quantity In**;
+- otherwise the **previous price is kept**.
+
+After a full recompute, rows with zero final stock get price 0. Quantities below the rounding
+threshold of the unit of measure are treated as zero.
+
+During the full recompute, lines of products without a unit of measure on the template are left
+out; a warning in the server log gives their number and amount.

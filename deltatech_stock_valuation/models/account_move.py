@@ -42,8 +42,10 @@ class AccountMove(models.Model):
         # recalculul folosește SQL direct pe note: orice modificare ORM nescrisă
         # (stare, dată, arii pe linii) trebuie flushată înainte
         self.env.flush_all()
-        histories = self.env["product.valuation.history"]
-        valuations = self.env["product.valuation"]
+        # evaluarea e date derivate din note, cu drept de scriere doar pentru contabilul-șef;
+        # orice utilizator care postează o notă de stoc trebuie să o poată actualiza
+        histories = self.env["product.valuation.history"].sudo()
+        valuations = self.env["product.valuation"].sudo()
         for product_id, valuation_area_id, account_id, company_id, date in keys:
             histories |= histories.get_valuation(product_id, valuation_area_id, account_id, date, company_id)
             valuations |= valuations.get_valuation(product_id, valuation_area_id, account_id, company_id)
