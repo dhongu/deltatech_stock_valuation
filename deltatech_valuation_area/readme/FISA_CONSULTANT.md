@@ -71,18 +71,19 @@ Datele minime pentru demo (sunt și cele din capturi):
 
 ## 5. Configurare inițială
 
-1. **Inventar → Configurare → Setări**, secțiunea **Evaluare**: bifați **Folosește zonă de
+1. **Inventar → Configurare → Setări**, secțiunea **Evaluare**: bifați **Folosește arii de
    evaluare** (pasul 1). Câmpul pentru aria implicită apare sub bifă, dar îl completați abia
    după ce creați ariile (pașii 2–3). Lăsați bifată (valoarea implicită) setarea **Păstrează
    valoarea mișcării la recalcularea retroactivă**, dacă nu ați decis altfel cu contabilul
    (vezi pasul 1).
-2. **Inventar → Configurare → Gestiunea depozitului → Zonă de evaluare**: creați ariile.
+2. **Inventar → Configurare → Gestiunea depozitului → Arii de evaluare** (meniul e vizibil doar
+   pentru *Contabilitate / Administrator*, singurul grup care poate scrie ariile): creați ariile.
 3. Reveniți în Setări și alegeți **Arie de evaluare** = aria implicită a companiei; **Salvează**.
 4. **Inventar → Configurare → Gestiunea depozitului → Depozite**: completați **Arie de evaluare** pe depozitele evaluate
    separat (pasul 4).
 5. **Inventar → Configurare → Gestiunea depozitului → Locații** (meniul apare doar cu setarea
-   **Locații de stocare** activă): completați **Arie de evaluare** pe locațiile interne — **inclusiv pe locația de stoc
-   a fiecărui depozit** (vezi pasul 4 de ce).
+   **Locații de stocare** activă): completați **Arie de evaluare** doar pe locațiile
+   interne care au altă arie decât depozitul lor; celelalte iau aria depozitului (pasul 4).
 6. Pentru ca stocul să genereze note contabile automate (pasul 6): categoria produsului cu
    evaluarea **Perpetual (at invoicing)** și, pe locația de ajustare a inventarului, contul de
    pierderi completat: **Inventar → Configurare → Gestiunea depozitului → Locații**, scoateți
@@ -93,7 +94,7 @@ Datele minime pentru demo (sunt și cele din capturi):
 
 ### Pasul 1 — Activarea ariilor pe companie
 
-**Inventar → Configurare → Setări**, secțiunea **Evaluare**. Bifați **Folosește zonă de
+**Inventar → Configurare → Setări**, secțiunea **Evaluare**. Bifați **Folosește arii de
 evaluare** ①; sub bifă apare câmpul **Arie de evaluare** — aria implicită a companiei, folosită
 când nici locația, nici depozitul nu au arie. Apăsați **Salvează**.
 
@@ -121,11 +122,11 @@ valoarea ieșirilor** deja validate, dar **nu corectează notele contabile deja 
 evaluare OBYC). Pentru celelalte produse, și când este instalat doar acest modul, Odoo 20 aplică
 mereu reluarea standard, oricum ar fi setarea. Schimbați setarea doar cu acordul contabilului.
 
-![Setări Inventar — Folosește zonă de evaluare, aria implicită și Păstrează valoarea mișcării](screenshots/01_setari_use_valuation_area.png)
+![Setări Inventar — Folosește arii de evaluare, aria implicită și Păstrează valoarea mișcării](screenshots/01_setari_use_valuation_area.png)
 
 ### Pasul 2 — Lista ariilor de evaluare
 
-**Inventar → Configurare → Gestiunea depozitului → Zonă de evaluare**. Lista arată, pentru fiecare arie, **Cod**,
+**Inventar → Configurare → Gestiunea depozitului → Arii de evaluare**. Lista arată, pentru fiecare arie, **Cod**,
 **Nume**, **Companie** și **Jurnal de stoc**. Butonul **Nou(ă)** creează o arie nouă.
 
 ![Lista ariilor de evaluare](screenshots/02_valuation_area_list.png)
@@ -139,7 +140,7 @@ Deschideți o arie din listă (sau creați una). Completați:
 | **Cod** ① | cod scurt, obligatoriu; apare în numele afișat `[COD] Nume` (regulile de conturi din `deltatech_obyc` se leagă de arie, nu de cod) |
 | **Nume** | denumirea ariei, obligatorie |
 | **Companie** | compania căreia îi aparține aria (implicit compania curentă) |
-| **Jurnal de stoc** ② | jurnalul pe care se înregistrează notele de stoc ale ariei — **folosit doar dacă este instalat `deltatech_obyc`** |
+| **Jurnal de stoc** ② | jurnalul pe care se înregistrează notele de stoc ale ariei — **folosit doar dacă este instalat `deltatech_obyc`**; se pot alege doar jurnale de tip *Diverse* ale companiei ariei |
 
 Numele afișat al ariei are forma **`[COD] Nume`** (ex. „[STD] Arie standard").
 
@@ -158,11 +159,11 @@ arată aria fiecărui depozit; o completați din formularul depozitului, câmpul
 de lângă adresă. În captură, **Depozit central** are aria **[DEP] Arie depozit**, care înlocuiește
 aria implicită a companiei pe mișcările depozitului.
 
-**Atenție:** aria depozitului se aplică doar mișcărilor care **poartă depozitul** — cele generate
-din reguli de aprovizionare (ex. livrări din comenzi de vânzare, recepții din comenzi de
-achiziție). Ajustările de inventar și transferurile create manual nu poartă depozitul și cad pe
-aria implicită a companiei. De aceea completați aceeași arie și pe **locația de stoc** a
-depozitului (pasul 5) — așa este configurat și demo-ul (DC/Stoc = [DEP]).
+Aria depozitului se aplică tuturor mișcărilor pe locațiile lui interne, inclusiv ajustărilor de
+inventar și transferurilor create manual: depozitul se deduce din locație (de la versiunea
+20.0.1.0.4; înainte, aceste mișcări cădeau pe aria implicită a companiei, VA-001). Aria pusă pe o
+locație (pasul 5) are prioritate față de cea a depozitului. În demo, DC/Stoc are explicit aceeași
+arie [DEP] ca depozitul.
 
 ![Lista depozitelor cu coloana Arie de evaluare](screenshots/04_depozit_valuation_area.png)
 
@@ -173,8 +174,10 @@ depozitului (pasul 5) — așa este configurat și demo-ul (DC/Stoc = [DEP]).
 câmpul **Arie de evaluare** ① (vizibil doar pentru Inventar / Administrator). Aria locației are
 **prioritate maximă** și se ia doar pentru locațiile de tip **Intern**.
 
-Aria **nu se moștenește** de la locația părinte: fiecare locație internă (inclusiv sublocațiile,
-rafturile) trebuie configurată explicit; o sublocație fără arie cade pe depozit sau pe companie.
+Aria **nu se moștenește** de la locația părinte: o locație internă fără arie proprie (inclusiv
+sublocațiile, rafturile) ia aria depozitului ei, apoi pe cea a companiei. O mișcare între două
+locații interne este refuzată la validare dacă ariile lor efective (proprie → depozit → companie)
+diferă (secțiunea 9).
 
 ![Formularul locației — Arie de evaluare](screenshots/05_locatie_valuation_area.png)
 
@@ -252,7 +255,7 @@ modulul nu intervine în această înregistrare.
 Cât timp compania folosește ariile, linia cu produs **stocabil** **nu poate rămâne fără arie**:
 golirea ei blochează salvarea cu mesajul de la secțiunea 9. Aria se completează însă pe **orice**
 linie cu produs (inclusiv servicii și consumabile): dacă compania nu are arie implicită și linia
-nu are o mișcare legată, chiar alegerea produsului pe linie e refuzată („Zona de evaluare nu este
+nu are o mișcare legată, chiar alegerea produsului pe linie e refuzată („Aria de evaluare nu este
 definită") — pe facturi și pe orice linie contabilă cu produs, creată de alte documente.
 
 ![Factură de furnizor — aria pe linia produsului, în Elemente jurnal](screenshots/08_factura_furnizor_valuation_area.png)
@@ -277,10 +280,11 @@ linia din **Elemente jurnal**, ca la pasul 7.
 
 ![Factură de client — liniile de descărcare 607/371 cu aria](screenshots/09_factura_client_descarcare.png)
 
-**Note contabile manuale.** În Odoo 20, lista liniilor unei note contabile introduse manual nu
-are coloane pentru produs și cantitate, iar modulul nu le adaugă; o notă manuală nu poate deci
-primi produs sau cantitate din interfață, iar aria (care se calculează doar pe liniile cu produs)
-nu se completează pe ea. Corecțiile pe arii se fac prin documentele de stoc sau de facturare.
+**Note contabile manuale.** De la versiunea 20.0.1.0.4, lista **Elemente jurnal** a unei note
+contabile introduse manual are coloanele opționale **Produs**, **Cantitate**, **UM** și **Arie de
+evaluare** (afișați-le din meniul coloanelor opționale); o corecție pe arie (de exemplu un sold
+inițial) poate purta astfel produsul, cantitatea semnată și aria. Lista generală a elementelor de
+jurnal are coloanele opționale **Cantitate** și **Arie de evaluare**.
 
 ### Note de monografie și raportare
 
@@ -323,16 +327,16 @@ blocarea liniilor cu produs stocabil fără arie.
 
 **Ce rămâne manual:** definirea ariilor și a jurnalelor; decizia asupra setării **Păstrează
 valoarea mișcării la recalcularea retroactivă**; completarea ariei pe fiecare depozit și
-pe fiecare locație internă (fără moștenire). Notele contabile manuale nu pot primi produs,
-cantitate sau arie din interfață (vezi pasul 8).
+pe locațiile interne care au altă arie decât depozitul lor. Pe notele contabile manuale,
+produsul, cantitatea, UM și aria se completează din coloanele opționale ale listei **Elemente
+jurnal** (vezi pasul 9).
 
 ## 8. Verificări pentru consultant
 
-- [ ] compania are bifat **Folosește zonă de evaluare** și o **Arie de evaluare** implicită
+- [ ] compania are bifat **Folosește arii de evaluare** și o **Arie de evaluare** implicită
 - [ ] **Păstrează valoarea mișcării la recalcularea retroactivă** este bifată (implicit) sau debifarea ei e decisă și consemnată împreună cu contabilul
 - [ ] fiecare arie are **Cod** și, dacă se folosește `deltatech_obyc`, **Jurnal de stoc** al aceleiași companii
-- [ ] depozitele evaluate separat au aria completată **și** locația lor de stoc are aceeași arie
-- [ ] fiecare sublocație internă relevantă are aria setată explicit (nu se moștenește)
+- [ ] depozitele evaluate separat au aria completată; locațiile cu altă arie decât depozitul lor o au setată explicit
 - [ ] pe o notă de stoc automată (ex. ajustare de inventar), coloana **Arie de evaluare** arată aria locației, pe toate liniile cu produs
 - [ ] în **Elemente jurnal**, linia de debit a notei de stoc are **Cantitate** pozitivă, iar linia de credit cantitate negativă, egală în valoare absolută
 - [ ] pe o factură de furnizor cu produs stocabil, tab-ul **Elemente jurnal** arată aria pe linia produsului (aria recepției legate sau, fără comandă, aria implicită)
@@ -346,9 +350,9 @@ cantitate sau arie din interfață (vezi pasul 8).
 
 | Mesaj | Cauză | Remediere |
 |---|---|---|
-| „Zona de evaluare este obligatorie pentru produsele stocabile. Dacă produsul nu este stocabil, o puteți lăsa necompletată." | pe o linie de notă/factură cu produs stocabil s-a golit **Arie de evaluare**, iar compania folosește ariile | completați aria pe linie |
-| „Zona de evaluare nu este definită" | compania folosește ariile, dar nu are arie implicită, iar linia (sau mișcarea) nu găsește arie pe locație/depozit; apare chiar la alegerea oricărui produs (inclusiv serviciu) pe linia unei facturi | alegeți aria implicită în Setări (pasul 1) sau completați aria pe locație/depozit |
-| „Locațiile sursă și destinație trebuie să aibă aceeași zonă de evaluare pentru mișcările interne." | se determină aria unei mișcări între două locații interne cu arii diferite (vezi limitarea de la secțiunea 11) | păstrați sursa și destinația în aceeași arie sau treceți transferul printr-o locație de tranzit |
+| „Aria de evaluare este obligatorie pentru produsele stocabile. Dacă produsul nu este stocabil, o puteți lăsa necompletată." | pe o linie de notă/factură cu produs stocabil s-a golit **Arie de evaluare**, iar compania folosește ariile | completați aria pe linie |
+| „Aria de evaluare nu este definită" | compania folosește ariile, dar nu are arie implicită, iar linia (sau mișcarea) nu găsește arie pe locație/depozit; apare chiar la alegerea oricărui produs (inclusiv serviciu) pe linia unei facturi | alegeți aria implicită în Setări (pasul 1) sau completați aria pe locație/depozit |
+| „Locațiile sursă și destinație trebuie să aibă aceeași arie de evaluare pentru mișcările interne." | la validarea unei mișcări (sau a unei linii a ei, de exemplu la putaway pe o sublocație) între două locații interne ale căror arii efective (proprie → depozit → companie) diferă; cu sau fără `deltatech_obyc` (de la versiunea 20.0.1.0.4) | păstrați sursa și destinația în aceeași arie sau treceți transferul printr-o locație de tranzit |
 
 ## 10. Capturi de ecran
 
@@ -375,19 +379,18 @@ Regenerare:
 
 ## 11. Observații pentru manual
 
-- **Terminologie:** interfața RO folosește atât „zonă de evaluare" (meniul, bifa din Setări,
-  mesajele de eroare), cât și „arie de evaluare" (câmpurile, titlul listei). Sunt același lucru;
-  manualul poate folosi „arie de evaluare" și menționa că meniul se numește „Zonă de evaluare".
-- **Blocarea transferurilor interne între arii** se verifică doar când se determină aria
-  mișcării. Cu acest modul singur, un transfer intern simplu între două locații interne nu
-  generează notă în Odoo 20, deci **nu este blocat** (verificat pe Odoo 20, la 01.10.2026). Cu
-  `deltatech_obyc` instalat, pentru produsele cu clasă de evaluare OBYC, aria se determină la
-  validarea transferului (la alegerea jurnalului de stoc al ariei), deci validarea între arii
-  diferite este refuzată (confirmat din cod; neverificat încă pe o bază de test cu `deltatech_obyc`). Nu prezentați blocarea ca garanție în afara acestui caz;
-  recomandați păstrarea sursei și destinației în aceeași arie. Suportul complet pentru transferuri între arii este planificat (roadmap evaluare
+- **Terminologie:** de la versiunea 20.0.1.0.4 interfața RO folosește peste tot „arie de evaluare"
+  (meniul **Arii de evaluare**, bifa din Setări, mesajele de eroare); pe bazele existente,
+  traducerile se reîncarcă la actualizarea modulului.
+- **Transferurile interne directe între arii diferite sunt refuzate** la validare (de la versiunea
+  20.0.1.0.4, cu sau fără `deltatech_obyc`). Înainte, fără `deltatech_obyc`, un astfel de transfer
+  trecea fără eroare, iar valoarea rămânea pe aria sursă (verificat pe Odoo 20, la 01.10.2026);
+  verificați transferurile vechi. Ruta prin tranzit nu a fost verificată pe o bază de test. Suportul complet pentru transferuri între arii este planificat (roadmap evaluare
   pe depozit).
-- **Aria depozitului** se aplică doar mișcărilor care poartă depozitul (din reguli de
-  aprovizionare); pentru restul, aria trebuie pusă pe locația de stoc.
+- **Aria depozitului** se aplică, de la versiunea 20.0.1.0.4, tuturor mișcărilor pe locațiile lui
+  interne. Înainte, ajustările de inventar și transferurile manuale cădeau pe aria implicită a
+  companiei dacă locația de stoc nu avea arie proprie (VA-001); verificați notele de inventar
+  anterioare pe bazele configurate doar pe depozit.
 - **Jurnalul de stoc al ariei** are efect doar cu `deltatech_obyc` și doar pentru produsele cu
   clasă de evaluare OBYC.
 - Modulul este infrastructură: nu livrează singur rapoarte valorice; valoarea pe arie o calculează

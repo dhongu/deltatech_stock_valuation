@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-31 10:25+0000\n"
-"PO-Revision-Date: 2026-07-31 10:25+0000\n"
+"POT-Creation-Date: 2026-10-01 09:23+0000\n"
+"PO-Revision-Date: 2026-10-01 09:23+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -64,11 +64,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_stock_warehouse__display_name
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__display_name
 msgid "Display Name"
-msgstr ""
-
-#. module: deltatech_valuation_area
-#: model:ir.ui.menu,name:deltatech_valuation_area.menu_valuation_area
-msgid "Evaluation Area"
 msgstr ""
 
 #. module: deltatech_valuation_area
@@ -132,7 +127,7 @@ msgstr ""
 
 #. module: deltatech_valuation_area
 #: model:ir.model.fields,help:deltatech_valuation_area.field_valuation_area__code
-msgid "Short code used in account determination"
+msgid "Short code shown in front of the area name, as [CODE] Name."
 msgstr ""
 
 #. module: deltatech_valuation_area
@@ -165,7 +160,6 @@ msgid "Use valuation area for this company."
 msgstr ""
 
 #. module: deltatech_valuation_area
-#: model:ir.actions.act_window,name:deltatech_valuation_area.action_valuation_area
 #: model:ir.model,name:deltatech_valuation_area.model_valuation_area
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_account_move_line__valuation_area_id
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_company__valuation_area_id
@@ -181,6 +175,12 @@ msgstr ""
 msgid ""
 "Valuation Area is required for stockable products. If the product is not "
 "stockable, you can leave it empty."
+msgstr ""
+
+#. module: deltatech_valuation_area
+#: model:ir.actions.act_window,name:deltatech_valuation_area.action_valuation_area
+#: model:ir.ui.menu,name:deltatech_valuation_area.menu_valuation_area
+msgid "Valuation Areas"
 msgstr ""
 
 #. module: deltatech_valuation_area
