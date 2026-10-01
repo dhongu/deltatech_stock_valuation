@@ -10,8 +10,8 @@
 # Class. Pentru notele contabile reale se validează: o recepție de furnizor (cheia
 # stock_receipt), un retur la furnizor cu Storno accounting activ (înregistrare în roșu), o
 # livrare la client (cheia stock_delivery: costul mărfii vândute se înregistrează la livrare),
-# factura de vânzare (doar venit + TVA, fără linii de cost) și un cost de achiziție (landed
-# cost) pe o a doua recepție.
+# factura de vânzare (doar venit + TVA, fără linii de cost), factura de furnizor (linia pe 408)
+# și un cost de achiziție (landed cost) pe o a doua recepție.
 #
 # Convenția din cod pentru notele de stoc: dacă regula are Cont sursă → Dr Cont de evaluare /
 # Cr Cont sursă; altfel → Dr Cont destinație / Cr Cont de evaluare.
@@ -84,8 +84,8 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         #   retur la furnizor:   Dr 408 / Cr 371  (fără sursă) — cu storno: Dr 371 −V / Cr 408 −V
         #   livrare:             Dr 607 / Cr 371  (fără sursă) — costul la livrare
         #   retur de la client:  Dr 371 / Cr 607  (sursă completată)
-        #   venit (factura):     Cr 707 — 707 pus și ca cont de evaluare, ca linia facturii să
-        #                        nu ajungă pe alt cont (OBYC-001 din readme/bugs.md)
+        #   venit (factura):     Cr 707 — doar Cont destinație (factura de vânzare și nota de
+        #                        credit iau Contul destinație al regulii Venituri, OBYC-001 reparat)
         #   cost de achiziție:   Dr 371 / Cr contul liniei de cost
         det = env["product.account.determination"]
         for key, src, dest, val in [
@@ -93,7 +93,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
             ("return_to_supplier", False, cls.account_src, cls.account_valuation),
             ("stock_delivery", False, cls.account_dest, cls.account_valuation),
             ("return_from_customer", cls.account_dest, False, cls.account_valuation),
-            ("stock_income", cls.account_income, cls.account_income, cls.account_income),
+            ("stock_income", False, cls.account_income, False),
             ("landed_cost", False, False, cls.account_valuation),
         ]:
             det.create(
@@ -104,7 +104,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
                     "company_id": company.id,
                     "acc_src_id": src and src.id,
                     "acc_dest_id": dest and dest.id,
-                    "acc_valuation_id": val.id,
+                    "acc_valuation_id": val and val.id,
                 }
             )
         # o regulă cu account modifier completat, ca matricea să arate coloana folosită;
@@ -162,6 +162,8 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         cls.picking_type_out = warehouse.out_type_id
         cls.supplier = cls.partner_b
         cls.supplier.name = "Furnizor Demo SRL"
+        # contul de furnizor din planul RO (common-ul de test pune o copie „(copy)" a contului)
+        cls.supplier.property_account_payable_id = cls._ro_account("401%", "Furnizori", "401100", "liability_payable")
         cls.customer = cls.partner_a
         cls.customer.name = "Client Demo SRL"
 
@@ -169,6 +171,10 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         # 1) Recepție furnizor → NC OBYC (Dr 371 / Cr cont sursă), pe jurnalul ariei
         cls.receipt_picking = cls._make_receipt(qty=10.0)
         cls.move_receipt = cls.receipt_picking.move_ids.account_move_id[:1]
+
+        # 1b) Factura de furnizor pentru recepție → linia de produs pe Contul sursă (408) al
+        #     regulii de recepție, care stinge 408 (OBYC-001): Dr 408 + Dr 4426 / Cr 401
+        cls.vendor_bill = cls._make_vendor_bill(qty=10.0, price=100.0)
 
         # 2) Retur la furnizor cu Storno activ → aceleași conturi, sume negative (roșu)
         cls.move_storno = cls._make_storno_return(cls.receipt_picking, qty=5.0)
@@ -192,6 +198,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         cls.act_valuation_class = env.ref("deltatech_obyc.action_product_valuation_class").id
         cls.act_modifier = env.ref("deltatech_obyc.action_account_modifier").id
         cls.act_out_invoice = env.ref("account.action_move_out_invoice_type").id
+        cls.act_in_invoice = env.ref("account.action_move_in_invoice_type").id
 
     # ---------------------------------------------------------------------------------
     # Helperi de seed
@@ -267,6 +274,32 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         return invoice
 
     @classmethod
+    def _make_vendor_bill(cls, qty, price):
+        tax = cls.env.company.account_purchase_tax_id
+        bill = cls.env["account.move"].create(
+            {
+                "move_type": "in_invoice",
+                "partner_id": cls.supplier.id,
+                "invoice_date": fields.Date.today(),
+                "ref": "FF-1001",
+                # o singură scadență: o singură linie 401 în captură
+                "invoice_payment_term_id": cls.env.ref("account.account_payment_term_immediate").id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": cls.product.id,
+                            "quantity": qty,
+                            "price_unit": price,
+                            "tax_ids": [Command.set(tax.ids)],
+                        }
+                    )
+                ],
+            }
+        )
+        bill.action_post()
+        return bill
+
+    @classmethod
     def _make_landed_cost(cls, picking, amount):
         cost_product = cls.env["product.product"].create(
             {"name": "Transport marfă", "type": "service", "landed_cost_ok": True}
@@ -318,6 +351,13 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         self.assertFalse(self.invoice.line_ids.filtered(lambda line: line.display_type == "cogs"))
         self.assertEqual(
             [code for code, _dr, _cr in self._dr_cr(self.invoice)], ["411", "442", "707"], self._dr_cr(self.invoice)
+        )
+        # linia de produs ia Contul destinație al regulii Venituri (OBYC-001), fără recalculare
+        self.assertEqual(self.invoice.invoice_line_ids.account_id, self.account_income)
+        # factura de furnizor: linia de produs pe 408 (Contul sursă al regulii de recepție)
+        self.assertEqual(self.vendor_bill.invoice_line_ids.account_id, self.account_src)
+        self.assertEqual(
+            self._dr_cr(self.vendor_bill), [("401", 0.0, 1210.0), ("408", 1000.0, 0.0), ("442", 210.0, 0.0)]
         )
         self.assertEqual(self._dr_cr(self.move_landed_cost), [("371", 50.0, 0.0), ("408", 0.0, 50.0)])
         self.assertEqual(self.move_delivery.journal_id, self.stock_journal)
@@ -400,5 +440,10 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
             },
             # 10. Nota costului de achiziție (landed cost): Dr 371 / Cr contul liniei de cost
             self.account_move_shot(self.move_landed_cost, "10_landed_cost_entry.png"),
+            # 11. Factura de furnizor: linia de produs pe 408, stinge recepția (OBYC-001)
+            {
+                **self.account_move_shot(self.vendor_bill, "11_vendor_bill_408.png"),
+                "url": f"action={self.act_in_invoice}&id={self.vendor_bill.id}&model=account.move&view_type=form",
+            },
         ]
         self.capture_screenshots(shots)
