@@ -2,6 +2,8 @@
 # See README.rst file on addons root folder for license details
 
 
+from odoo.exceptions import UserError
+
 from .test_common import TestCommon
 
 
@@ -200,3 +202,17 @@ class TestStockMoveAccountDetermination(TestCommon):
         self.assertEqual(rule.acc_src_id, self.account_src)
         self.assertEqual(rule.acc_dest_id, self.account_dest)
         self.assertEqual(rule.acc_valuation_id, self.account_valuation)
+
+    def test_05_unknown_transaction_key_message(self):
+        """The error for an unmapped move names the real location usages, not placeholders."""
+        supplier = self.env.ref("stock.stock_location_suppliers")
+        inventory = self.env["stock.location"].create({"name": "Test Inventory Loss", "usage": "inventory"})
+        move = self.env["stock.move"].new(
+            {"product_id": self.product.id, "location_id": supplier.id, "location_dest_id": inventory.id}
+        )
+        with self.assertRaises(UserError) as err:
+            move._compute_transaction_key()
+        message = str(err.exception)
+        self.assertIn("supplier", message)
+        self.assertIn("inventory", message)
+        self.assertNotIn("{", message)

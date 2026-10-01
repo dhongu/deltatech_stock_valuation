@@ -178,7 +178,7 @@ class StockMove(models.Model):
         if not tr_key:
             raise UserError(
                 self.env._(
-                    "Transaction key could not be determined for the move from {source_usage} to {dest_usage}.",
+                    "Transaction key could not be determined for the move from %(source_usage)s to %(dest_usage)s.",
                     source_usage=source_usage,
                     dest_usage=dest_usage,
                 )

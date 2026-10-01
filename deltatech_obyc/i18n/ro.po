@@ -300,11 +300,11 @@ msgstr "Cheie de tranzacție"
 #. odoo-python
 #: code:addons/deltatech_obyc/models/stock_move.py:0
 msgid ""
-"Transaction key could not be determined for the move from {source_usage} to "
-"{dest_usage}."
+"Transaction key could not be determined for the move from %(source_usage)s "
+"to %(dest_usage)s."
 msgstr ""
 "Cheia de tranzacție nu a putut fi determinată pentru mișcarea de la "
-"{source_usage} la {dest_usage}."
+"%(source_usage)s la %(dest_usage)s."
 
 #. module: deltatech_obyc
 #. odoo-python
