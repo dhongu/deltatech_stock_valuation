@@ -57,6 +57,7 @@ Review date: 2026-10-01. Target version: Odoo 19.
 - **Location:** `readme/USAGE.md`, `readme/DESCRIPTION.md`.
 - **Actual behavior:** `USAGE.md` gives the menus under Inventory → Operations (they are under Inventory → Products), describes recompute buttons that are no longer in the settings, says the area is required only on the marked accounts (it is required on any line with a stockable product) and lists the customer refund as "+ in" (the code counts it as an out with a minus sign). `DESCRIPTION.md` describes the "smart validation" `_is_valuation_area_required`, which is commented out in `models/account_move_line.py`.
 - **Expected behavior:** Both match `FISA_CONSULTANT.md` and the code.
+- **Update 2026-10-01:** The consultant sheet was corrected after the accounting audit; `USAGE.md` must now also carry: the recommendation of `deltatech_obyc` for Romanian clients (without OBYC the stock accounts move only at invoicing), the warning against saving the settings or running Recompute All on multi-company databases (SV-002, SV-003), and the fact that a value-only adjustment changes the value and the average price (not the quantity). The reversal of stock entries without storno now cancels the quantity (`deltatech_valuation_area` 19.0.1.0.3); `USAGE.md` does not describe it either way.
 - **Suggested fix:** Rebuild `USAGE.md` from the consultant sheet (`usage-din-fisa` agent) and correct `DESCRIPTION.md`.
 
 ## SV-006 — P2: New valuation rows use the environment currency instead of their explicit company
@@ -81,9 +82,20 @@ Review date: 2026-10-01. Target version: Odoo 19.
 - **Suggested fix:** Update the action to supported methods behind the appropriate administrative access checks, and align usage examples that still reference the old names.
 - **Validation needed:** Execute the installed action as an authorized administrator and verify both history and current valuation recomputation; verify unauthorized execution is rejected.
 
+## SV-008 — P3: The price of a row with zero final stock depends on the recompute path
+
+- **Status:** Open (documented in `FISA_CONSULTANT.md`, section 6).
+- **Location:** `models/product_valuation.py`, `ProductValuation._recompute_amount()` (posting path) and the insert of `_recompute_all_amount()` (full recompute).
+- **Trigger:** A product whose final stock in the last month is zero.
+- **Actual behavior:** At posting, the price becomes `debit / quantity_in` of the last month (or the previous price when there were no entries); after Recompute All it becomes 0. `debit` also includes customer refunds (an `out_refund` debits the stock account but its quantity is counted as a negative out, not as an in) and value-only adjustments, so `debit / quantity_in` can be distorted.
+- **Expected behavior:** The same price on both paths, computed only from the entries that carry a quantity in.
+- **Impact:** With Use Valuation Area Price, an out for such a row is valued at the standard price after a full recompute and at a possibly distorted price after a posting.
+- **Suggested fix:** Use one rule on both paths (keep the previous price, or the last entry price computed from the lines with quantity in only).
+- **Validation needed:** A test with an in, an out of the whole stock and a customer refund in the same month, comparing the price after posting and after Recompute All.
+
 ## Review limitations
 
-SV-001..005 come from checking the consultant sheet against the code; SV-001, SV-002 and the
+SV-001..005 and SV-008 come from checking the consultant sheet against the code; SV-001, SV-002 and the
 server action of SV-007 were checked in the source. SV-003, SV-006 and SV-007 come from a separate
 code review (local source inspection and isolated reproductions, no database-backed integration
 test). No fixes have been applied.

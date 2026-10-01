@@ -1,3 +1,22 @@
+## 19.0.1.0.4 (2026-10-01)
+
+- Fix (OBYC-001): the product line of a customer invoice, a vendor bill or a credit note
+  got the valuation account of the rule, because the account was chosen from the line
+  debit/credit, still 0 when the line is created. A vendor bill debited the stock account a
+  second time (after the receipt entry) and left the GR/IR account (408) open; customer
+  invoices booked the revenue on the stock account. The account is now chosen from the
+  document type: customer invoice and credit note → destination account of the
+  `stock_income` rule; vendor bill and credit note → source account of the
+  `stock_receipt` rule; the valuation account only when that account is empty. Credit
+  notes use the same account as the invoice.
+- Docs: consultant sheet corrected after the accounting audit and the OBYC-001 fix: invoice
+  accounts per document type, credit notes with storno, configuration for finished products,
+  raw materials and production, vendor bill on 408, landed cost account, inventory differences
+  (shortages, imputation, VAT, profit tax), price and exchange differences on 408, month-end
+  procedure for deliveries not invoiced (OBYC-002) compatible with the D300 computed from tax
+  tags; screenshots 01 and 10 regenerated, 11 (vendor bill) added. `DESCRIPTION.md`: account
+  mapping examples follow the code convention. `readme/bugs.md`: OBYC-008 and OBYC-009 added.
+
 ## 19.0.1.0.3 (2026-10-01)
 
 - Fix: validating a landed cost on a product with an OBYC valuation class crashed with

@@ -1,3 +1,16 @@
+## 19.0.0.0.10 (2026-10-01)
+
+- Test: reversing a stock journal entry on a company without storno leaves the stock
+  valuation at zero (the fix is in `deltatech_valuation_area` 19.0.1.0.3).
+- Test: with storno, reversing a stock entry leaves the valuation at zero, including a
+  zero-value line (move at cost 0).
+- Docs: consultant sheet corrected after the accounting audit: OBYC recommended for Romanian
+  clients and a month-end procedure for receipts and deliveries not invoiced without OBYC;
+  a value-only adjustment changes the value and the average price; reversal with and without
+  storno; month-end and stock count reconciliation; legal basis (OMFP 1802/2014, Fiscal Code);
+  firm warning for multi-company databases. `readme/bugs.md`: SV-005 updated, SV-008 added.
+- Docs: the screenshot test puts a supplier on the receipt entry; screenshots regenerated.
+
 ## 19.0.0.0.9 (2026-10-01)
 
 - Docs: consultant sheet updated to the current code (11-section structure), screenshots

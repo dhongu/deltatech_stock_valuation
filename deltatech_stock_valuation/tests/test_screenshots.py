@@ -93,9 +93,14 @@ class TestStockValuationScreenshots(AccountTestInvoicingCommon, ScreenshotCase o
             }
         )
 
+        # furnizorul de pe linia 408 (soldul 408 se analizează pe partener la închiderea lunii)
+        cls.supplier = env["res.partner"].create({"name": "Furnizor Demo SRL", "is_company": True})
+
         # convenția cantității semnate pe notele de tip entry: pozitivă pe debit, negativă pe credit
         # recepție: Dr 371 (+10) / Cr 408 (-10), 1.000 lei
-        cls.move_in = cls._post_stock_entry("Recepție mărfuri", cls.account_stock, cls.account_408, 1000.0, 10.0)
+        cls.move_in = cls._post_stock_entry(
+            "Recepție mărfuri", cls.account_stock, cls.account_408, 1000.0, 10.0, partner=cls.supplier
+        )
         # livrare: Dr 607 (+4) / Cr 371 (-4), 400 lei
         cls.move_out = cls._post_stock_entry("Livrare mărfuri", cls.account_607, cls.account_stock, 400.0, 4.0)
 
@@ -118,6 +123,7 @@ class TestStockValuationScreenshots(AccountTestInvoicingCommon, ScreenshotCase o
                     <list create="0" delete="0" edit="0">
                         <field name="move_name" string="Notă contabilă"/>
                         <field name="account_id"/>
+                        <field name="partner_id"/>
                         <field name="product_id"/>
                         <field name="name"/>
                         <field name="quantity" string="Cantitate"/>
@@ -158,7 +164,7 @@ class TestStockValuationScreenshots(AccountTestInvoicingCommon, ScreenshotCase o
         )
 
     @classmethod
-    def _post_stock_entry(cls, label, debit_account, credit_account, amount, quantity):
+    def _post_stock_entry(cls, label, debit_account, credit_account, amount, quantity, partner=None):
         """Notă de stoc tip `entry`: linia de debit cu qty=+quantity, linia de credit cu qty=-quantity.
         Aria de evaluare e obligatorie pe orice linie cu produs stocabil (deltatech_valuation_area)."""
         area = cls.valuation_area.id if cls.valuation_area else False
@@ -168,6 +174,7 @@ class TestStockValuationScreenshots(AccountTestInvoicingCommon, ScreenshotCase o
                 "journal_id": cls.journal.id,
                 "date": fields.Date.today(),
                 "ref": label,
+                "partner_id": partner and partner.id,
                 "line_ids": [
                     (
                         0,
