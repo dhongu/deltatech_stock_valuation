@@ -2,7 +2,8 @@
 # See README.rst file on addons root folder for license details
 #
 # Notele contabile OBYC (conturi Dr/Cr, sume, cantități semnate) pe scenariile de bază:
-# recepție, livrare, retur de la client (negru și storno) și cost de achiziție (landed cost).
+# recepție, livrare, retur de la client (negru și storno), cost de achiziție (landed cost)
+# și factura de vânzare.
 
 from odoo import Command
 from odoo.tests import tagged
@@ -30,16 +31,24 @@ class TestObycEntries(TestCommon):
         cls.account_customer = cls.env["account.account"].create(
             {"name": "Test Customer Return Account", "code": "TCR001", "account_type": "asset_current"}
         )
+        cls.account_income = cls.env["account.account"].create(
+            {"name": "Test Income", "code": "TINC01", "account_type": "income"}
+        )
+        cls.account_income_debit = cls.env["account.account"].create(
+            {"name": "Test Income Debit", "code": "TINCD1", "account_type": "asset_current"}
+        )
         cls.account_lc_expense = cls.env["account.account"].create(
             {"name": "Test Landed Cost Expense", "code": "TLCE01", "account_type": "expense"}
         )
         # recepție: Dr valuation / Cr src; livrare (doar acc_dest): Dr dest / Cr valuation;
-        # retur de la client: Dr valuation / Cr src; cost de achiziție: Dr valuation
+        # retur de la client: Dr valuation / Cr src; cost de achiziție: Dr valuation;
+        # venit (factura de vânzare): Cr dest
         for key, src, dest in [
             ("stock_receipt", cls.account_src, False),
             ("stock_delivery", False, cls.account_dest),
             ("return_from_customer", cls.account_customer, False),
             ("landed_cost", False, False),
+            ("stock_income", cls.account_income_debit, cls.account_income),
         ]:
             cls.env["product.account.determination"].create(
                 {
@@ -57,6 +66,18 @@ class TestObycEntries(TestCommon):
         cls.stock_location = cls.env.ref("stock.stock_location_stock")
         cls.picking_type_in = cls.env.ref("stock.picking_type_in")
         cls.picking_type_out = cls.env.ref("stock.picking_type_out")
+
+        # compania default din baza de test nu are plan de conturi — contul de creanțe
+        # și jurnalul de vânzări se creează explicit
+        cls.account_receivable = cls.env["account.account"].create(
+            {"name": "Test Receivable", "code": "TREC02", "account_type": "asset_receivable", "reconcile": True}
+        )
+        cls.partner = cls.env["res.partner"].create(
+            {"name": "Test Customer OBYC", "property_account_receivable_id": cls.account_receivable.id}
+        )
+        cls.sale_journal = cls.env["account.journal"].create(
+            {"name": "Test Sale Journal", "code": "TSJ2", "type": "sale", "company_id": cls.env.company.id}
+        )
 
     def _picking(self, picking_type, location, location_dest, qty):
         picking = self.env["stock.picking"].create(
@@ -110,6 +131,25 @@ class TestObycEntries(TestCommon):
         return_picking = self.env["stock.picking"].browse(action["res_id"])
         self._validate(return_picking)
         return return_picking
+
+    def _out_invoice(self, lines):
+        invoice = self.env["account.move"].create(
+            {
+                "move_type": "out_invoice",
+                "invoice_date": "2026-01-15",
+                "partner_id": self.partner.id,
+                "journal_id": self.sale_journal.id,
+                "invoice_line_ids": [
+                    Command.create({"product_id": product.id, "quantity": qty, "price_unit": price, "tax_ids": []})
+                    for product, qty, price in lines
+                ],
+            }
+        )
+        # OBYC-001 (readme/bugs.md): la creare, `_compute_account_id` rulează înainte
+        # de debit/credit și pune linia pe `acc_valuation_id`; recalculul pe toate
+        # liniile odată (ca în `test_account_move_line`) dă contul de venit al regulii
+        invoice.invoice_line_ids._compute_account_id()
+        return invoice
 
     def test_01_receipt(self):
         lines = self._lines(self._receipt(10.0))
@@ -193,3 +233,30 @@ class TestObycEntries(TestCommon):
             ],
         )
         self.assertAlmostEqual(receipt.move_ids.value, 1050.0)
+
+    def test_06_sale_invoice(self):
+        """Factura de vânzare pe un produs OBYC evaluat în timp real: doar venitul (cheia
+        `stock_income`), fără linii COGS — costul s-a înregistrat deja la livrare
+        (cheia `stock_delivery`). Înainte de fix, postarea cădea cu „Transaction key is
+        not defined"."""
+        self._receipt(10.0)
+        delivery = self._delivery(2.0)
+        invoice = self._out_invoice([(self.product, 2.0, 150.0)])
+        invoice.action_post()
+        self.assertEqual(invoice.state, "posted")
+        self.assertFalse(invoice.line_ids.filtered(lambda line: line.display_type == "cogs"))
+        self.assertRecordValues(
+            self._sorted_lines(invoice),
+            [
+                {"account_id": self.account_income.id, "debit": 0.0, "credit": 300.0},
+                {"account_id": self.account_receivable.id, "debit": 300.0, "credit": 0.0},
+            ],
+        )
+        # costul mărfii vândute rămâne doar pe nota livrării, o singură dată
+        self.assertRecordValues(
+            self._lines(delivery),
+            [
+                {"account_id": self.account_dest.id, "debit": 200.0, "credit": 0.0},
+                {"account_id": self.account_valuation.id, "debit": 0.0, "credit": 200.0},
+            ],
+        )
