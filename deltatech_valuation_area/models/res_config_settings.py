@@ -15,3 +15,7 @@ class ResConfigSettings(models.TransientModel):
     valuation_area_id = fields.Many2one(
         "valuation.area", related="company_id.valuation_area_id", string="Valuation Area", readonly=False
     )
+    valuation_keep_move_value = fields.Boolean(
+        related="company_id.valuation_keep_move_value",
+        readonly=False,
+    )

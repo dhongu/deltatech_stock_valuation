@@ -1,0 +1,11 @@
+{
+  "title": "OBYC Accounts",
+  "summary": "Automatic GL account mapping for stock moves",
+  "icon": "gear",
+  "lang": "en",
+  "features": [
+    "SAP OBYC-style transaction keys",
+    "Source, destination & valuation accounts",
+    "Rules by class, area & modifier"
+  ]
+}

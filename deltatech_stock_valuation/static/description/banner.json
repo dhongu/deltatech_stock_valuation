@@ -1,0 +1,7 @@
+{
+  "title": "Product Valuation",
+  "summary": "Weighted average cost per area & account",
+  "icon": "trend",
+  "lang": "en",
+  "features": ["Cost per product, area & account", "Monthly valuation history", "Always matches the accounting ledger"]
+}

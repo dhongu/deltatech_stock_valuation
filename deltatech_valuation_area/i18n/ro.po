@@ -17,6 +17,21 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: deltatech_valuation_area
+#: model_terms:ir.ui.view,arch_db:deltatech_valuation_area.res_config_settings_view_form
+msgid ""
+"Checked: validated stock moves keep the value computed at validation (as in "
+"Odoo 19), consistent with the posted journal entries. Unchecked: the "
+"standard Odoo 20 recompute rewrites the value of later outgoing moves, but "
+"posted journal entries are NOT corrected, so stock value and accounting can "
+"diverge."
+msgstr ""
+"Bifat: mișcările de stoc validate păstrează valoarea calculată la validare "
+"(ca în Odoo 19), coerent cu notele contabile postate. Nebifat: "
+"recalcularea standard Odoo 20 rescrie valoarea ieșirilor ulterioare, dar "
+"notele contabile postate NU se corectează, deci valoarea stocului și "
+"contabilitatea pot diverge."
+
+#. module: deltatech_valuation_area
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__code
 msgid "Code"
 msgstr "Cod"
@@ -74,6 +89,24 @@ msgid "ID"
 msgstr "ID"
 
 #. module: deltatech_valuation_area
+#: model:ir.model.fields,help:deltatech_valuation_area.field_res_company__valuation_keep_move_value
+#: model:ir.model.fields,help:deltatech_valuation_area.field_res_config_settings__valuation_keep_move_value
+msgid ""
+"If checked, the value of stock moves already validated stays the one "
+"computed at validation time (the Odoo 19 behaviour, consistent with the "
+"posted journal entries). If unchecked, the standard Odoo 20 recompute "
+"rewrites the value of the later outgoing moves, while the journal entries "
+"already posted are NOT corrected, so the stock value and the accounting can "
+"diverge."
+msgstr ""
+"Dacă este bifat, valoarea mișcărilor de stoc deja validate rămâne cea "
+"calculată la momentul validării (comportamentul din Odoo 19, coerent cu "
+"notele contabile postate). Dacă nu este bifat, recalcularea standard Odoo "
+"20 rescrie valoarea ieșirilor ulterioare, iar notele contabile deja "
+"postate NU se corectează, astfel încât valoarea stocului și contabilitatea "
+"pot diverge."
+
+#. module: deltatech_valuation_area
 #: model:ir.model,name:deltatech_valuation_area.model_stock_location
 msgid "Inventory Locations"
 msgstr "Locații inventar"
@@ -82,6 +115,12 @@ msgstr "Locații inventar"
 #: model:ir.model,name:deltatech_valuation_area.model_account_move_line
 msgid "Journal Item"
 msgstr "Element jurnal"
+
+#. module: deltatech_valuation_area
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_company__valuation_keep_move_value
+#: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_config_settings__valuation_keep_move_value
+msgid "Keep move value on retroactive recompute"
+msgstr "Păstrează valoarea mișcării la recalcularea retroactivă"
 
 #. module: deltatech_valuation_area
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_valuation_area__write_uid

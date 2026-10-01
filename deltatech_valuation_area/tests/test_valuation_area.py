@@ -340,3 +340,16 @@ class TestValuationArea(AccountTestInvoicingCommon):
         )
         with self.assertRaises(UserError):
             move._get_valuation_area()
+
+    def test_keep_move_value_setting_default(self):
+        """Setarea `valuation_keep_move_value` există, e bifată implicit pe o companie
+        nouă și e expusă (editabilă) în setări."""
+        self.assertIn("valuation_keep_move_value", self.env["res.company"]._fields)
+        company = self.env["res.company"].create({"name": "Keep Move Value Co"})
+        self.assertTrue(company.valuation_keep_move_value)
+
+        settings = self.env["res.config.settings"].create({})
+        self.assertTrue(settings.valuation_keep_move_value)
+        settings.valuation_keep_move_value = False
+        settings.execute()
+        self.assertFalse(self.env.company.valuation_keep_move_value)

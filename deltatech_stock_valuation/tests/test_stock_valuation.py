@@ -1,0 +1,139 @@
+# ©  2024 Deltatech
+#              Dorin Hongu <dhongu(@)gmail(.)com
+# See README.rst file on addons rcoot folder for license details
+
+from dateutil.relativedelta import relativedelta
+
+from odoo import Command, fields
+from odoo.tests import tagged
+
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
+
+
+@tagged("post_install", "-at_install", "deltatech_stock_valuation")
+class TestStockValuation(AccountTestInvoicingCommon):
+    """
+    Testări generale pentru evaluarea stocului prin documente contabile.
+    Verifică impactul diferitelor tipuri de facturi (ieșire, retur, intrare)
+    asupra conturilor de evaluare.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        cls.account = cls.env["account.account"].create(
+            {
+                "name": "Account A",
+                "code": "1234",
+                "account_type": "asset_current",
+                "is_for_stock_valuation": True,
+            }
+        )
+
+        cls.sale_journal = cls.env["account.journal"].create(
+            {
+                "name": "Test Journal",
+                "type": "sale",
+                "code": "TEST",
+            }
+        )
+
+        cls.env.company.set_stock_valuation_at_company_level()
+
+        country_ro = cls.env.ref("base.ro", raise_if_not_found=False)
+        if country_ro:
+            state_ro = cls.env["res.country.state"].search([("country_id", "=", country_ro.id)], limit=1)
+            for partner in [cls.partner_a, cls.partner_b, cls.env.company.partner_id]:
+                partner.write(
+                    {
+                        "country_id": country_ro.id,
+                        "state_id": state_ro.id if state_ro else False,
+                        "city": partner.city or "Bucuresti",
+                        "street": partner.street or "Str. Test 1",
+                    }
+                )
+
+    def test_account_move(self):
+        """
+        Verifică procesarea mai multor tipuri de mișcări contabile.
+        Creează facturi de client, facturi de furnizor și retururi, le postează
+        și validează indirect fluxul de date care va fi folosit pentru evaluare.
+        """
+        today = fields.Date.today()
+        today = fields.Date.from_string(today)
+        date = today + relativedelta(day=1, months=-1, days=15)
+
+        invoices = self.env["account.move"].create(
+            [
+                {
+                    "move_type": "out_invoice",
+                    "invoice_date": date,
+                    "date": date,
+                    "partner_id": self.partner_a.id,
+                    "invoice_line_ids": [
+                        Command.create(
+                            {
+                                "product_id": self.product_a.id,
+                                "account_id": self.account.id,
+                                "quantity": 5.0,
+                                "price_unit": 1000.0,
+                                "tax_ids": [Command.set(self.company_data["default_tax_sale"].ids)],
+                            }
+                        )
+                    ],
+                },
+                {
+                    "move_type": "out_invoice",
+                    "invoice_date": date,
+                    "date": date,
+                    "partner_id": self.company_data["company"].partner_id.id,
+                    "invoice_line_ids": [
+                        Command.create(
+                            {
+                                "product_id": self.product_a.id,
+                                "account_id": self.account.id,
+                                "quantity": 2.0,
+                                "price_unit": 1500.0,
+                                "tax_ids": [Command.set(self.company_data["default_tax_sale"].ids)],
+                            }
+                        )
+                    ],
+                },
+                {
+                    "move_type": "out_refund",
+                    "invoice_date": date,
+                    "date": date,
+                    "partner_id": self.partner_a.id,
+                    "invoice_line_ids": [
+                        Command.create(
+                            {
+                                "product_id": self.product_a.id,
+                                "account_id": self.account.id,
+                                "quantity": 3.0,
+                                "price_unit": 1000.0,
+                                "tax_ids": [Command.set(self.company_data["default_tax_sale"].ids)],
+                            }
+                        )
+                    ],
+                },
+                {
+                    "move_type": "in_invoice",
+                    "invoice_date": date,
+                    "date": date,
+                    "partner_id": self.partner_b.id,
+                    "invoice_line_ids": [
+                        Command.create(
+                            {
+                                "product_id": self.product_b.id,
+                                "account_id": self.account.id,
+                                "quantity": 10.0,
+                                "price_unit": 800.0,
+                                "tax_ids": [Command.set(self.company_data["default_tax_purchase"].ids)],
+                            }
+                        )
+                    ],
+                },
+            ]
+        )
+        invoices.action_post()

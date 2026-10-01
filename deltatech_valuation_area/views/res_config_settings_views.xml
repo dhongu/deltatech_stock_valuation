@@ -18,6 +18,12 @@
                         </div>
                     </div>
                 </setting>
+                <setting
+                    id="valuation_keep_move_value"
+                    help="Checked: validated stock moves keep the value computed at validation (as in Odoo 19), consistent with the posted journal entries. Unchecked: the standard Odoo 20 recompute rewrites the value of later outgoing moves, but posted journal entries are NOT corrected, so stock value and accounting can diverge."
+                >
+                    <field name="valuation_keep_move_value" />
+                </setting>
             </xpath>
         </field>
     </record>
