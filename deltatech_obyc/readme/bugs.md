@@ -49,3 +49,26 @@ Review date: 2026-10-01. Target version: Odoo 19.
 - **Evidence:** Confirmed with the accounting reference (Pacioli) on 2026-10-01.
 - **Suggested fix:** Detect invoices posted before the related delivery and route their revenue to 419 (or require down-payment invoices), then regularize at delivery.
 - **Validation needed:** Tests with an invoice before delivery, checking the 419 entry and its regularization; a bill-and-hold case.
+
+## OBYC-005 — P2: Inventory adjustment keys are swapped
+
+- **Status:** Open.
+- **Location:** `models/stock_move.py`, `_compute_transaction_key()`.
+- **Trigger:** Validate an inventory adjustment for a product with an OBYC valuation class.
+- **Actual behavior:** A loss (internal → inventory location) uses `inventory_adjustment_plus`; a gain (inventory location → internal) uses `inventory_adjustment_minus`.
+- **Expected behavior:** A gain uses `inventory_adjustment_plus` and a loss uses `inventory_adjustment_minus`, as the key names and `readme/DESCRIPTION.md` say.
+- **Impact:** A rule configured by its name books gains as losses and losses as gains. The entry is balanced, so nothing fails.
+- **Evidence:** `case "internal", "inventory": tr_key = "inventory_adjustment_plus"` and `case "inventory", "internal": tr_key = "inventory_adjustment_minus"`.
+- **Suggested fix:** Swap the two keys, with a migration note for the databases whose rules were configured around the current behavior.
+- **Validation needed:** A test with a positive and a negative adjustment, checking the rule and the accounts used.
+
+## OBYC-006 — P3: OBYC journal entries are created for products without real-time valuation
+
+- **Status:** Open.
+- **Location:** `models/stock_move.py`, `_should_create_account_move()`.
+- **Trigger:** A product with an OBYC valuation class in a category with manual (periodic) valuation, or a non-valued move.
+- **Actual behavior:** The override only checks the rule accounts; it skips the core checks (`is_storable`, `is_valued`, `valuation == "real_time"`, non-zero quantity), so a journal entry is created anyway.
+- **Expected behavior:** Same checks as the core, plus the OBYC rule check.
+- **Impact:** Unexpected stock entries for products valued manually.
+- **Suggested fix:** Combine the core conditions with the OBYC rule check (without the core's location valuation account condition, which OBYC replaces).
+- **Validation needed:** A test with a product with a valuation class in a manual-valuation category: no journal entry.
