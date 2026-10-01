@@ -1,3 +1,8 @@
+## 20.0.1.0.7 (2026-10-01)
+
+- New: valuation class on the product category. A product without its own valuation class
+  uses the class of its category; the class set on the product still takes priority.
+
 ## 20.0.1.0.6 (2026-10-01)
 
 Port of the 19.0 documentation fixes after the accounting audit and the OBYC-001 fix,

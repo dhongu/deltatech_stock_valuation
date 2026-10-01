@@ -111,10 +111,10 @@ class StockMove(models.Model):
         """Mișcare OBYC a cărei valoare rămâne cea din momentul validării (ca în 19):
         produs cu clasă de evaluare și setarea companiei `valuation_keep_move_value`."""
         self.ensure_one()
-        return bool(self.product_id.valuation_class_id and self.company_id.valuation_keep_move_value)
+        return bool(self.product_id._get_valuation_class() and self.company_id.valuation_keep_move_value)
 
     def _obyc_fill_dropship_value(self):
-        for move in self.filtered(lambda m: m.product_id.valuation_class_id and m.is_dropship and not m.value):
+        for move in self.filtered(lambda m: m.product_id._get_valuation_class() and m.is_dropship and not m.value):
             move.value = move.sudo()._get_value()
 
     def _obyc_correct_out_value(self, correction_quantity):
@@ -192,7 +192,7 @@ class StockMove(models.Model):
 
     def _get_rule_account(self):
         self.ensure_one()
-        if not self.product_id.valuation_class_id:
+        if not self.product_id._get_valuation_class():
             return self.env["product.account.determination"]
         transaction_key = self._compute_transaction_key()
         account_modifier = self.env["account.modifier"]
@@ -204,7 +204,7 @@ class StockMove(models.Model):
 
         rule = _get_rule_account(
             valuation_area=valuation_area,
-            valuation_class=self.product_id.valuation_class_id,
+            valuation_class=self.product_id._get_valuation_class(),
             transaction_key=transaction_key,
             account_modifier=account_modifier,
             company=self.company_id,
@@ -213,7 +213,7 @@ class StockMove(models.Model):
         return rule
 
     def _should_create_account_move(self):
-        if not self.product_id.valuation_class_id:
+        if not self.product_id._get_valuation_class():
             return super()._should_create_account_move()
         self.ensure_one()
 
@@ -249,7 +249,7 @@ class StockMove(models.Model):
         return bool(self.company_id.account_storno and self.origin_returned_move_id)
 
     def _get_account_move_line_vals(self):
-        if not self.product_id.valuation_class_id:
+        if not self.product_id._get_valuation_class():
             vals_list = super()._get_account_move_line_vals()
         else:
             rule = self._get_rule_account()
@@ -306,7 +306,7 @@ class StockMove(models.Model):
         evaluare OBYC; recordset gol dacă nu se aplică."""
         self.ensure_one()
         journal = self.env["account.journal"]
-        if self.product_id.valuation_class_id:
+        if self.product_id._get_valuation_class():
             valuation_area = self._get_valuation_area(raise_if_not_found=False)
             if valuation_area and valuation_area.stock_journal_id:
                 journal = valuation_area.stock_journal_id
