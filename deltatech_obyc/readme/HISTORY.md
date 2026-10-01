@@ -1,0 +1,19 @@
+## 20.0.1.0.2 (2026-10-01)
+
+- Migration to Odoo 20: in 20 `stock.move.value` is negative on outgoing moves; the OBYC
+  journal entry keeps posting the absolute value, so the Dr/Cr amounts are the same as in 19.
+- Odoo 20 replays the valuation and rewrites the value of outgoing moves already done when an
+  incoming move is backdated, a done quantity is edited or a vendor bill revalues a receipt.
+  For products with an OBYC valuation class the move value stays the one posted at validation
+  (as in 19), consistent with the OBYC journal entry; other products keep the Odoo 20 behaviour.
+
+## 19.0.1.0.2 (2026-09-30)
+
+- Own module icon in the flat style of the other modules.
+
+## 19.0.1.0.1 (2026-08-19)
+
+- Fix: dropship moves (supplier -> customer) for products with an OBYC valuation class were
+  not valued — `stock.move.value` stayed 0, because the `stock_account` core fills this
+  field only for `is_in` moves, not for `is_dropship` ones. The journal entry generated
+  right after was posted with debit=0/credit=0 — apparently recorded, but with no value.

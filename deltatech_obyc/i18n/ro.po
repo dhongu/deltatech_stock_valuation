@@ -1,0 +1,338 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* deltatech_obyc
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-31 10:23+0000\n"
+"PO-Revision-Date: 2026-07-31 10:23+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: deltatech_obyc
+#: model:ir.ui.menu,name:deltatech_obyc.menu_obyc_config
+msgid "Account Determination Config"
+msgstr "Configurare determinare cont"
+
+#. module: deltatech_obyc
+#: model:ir.model,name:deltatech_obyc.model_account_modifier
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_journal__account_modifier_id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__account_modifier_id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_stock_picking_type__account_modifier_id
+msgid "Account Modifier"
+msgstr "Modificator de cont"
+
+#. module: deltatech_obyc
+#: model:ir.actions.act_window,name:deltatech_obyc.action_account_modifier
+#: model:ir.ui.menu,name:deltatech_obyc.menu_account_modifier
+msgid "Account Modifiers"
+msgstr "Modificatori de cont"
+
+#. module: deltatech_obyc
+#: model_terms:ir.ui.view,arch_db:deltatech_obyc.view_product_account_determination_form
+msgid "Accounts"
+msgstr "Conturi"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_modifier__code
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_valuation_class__code
+msgid "Code"
+msgstr "Cod"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__company_id
+msgid "Company"
+msgstr "Companie"
+
+#. module: deltatech_obyc
+#: model_terms:ir.ui.view,arch_db:deltatech_obyc.view_product_account_determination_form
+msgid "Conditions"
+msgstr "Condiții"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_modifier__create_uid
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__create_uid
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_valuation_class__create_uid
+msgid "Created by"
+msgstr "Creat de"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_modifier__create_date
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__create_date
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_valuation_class__create_date
+msgid "Created on"
+msgstr "Creat în"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__acc_dest_id
+msgid "Destination Account"
+msgstr "Cont destinație"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_journal__display_name
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_modifier__display_name
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__display_name
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_template__display_name
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_valuation_class__display_name
+#: model:ir.model.fields,field_description:deltatech_obyc.field_stock_move__display_name
+#: model:ir.model.fields,field_description:deltatech_obyc.field_stock_picking_type__display_name
+#: model:ir.model.fields,field_description:deltatech_obyc.field_stock_valuation_adjustment_lines__display_name
+msgid "Display Name"
+msgstr "Nume afișat"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__dropship
+msgid "Dropshipping"
+msgstr "Livrare directă"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__dropship_return
+msgid "Dropshipping Return"
+msgstr "Retur dropshipping"
+
+#. module: deltatech_obyc
+#: model:ir.ui.menu,name:deltatech_obyc.menu_product_valuation_class
+msgid "Evaluation Class"
+msgstr "Clasă de evaluare"
+
+#. module: deltatech_obyc
+#. odoo-python
+#: code:addons/deltatech_obyc/models/product_account_determination.py:0
+msgid "Go to the configuration"
+msgstr "Mergi la configurare"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_journal__id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_modifier__id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_move_line__id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_template__id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_valuation_class__id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_stock_move__id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_stock_picking_type__id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_stock_valuation_adjustment_lines__id
+msgid "ID"
+msgstr "ID"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__stock_income
+msgid "Income"
+msgstr "Venituri"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__internal_transfer
+msgid "Internal Transfer"
+msgstr "Transfer intern"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__internal_transfer_in
+msgid "Internal Transfer In"
+msgstr "Intrare transfer intern"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__internal_transfer_out
+msgid "Internal Transfer Out"
+msgstr "Ieșire transfer intern"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__inventory_adjustment_minus
+msgid "Inventory Adjustment Minus"
+msgstr "Ajustare inventar minus"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__inventory_adjustment_plus
+msgid "Inventory Adjustment Plus"
+msgstr "Ajustare inventar plus"
+
+#. module: deltatech_obyc
+#: model:ir.model,name:deltatech_obyc.model_account_journal
+msgid "Journal"
+msgstr "Jurnal"
+
+#. module: deltatech_obyc
+#: model:ir.model,name:deltatech_obyc.model_account_move_line
+msgid "Journal Item"
+msgstr "Element jurnal"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__landed_cost
+msgid "Landed Cost"
+msgstr "Costuri Adiționale Stoc"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_modifier__write_uid
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__write_uid
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_valuation_class__write_uid
+msgid "Last Updated by"
+msgstr "Ultima actualizare făcută de"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_modifier__write_date
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__write_date
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_valuation_class__write_date
+msgid "Last Updated on"
+msgstr "Ultima actualizare pe"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_account_modifier__name
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_valuation_class__name
+msgid "Name"
+msgstr "Nume"
+
+#. module: deltatech_obyc
+#. odoo-python
+#: code:addons/deltatech_obyc/models/product_account_determination.py:0
+msgid ""
+"No account determination rule found for transaction key "
+"'%(transaction_key_name)s', account modifier '%(modifier_name)s', valuation "
+"class '%(valuation_class_name)s', valuation area '%(area_name)s' and company"
+" '%(company_name)s'."
+msgstr ""
+"Nu s-a găsit nicio regulă de determinare a contului pentru cheia de "
+"tranzacție '%(transaction_key_name)s', modificatorul de cont "
+"'%(modifier_name)s', clasa de evaluare '%(valuation_class_name)s', zona de "
+"evaluare '%(area_name)s' și compania '%(company_name)s'."
+
+#. module: deltatech_obyc
+#. odoo-python
+#: code:addons/deltatech_obyc/models/product_template.py:0
+msgid "No account found for the given valuation class and transaction key."
+msgstr ""
+"Nu s-a găsit niciun cont pentru clasa de evaluare și cheia de tranzacție "
+"date."
+
+#. module: deltatech_obyc
+#: model:ir.model,name:deltatech_obyc.model_stock_picking_type
+msgid "Picking Type"
+msgstr "Tip ridicare"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__price_difference
+msgid "Price Difference"
+msgstr "Diferență de preț"
+
+#. module: deltatech_obyc
+#: model:ir.model,name:deltatech_obyc.model_product_template
+msgid "Product"
+msgstr "Produs"
+
+#. module: deltatech_obyc
+#: model:ir.actions.act_window,name:deltatech_obyc.action_product_account_determination
+#: model:ir.model,name:deltatech_obyc.model_product_account_determination
+#: model:ir.ui.menu,name:deltatech_obyc.menu_product_account_determination
+msgid "Product Account Determination"
+msgstr "Determinare cont produs"
+
+#. module: deltatech_obyc
+#: model:ir.actions.act_window,name:deltatech_obyc.action_product_valuation_class
+msgid "Product Valuation Class"
+msgstr "Clasă de evaluare produs"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__production_issue
+msgid "Production Issue"
+msgstr "Consum producție"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__production_receipt
+msgid "Production Receipt"
+msgstr "Recepție producție"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__return_from_customer
+msgid "Return from Customer"
+msgstr "Retur de la client"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__return_to_supplier
+msgid "Return to Supplier"
+msgstr "Retur la furnizor"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,help:deltatech_obyc.field_account_modifier__code
+msgid "Short code used in account mapping rules"
+msgstr "Cod scurt folosit în regulile de mapare a conturilor"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__acc_src_id
+msgid "Source Account"
+msgstr "Cont sursă"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__stock_delivery
+msgid "Stock Delivery"
+msgstr "Livrare stoc"
+
+#. module: deltatech_obyc
+#: model:ir.model,name:deltatech_obyc.model_stock_move
+msgid "Stock Move"
+msgstr "Mișcare stoc"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__stock_receipt_price_difference
+msgid "Stock Receipt Price Difference"
+msgstr "Diferență de preț la recepție stoc"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__stock_receipt
+msgid "Stock Receipt from Supplier"
+msgstr "Recepție stoc de la furnizor"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields.selection,name:deltatech_obyc.selection__product_account_determination__transaction_key__stock_valuation
+msgid "Stock Valuation"
+msgstr "Evaluare stoc"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__transaction_key
+msgid "Transaction Key"
+msgstr "Cheie de tranzacție"
+
+#. module: deltatech_obyc
+#. odoo-python
+#: code:addons/deltatech_obyc/models/stock_move.py:0
+msgid ""
+"Transaction key could not be determined for the move from {source_usage} to "
+"{dest_usage}."
+msgstr ""
+"Cheia de tranzacție nu a putut fi determinată pentru mișcarea de la "
+"{source_usage} la {dest_usage}."
+
+#. module: deltatech_obyc
+#. odoo-python
+#: code:addons/deltatech_obyc/models/product_template.py:0
+msgid "Transaction key is not defined. Please set it in the context."
+msgstr "Cheia de tranzacție nu este definită. Setați-o în context."
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__acc_valuation_id
+msgid "Valuation Account"
+msgstr "Cont de evaluare"
+
+#. module: deltatech_obyc
+#: model:ir.model,name:deltatech_obyc.model_stock_valuation_adjustment_lines
+msgid "Valuation Adjustment Lines"
+msgstr "Linii de ajustare a evaluării"
+
+#. module: deltatech_obyc
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__valuation_area_id
+msgid "Valuation Area"
+msgstr "Arie de evaluare"
+
+#. module: deltatech_obyc
+#: model:ir.model,name:deltatech_obyc.model_product_valuation_class
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_account_determination__valuation_class_id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_product__valuation_class_id
+#: model:ir.model.fields,field_description:deltatech_obyc.field_product_template__valuation_class_id
+#: model_terms:ir.ui.view,arch_db:deltatech_obyc.view_product_template_form_valuation_class
+#: model_terms:ir.ui.view,arch_db:deltatech_obyc.view_product_template_search_valuation_class
+msgid "Valuation Class"
+msgstr "Clasă de evaluare"

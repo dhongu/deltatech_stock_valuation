@@ -1,0 +1,593 @@
+<div class="mx-auto px-3 py-3 rounded-4" style="max-width:1100px;font-family:'Segoe UI','Avenir Next','Helvetica Neue',Arial,sans-serif;color:#212529;font-weight:400;background-color:#ffffff;--bs-body-color:#212529;--bs-body-bg:#ffffff;--bs-emphasis-color:#212529;--bs-border-color:#dee2e6;--bs-card-bg:#ffffff;--bs-card-color:#212529;--bs-card-border-color:#dee2e6;--bs-link-color:#006F42;--bs-link-hover-color:#00432a;--bs-nav-link-color:#212529;--bs-nav-pills-link-active-bg:#006F42;--bs-nav-pills-link-active-color:#ffffff;--bs-code-color:#b4266b;--bs-heading-color:#212529;">
+<!-- tb-gen v1 -->
+<div class="text-center rounded-4 shadow px-4 py-5 mt-2 mb-4" style="background-color:#006F42;color:#ffffff;">
+  <span class="d-inline-block rounded-pill fw-bold text-uppercase mb-4"
+    style="background-color:#00432a;color:#9be8b6;letter-spacing:1.5px;padding:7px 18px;font-size:11px;">Odoo Partner &nbsp;&bull;&nbsp; Terrabit</span>
+  <div class="mb-3"><span class="d-inline-block rounded-3 p-2" style="background-color:#ffffff;"><img src="icon.png" alt="Deltatech OBYC - Account Determination" style="width:72px;height:72px;border:none;"/></span></div>
+  <h1 class="fw-bold mb-3" style="color:#ffffff;font-size:42px;line-height:1.08;letter-spacing:-0.5px;border:none;">Deltatech OBYC - Account Determination</h1>
+  <p class="mx-auto mb-4" style="font-size:19px;color:#cdeccf;max-width:620px;line-height:1.5;">Implementare OBYC-style account mapping pentru tranzac&#539;ii de stoc</p>
+  <div>
+    <span class="d-inline-block rounded-pill fw-bold m-1" style="background-color:#57B952;color:#04331f;padding:8px 16px;font-size:12px;">Odoo 20.0</span>
+    <span class="d-inline-block rounded-pill fw-semibold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">Valuation/Valuation</span>
+    <span class="d-inline-block rounded-pill fw-semibold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">LGPL-3</span>
+    <span class="d-inline-block rounded-pill fw-semibold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">Online &bull; Odoo.sh &bull; On-premise</span>
+  </div>
+</div>
+
+<ul class="nav nav-pills justify-content-center mb-4 pb-3 border-bottom" style="--bs-nav-pills-link-active-bg:#006F42;">
+  <li class="nav-item mx-1 mb-2">
+    <a class="nav-link active fw-semibold rounded-pill border" id="tb-tab-overview"
+       data-bs-toggle="pill" data-bs-target="#tb-panel-overview" href="#tb-panel-overview"
+       style="padding:10px 22px;">Overview</a>
+  </li>
+  <li class="nav-item mx-1 mb-2">
+    <a class="nav-link fw-semibold rounded-pill border" id="tb-tab-versions"
+       data-bs-toggle="pill" data-bs-target="#tb-panel-versions" href="#tb-panel-versions"
+       style="padding:10px 22px;">Versions</a>
+  </li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade show active py-2" id="tb-panel-overview" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
+<h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Overview</h2>
+<h1 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#128230; Deltatech OBYC - Product Account Determination</h1>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Description</h2>
+<p class="mb-4" style="font-size:19px;line-height:1.6;max-width:780px;">This module implements an account determination mechanism inspired by SAP OBYC (OBject-based valuation and account determination for inventorY and Cost management). It allows automatic selection of accounts based on:</p>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Transaction Key</span><div class="mt-1">(e.g. stock_receipt, stock_delivery)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Valuation Class</span><div class="mt-1">(from the product)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Valuation Area</span><div class="mt-1">(e.g. by company, plant, warehouse)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Account Modifier</span><div class="mt-1">(from operation context)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Company</span><div class="mt-1"></div></div></li></ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#129513; Key Features</h2>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Defines a flexible mapping table (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.account.determination</code>) for automatic GL account assignment</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Introduces configurable master data:<ul class="ps-3 mt-2">
+<li class="small"><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.valuation.class</code> &#8211; assigned to product templates</li>
+<li class="small"><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">account.modifier</code> &#8211; optionally used in operations (e.g., picking types)</li>
+</ul>
+</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Automatically selects source, destination, and valuation accounts during stock moves</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Transaction key determination logic for common inventory operations</div></div></li></ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#128260; Transaction Key Mapping (Default Logic)</h2>
+<table class="table table-bordered" style="font-size:14px;">
+<thead>
+<tr>
+<th>Source Location</th>
+<th>Destination Location</th>
+<th>Transaction Key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Supplier</td>
+<td>Internal</td>
+<td>stock_receipt</td>
+</tr>
+<tr>
+<td>Internal</td>
+<td>Customer</td>
+<td>stock_delivery</td>
+</tr>
+<tr>
+<td>Internal</td>
+<td>Internal</td>
+<td>internal_transfer</td>
+</tr>
+<tr>
+<td>Customer</td>
+<td>Internal</td>
+<td>return_from_customer</td>
+</tr>
+<tr>
+<td>Internal</td>
+<td>Supplier</td>
+<td>return_to_supplier</td>
+</tr>
+<tr>
+<td>Supplier</td>
+<td>Customer</td>
+<td>dropship</td>
+</tr>
+</tbody>
+</table>
+<p>You can customize the transaction key determination logic in <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock.move</code> to support more complex cases.</p>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#128203; Comprehensive Transaction Keys List</h2>
+<p>The module implements the following transaction keys:</p>
+<table class="table table-bordered" style="font-size:14px;">
+<thead>
+<tr>
+<th>Key</th>
+<th>Description</th>
+<th>Typical Accounting Impact</th>
+<th>SAP Equivalent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stock Valuation</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>stock_valuation</td>
+<td>Stock Valuation</td>
+<td>Debit/Credit for valuation updates</td>
+<td>BSX</td>
+</tr>
+<tr>
+<td><strong>Purchase Transactions</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>stock_receipt</td>
+<td>Stock Receipt from Supplier</td>
+<td>Debit Inventory, Credit GR/IR clearing</td>
+<td>WRX</td>
+</tr>
+<tr>
+<td>return_to_supplier</td>
+<td>Return to Supplier</td>
+<td>Debit GR/IR clearing, Credit Inventory</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>Sale Transactions</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>stock_delivery</td>
+<td>Delivery to Customer</td>
+<td>Debit COGS, Credit Inventory</td>
+<td>VAX</td>
+</tr>
+<tr>
+<td>return_from_customer</td>
+<td>Return from Customer</td>
+<td>Debit Inventory, Credit COGS</td>
+<td>-</td>
+</tr>
+<tr>
+<td>stock_income</td>
+<td>Income Recognition</td>
+<td>Debit Receivables, Credit Revenue</td>
+<td>SAL</td>
+</tr>
+<tr>
+<td><strong>Dropshipping Transactions</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>dropship</td>
+<td>Dropshipping</td>
+<td>Debit COGS, Credit Payables</td>
+<td>-</td>
+</tr>
+<tr>
+<td>dropship_return</td>
+<td>Dropshipping Return</td>
+<td>Debit Payables, Credit COGS</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>Internal Transfers</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>internal_transfer</td>
+<td>Internal Transfer</td>
+<td>Debit Destination Inventory, Credit Source Inventory</td>
+<td>ZTR</td>
+</tr>
+<tr>
+<td>internal_transfer_out</td>
+<td>Internal Transfer Out</td>
+<td>Credit Source Inventory</td>
+<td>-</td>
+</tr>
+<tr>
+<td>internal_transfer_in</td>
+<td>Internal Transfer In</td>
+<td>Debit Destination Inventory</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>Inventory Adjustments</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>inventory_adjustment_plus</td>
+<td>Positive Inventory Adjustment</td>
+<td>Debit Inventory, Credit Inventory Adjustment</td>
+<td>BSX</td>
+</tr>
+<tr>
+<td>inventory_adjustment_minus</td>
+<td>Negative Inventory Adjustment</td>
+<td>Debit Inventory Adjustment, Credit Inventory</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>Production Transactions</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>production_issue</td>
+<td>Production Consumption</td>
+<td>Debit WIP, Credit Raw Materials</td>
+<td>-</td>
+</tr>
+<tr>
+<td>production_receipt</td>
+<td>Production Receipt</td>
+<td>Debit Finished Goods, Credit WIP</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#9881;&#65039; Models Introduced</h2>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">product.account.determination</span><div class="mt-1">Core mapping rule</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">product.valuation.class</span><div class="mt-1">Master data used to group products by accounting behavior</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">account.modifier</span><div class="mt-1">Optional field used to refine selection (similar to SAP account modifier)</div></div></li></ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#128193; How it Works</h2>
+<p>When a stock move is processed:</p>
+<ol>
+<li>
+<p><strong>Transaction Key Determination</strong>: The system computes a transaction key based on the source/destination locations and operation type
+   <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">Example: stock_receipt for supplier receipts, stock_delivery for customer deliveries</code></p>
+</li>
+<li>
+<p><strong>Parameters Collection</strong>:</p>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Valuation class from product (e.g., "RM" for raw materials, "FG" for finished goods)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Valuation area from company (e.g., "MAIN" for main company)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Account modifier from picking type (e.g., "STD" for standard)</div></div></li></ul>
+</li>
+<li>
+<p><strong>Rule Matching</strong>: It searches for a matching rule in <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.account.determination</code>
+   <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">Search criteria: Transaction Key + Valuation Class + Valuation Area + Account Modifier + Company</code></p>
+</li>
+<li>
+<p><strong>Account Application</strong>: If a rule is found, the three specified accounts are used in the accounting entries:</p>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Source Account</span><div class="mt-1">(acc_src_id): Typically used as the credit account in transactions</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Destination Account</span><div class="mt-1">(acc_dest_id): Typically used as the debit account in transactions</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Valuation Account</span><div class="mt-1">(acc_valuation_id): Used for stock valuation and price differences</div></div></li></ul>
+</li>
+</ol>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#129513; Account Determination Model</h2>
+<p>Each account determination rule (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.account.determination</code>) contains:</p>
+<ol>
+<li><strong>Transaction Key</strong> (transaction_key): Defines the type of operation (stock_receipt, stock_delivery, etc.)</li>
+<li><strong>Account Modifier</strong> (account_modifier_id): Allows refinement of account selection</li>
+<li><strong>Valuation Class</strong> (valuation_class_id): Groups products by accounting behavior</li>
+<li><strong>Valuation Area</strong> (valuation_area_id): Allows different accounting per company/division</li>
+<li><strong>Company</strong> (company_id): The company for which the rule applies</li>
+<li><strong>Source Account</strong> (acc_src_id): The account used for the credit side</li>
+<li><strong>Destination Account</strong> (acc_dest_id): The account used for the debit side</li>
+<li><strong>Valuation Account</strong> (acc_valuation_id): The account used for valuation and price differences</li>
+</ol>
+<p>This flexible structure allows defining complex accounting rules for various types of inventory operations.</p>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#128736;&#65039; Extensibility</h2>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>You can override the logic for transaction key computation per business scenario</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Add additional dimensions (e.g., storage location, product category) if needed</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Compatible with Odoo 17 Enterprise &amp; Community</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Extensible for adaptation to industry specifics or special accounting requirements</div></div></li></ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#128204; Usage Examples</h2>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Basic Configuration</h3>
+<p>To configure the module:</p>
+<ol>
+<li>Define valuation classes for products (e.g., Raw Materials, Semi-Finished, Finished Goods)</li>
+<li>Define valuation areas for companies</li>
+<li>Define account modifiers (optional)</li>
+<li>Configure account determination rules in <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.account.determination</code></li>
+</ol>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Typical Account Mappings</h3>
+<table class="table table-bordered" style="font-size:14px;">
+<thead>
+<tr>
+<th>Key</th>
+<th>Valuation Class</th>
+<th>Source Account</th>
+<th>Destination Account</th>
+<th>Valuation Account</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>stock_receipt</td>
+<td>RM</td>
+<td>408000</td>
+<td>301000</td>
+<td>378000</td>
+<td>Raw materials receipt</td>
+</tr>
+<tr>
+<td>stock_receipt</td>
+<td>FG</td>
+<td>408000</td>
+<td>371000</td>
+<td>378000</td>
+<td>Finished goods receipt</td>
+</tr>
+<tr>
+<td>stock_delivery</td>
+<td>FG</td>
+<td>371000</td>
+<td>607000</td>
+<td>378000</td>
+<td>Finished goods delivery</td>
+</tr>
+<tr>
+<td>inventory_adjustment_plus</td>
+<td>RM</td>
+<td>601800</td>
+<td>301000</td>
+<td>378000</td>
+<td>Positive adjustment raw materials</td>
+</tr>
+<tr>
+<td>inventory_adjustment_minus</td>
+<td>FG</td>
+<td>371000</td>
+<td>608000</td>
+<td>378000</td>
+<td>Negative adjustment finished goods</td>
+</tr>
+<tr>
+<td>production_receipt</td>
+<td>FG</td>
+<td>711000</td>
+<td>371000</td>
+<td>378000</td>
+<td>Production receipt</td>
+</tr>
+<tr>
+<td>production_issue</td>
+<td>RM</td>
+<td>301000</td>
+<td>601000</td>
+<td>378000</td>
+<td>Production consumption</td>
+</tr>
+<tr>
+<td>internal_transfer</td>
+<td>RM</td>
+<td>301000</td>
+<td>301000</td>
+<td>378000</td>
+<td>Transfer between locations</td>
+</tr>
+<tr>
+<td>stock_income</td>
+<td>FG</td>
+<td>707000</td>
+<td>411000</td>
+<td>378000</td>
+<td>Sales revenue posting</td>
+</tr>
+<tr>
+<td>dropship</td>
+<td>FG</td>
+<td>408000</td>
+<td>607000</td>
+<td>378000</td>
+<td>Direct delivery from supplier to customer</td>
+</tr>
+<tr>
+<td>return_from_customer</td>
+<td>FG</td>
+<td>607000</td>
+<td>371000</td>
+<td>378000</td>
+<td>Return of goods from customer</td>
+</tr>
+<tr>
+<td>return_to_supplier</td>
+<td>RM</td>
+<td>301000</td>
+<td>408000</td>
+<td>378000</td>
+<td>Return of goods to supplier</td>
+</tr>
+</tbody>
+</table>
+<p>Each of these mappings can vary by product class or warehouse (valuation area).</p>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#128269; Comparison with SAP OBYC</h2>
+<p>This module is inspired by the SAP OBYC concept but adapted for the Odoo ecosystem. The main differences include:</p>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Simplification: Transaction keys are named descriptively rather than using SAP codes</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Integration: Works natively with the Odoo inventory system</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Flexibility: Allows simpler customizations than the original SAP system</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Structure: Uses concepts familiar to Odoo users (products, locations, stock moves)</div></div></li></ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#128218; Additional Resources</h2>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div><a href="https://www.odoo.com/documentation/17.0/applications/finance/accounting.html">Odoo Accounting Documentation</a></div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div><a href="https://www.odoo.com/documentation/17.0/applications/inventory_and_mrp/inventory.html">Odoo Inventory Management Documentation</a></div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div><a href="https://community.sap.com/t5/enterprise-resource-planning-blog-posts-by-members/automatic-account-determination-overview/ba-p/13262637">SAP OBYC Reference</a></div></div></li></ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#128227; Important Notes</h2>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Ensure you understand the accounting implications before configuring this module</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Test the configuration in a test environment before using it in production</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Consult with an accounting expert to ensure compliance with local accounting regulations</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>The module is compatible with Odoo 17, but can be adapted for other versions</div></div></li></ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#129518; Three-Account System</h2>
+<p>The key innovation of this module is the three-account system that provides enhanced flexibility for inventory accounting:</p>
+<ol>
+<li>
+<p><strong>Source Account</strong> (acc_src_id): Typically represents the origin of the value (credit side)</p>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>For purchases: Accounts payable or GR/IR clearing</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>For sales: Inventory account</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>For internal operations: Source location's inventory account</div></div></li></ul>
+</li>
+<li>
+<p><strong>Destination Account</strong> (acc_dest_id): Represents where the value goes (debit side)</p>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>For purchases: Inventory account</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>For sales: Cost of goods sold</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>For internal operations: Destination location's inventory account</div></div></li></ul>
+</li>
+<li>
+<p><strong>Valuation Account</strong> (acc_valuation_id): Handles value differences and revaluations</p>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Price differences between standard and actual costs</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Exchange rate differences</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Revaluation adjustments</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Inventory valuation changes</div></div></li></ul>
+</li>
+</ol>
+<p>This three-account approach enables more sophisticated accounting treatments than Odoo's standard two-account inventory valuation system, allowing businesses to:</p>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Track price differences separately from inventory movements</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Handle complex valuation scenarios (FIFO, LIFO, standard cost with variances)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Support compliance with international accounting standards</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>Maintain detailed audit trails for inventory value changes</div></div></li></ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">&#128202; Transaction Key Use Cases</h2>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Purchase Flow</h3>
+<ul>
+<li>
+<p><strong>stock_receipt</strong>: When goods are received from a supplier</p>
+<ul>
+<li>Debit: Inventory (Destination Account)</li>
+<li>Credit: GR/IR Clearing (Source Account)</li>
+<li>Valuation Account: Used for price differences</li>
+</ul>
+</li>
+<li>
+<p><strong>return_to_supplier</strong>: When goods are returned to a supplier</p>
+<ul>
+<li>Debit: GR/IR Clearing (Destination Account)</li>
+<li>Credit: Inventory (Source Account)</li>
+<li>Valuation Account: Used for price differences</li>
+</ul>
+</li>
+</ul>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Sales Flow</h3>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>
+<p><strong>stock_delivery</strong>: When goods are delivered to a customer</p>
+<ul class="ps-3 mt-2">
+<li class="small">Debit: COGS (Destination Account)</li>
+<li class="small">Credit: Inventory (Source Account)</li>
+<li class="small">Valuation Account: Used for price differences</li>
+</ul>
+</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>
+<p><strong>return_from_customer</strong>: When goods are returned from a customer</p>
+<ul class="ps-3 mt-2">
+<li class="small">Debit: Inventory (Destination Account)</li>
+<li class="small">Credit: COGS (Source Account)</li>
+<li class="small">Valuation Account: Used for price differences</li>
+</ul>
+</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100 d-flex gap-2"><span class="flex-shrink-0 text-center fw-bold rounded d-inline-block" style="background-color:#57B952;color:#04331f;width:22px;height:22px;line-height:22px;font-size:13px;">&#10003;</span><div>
+<p><strong>stock_income</strong>: When revenue is recognized</p>
+<ul class="ps-3 mt-2">
+<li class="small">Debit: Receivables (Destination Account)</li>
+<li class="small">Credit: Revenue (Source Account)</li>
+<li class="small">Valuation Account: Usually not used in this context</li>
+</ul>
+</div></div></li></ul>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Inventory Management</h3>
+<ul>
+<li>
+<p><strong>inventory_adjustment_plus</strong>: For positive inventory adjustments</p>
+<ul>
+<li>Debit: Inventory (Destination Account)</li>
+<li>Credit: Inventory Adjustment (Source Account)</li>
+<li>Valuation Account: Used for valuation effects</li>
+</ul>
+</li>
+<li>
+<p><strong>inventory_adjustment_minus</strong>: For negative inventory adjustments</p>
+<ul>
+<li>Debit: Inventory Adjustment (Destination Account)</li>
+<li>Credit: Inventory (Source Account)</li>
+<li>Valuation Account: Used for valuation effects</li>
+</ul>
+</li>
+</ul>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Manufacturing</h3>
+<ul>
+<li>
+<p><strong>production_issue</strong>: When materials are consumed in production</p>
+<ul>
+<li>Debit: WIP (Destination Account)</li>
+<li>Credit: Raw Materials (Source Account)</li>
+<li>Valuation Account: Used for price differences</li>
+</ul>
+</li>
+<li>
+<p><strong>production_receipt</strong>: When finished goods are received from production</p>
+<ul>
+<li>Debit: Finished Goods (Destination Account)</li>
+<li>Credit: WIP (Source Account)</li>
+<li>Valuation Account: Used for price differences</li>
+</ul>
+</li>
+</ul>
+<h3 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:19px;letter-spacing:-0.3px;line-height:1.2;">Special Cases</h3>
+<ul>
+<li>
+<p><strong>dropship</strong>: For direct delivery from supplier to customer</p>
+<ul>
+<li>Debit: COGS (Destination Account)</li>
+<li>Credit: Payables (Source Account)</li>
+<li>Valuation Account: Used for price differences</li>
+</ul>
+</li>
+<li>
+<p><strong>internal_transfer</strong>: For transfers between locations</p>
+<ul>
+<li>Debit: Destination Location Inventory (Destination Account)</li>
+<li>Credit: Source Location Inventory (Source Account)</li>
+<li>Valuation Account: Used for price differences</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
+<h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Versions</h2>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">20.0.1.0.2 (2026-10-01)</h2>
+<ul>
+<li>Migration to Odoo 20: in 20 <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock.move.value</code> is negative on outgoing moves; the OBYC
+  journal entry keeps posting the absolute value, so the Dr/Cr amounts are the same as in 19.</li>
+<li>Odoo 20 replays the valuation and rewrites the value of outgoing moves already done when an
+  incoming move is backdated, a done quantity is edited or a vendor bill revalues a receipt.
+  For products with an OBYC valuation class the move value stays the one posted at validation
+  (as in 19), consistent with the OBYC journal entry; other products keep the Odoo 20 behaviour.</li>
+</ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.2 (2026-09-30)</h2>
+<ul>
+<li>Own module icon in the flat style of the other modules.</li>
+</ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.1 (2026-08-19)</h2>
+<ul>
+<li>Fix: dropship moves (supplier -&gt; customer) for products with an OBYC valuation class were
+  not valued &#8212; <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock.move.value</code> stayed 0, because the <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock_account</code> core fills this
+  field only for <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">is_in</code> moves, not for <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">is_dropship</code> ones. The journal entry generated
+  right after was posted with debit=0/credit=0 &#8212; apparently recorded, but with no value.</li>
+</ul>
+</div>
+</div>
+
+<div class="row text-center mt-4 mb-1 g-3">
+  <div class="col-md-6">
+    <div class="border rounded-3 p-4 h-100">
+      <div class="fw-bold" style="font-size:2.2rem;color:#006F42;line-height:1;">350+</div>
+      <div class="mt-2" style="font-size:0.9rem;color:#3d4752;">Modules published on Odoo Apps</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="border rounded-3 p-4 h-100">
+      <div class="fw-bold" style="font-size:2.2rem;color:#006F42;line-height:1;">Silver</div>
+      <div class="mt-2" style="font-size:0.9rem;color:#3d4752;">Odoo Partner &mdash; implementation &amp; support</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="text-center rounded-4 px-4 pt-5 pb-4 mt-4 mb-3" style="background-color:#00432a;color:#ffffff;">
+  <h2 class="fw-bold mb-2" style="color:#ffffff;font-size:26px;letter-spacing:-0.3px;border:none;">Need help getting started?</h2>
+  <p class="mx-auto mb-4" style="color:#bfe3cc;max-width:660px;line-height:1.6;font-size:16px;">
+     Our 350+ apps on the Odoo Apps Store are used in Odoo implementations across Europe,
+     the Americas, Asia and Africa &mdash; by companies we have never even met. That is the
+     advantage of building modules that simply work.</p>
+  <a href="https://www.terrabit.ro/contactus" target="_blank" rel="noopener"
+     class="d-inline-block fw-bold text-decoration-none rounded-3"
+     style="background-color:#57B952;color:#04331f;padding:14px 32px;font-size:15px;">Contact Terrabit &rarr;</a>
+</div>
+
+
+<section class="rounded-4 p-4 mb-3 border">
+  <h2 class="text-center fw-bold mb-1" style="color:#212529;font-size:24px;border:none;">More apps by Terrabit</h2>
+  <p class="text-center mb-4" style="color:#3d4752;">Other modules from the same publisher, built to work together.
+    <a href="https://apps.odoo.com/apps/browse?author=Terrabit" target="_blank" rel="noopener"
+       class="fw-semibold" style="color:#006F42;">All apps &rarr;</a></p>
+  <div class="row g-3">
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/20.0/deltatech_valuation_area" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block text-center fw-bold rounded me-2 flex-shrink-0"
+                  style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">SV</span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:14px;line-height:1.2;">Deltatech Stock Valuation Area</span>
+              <span class="d-block" style="font-size:11px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:12px;color:#3d4752;">Stock Valuation Area Management</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+</div>
