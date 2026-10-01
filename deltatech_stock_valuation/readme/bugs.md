@@ -86,6 +86,13 @@ the 20.0 code. Line numbers refer to the 20.0 branch.
 - **Actual behavior:** `USAGE.md` gives the menus under Inventory → Operations (lines 53-55; they are under Inventory → Products, `stock.menu_stock_inventory_control`), describes the manual recompute buttons (line 80 and following) that are commented out in `views/res_config_settings_views.xml`, says the area is required only on the marked accounts (line 24; it is required on any line with a stockable product, `deltatech_valuation_area`) and lists the customer refund as "+ in" (line 49; the code counts it as an out with a minus sign). `DESCRIPTION.md` describes the "smart validation" `_is_valuation_area_required` (lines 12 and 24), which is commented out in `models/account_move_line.py`, and recommends the server-side calls `recompute_all_amount()` (lines 31-32), which do not exist (see SV-007). Neither file mentions the Odoo 20 setting *Keep move value on retroactive recompute*.
 - **Expected behavior:** Both match `FISA_CONSULTANT.md` and the code.
 - **Suggested fix:** Rebuild `USAGE.md` from the consultant sheet (`usage-din-fisa` agent) and correct `DESCRIPTION.md`.
+- **Update 2026-10-01:** The consultant sheet was corrected after the accounting audit (20.0.0.0.11).
+  `USAGE.md` already carries the recommendation of `deltatech_obyc` for Romanian clients, the
+  value-only adjustment (value and average price change, not the quantity) and the reversal with
+  and without storno; the multi-company warning of the 19.0 sheet is not needed on 20.0, where
+  SV-002 and SV-003 are fixed. The reversal of stock entries now cancels the quantity
+  (`deltatech_valuation_area` 20.0.1.0.5); `USAGE.md` does not mention the zero-value lines with
+  storno nor the month-end procedure without OBYC, which stay in the consultant sheet.
 
 ## SV-006 — P3: New valuation rows use the environment currency instead of their explicit company
 
@@ -117,6 +124,20 @@ the 20.0 code. Line numbers refer to the 20.0 branch.
 - **Suggested fix:** Update the action to supported methods behind the appropriate administrative access checks, and align `readme/DESCRIPTION.md` (see SV-005).
 - **Validation needed:** Execute the installed action as an authorized administrator and verify both history and current valuation recomputation; verify unauthorized execution is rejected.
 
+## SV-008 — P3: The price of a row with zero final stock depends on the recompute path
+
+- **Status:** Open (documented in `FISA_CONSULTANT.md`, section 6). Found on 19.0 when checking the
+  consultant sheet against the code; the 20.0 code is the same.
+- **Location:** `models/product_valuation.py`, `ProductValuation._recompute_amount()` (posting path,
+  lines 189-193) and the insert of `ProductValuation._recompute_all_amount()` (full recompute,
+  lines 435-437).
+- **Trigger:** A product whose final stock in the last month is zero.
+- **Actual behavior:** At posting, the price becomes `debit / quantity_in` of the last month (or the previous price when there were no entries); after Recompute All it becomes 0. `debit` also includes customer refunds (an `out_refund` debits the stock account but its quantity is counted as a negative out, not as an in, `_get_quantity_in_out_sql()`) and value-only adjustments, so `debit / quantity_in` can be distorted.
+- **Expected behavior:** The same price on both paths, computed only from the entries that carry a quantity in.
+- **Impact:** With Use Valuation Area Price, an out for such a row is valued at the standard price after a full recompute and at a possibly distorted price after a posting.
+- **Suggested fix:** Use one rule on both paths (keep the previous price, or the last entry price computed from the lines with quantity in only).
+- **Validation needed:** A test with an in, an out of the whole stock and a customer refund in the same month, comparing the price after posting and after Recompute All.
+
 ## SV-009 — P2: Steps 2, 3, 4 and 6 of the full recompute are not scoped to the company
 
 - **Status:** Fixed in 20.0.0.0.10. Found at the verification of SV-003 (2026-10-01).
@@ -142,3 +163,5 @@ SV-001, SV-006 and SV-007 were reproduced in an Odoo shell on a 20.0 database (c
 back). SV-002, SV-003, SV-004 and SV-005 were confirmed by reading the 20.0 source; no
 multi-company or cron reproduction was run. All of them (and SV-009) were fixed in 20.0.0.0.10,
 ported from 19.0.0.0.11, each with a database-backed regression test in `tests/test_known_bugs.py`.
+SV-008 comes from checking the consultant sheet against the code (19.0 audit) and was re-checked by
+reading the 20.0 source; it is not fixed.
