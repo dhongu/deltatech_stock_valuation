@@ -170,8 +170,8 @@ Date minime pentru demo:
    | Livrare directă (dropship) | 408 | — | 607 | Dr 607 / Cr 408 |
    | Retur dropshipping (client → furnizor) | 607 | — | 408 | Dr 408 / Cr 607 (cu storno: Dr 607 −V / Cr 408 −V) |
    | Transfer intern (aceeași arie) | — | — | — | fără notă (valoarea stocului nu se schimbă) |
-   | Ajustare inventar plus (în cod: **lipsuri**, gestiune → inventar) | — | 607 | 371 | Dr 607 / Cr 371 |
-   | Ajustare inventar minus (în cod: **plusuri**, inventar → gestiune) | 607 | — | 371 | Dr 371 / Cr 607 |
+   | Ajustare inventar plus (plusuri, inventar → gestiune) | 607 | — | 371 | Dr 371 / Cr 607 |
+   | Ajustare inventar minus (lipsuri, gestiune → inventar) | — | 607 | 371 | Dr 607 / Cr 371 |
 
    Regulile **Livrare directă**, **Retur dropshipping** și **Recepție stoc de la furnizor**
    trebuie să folosească **același cont 408**: factura furnizorului pentru o livrare directă își ia
@@ -186,8 +186,8 @@ Date minime pentru demo:
    | Livrare stoc | — | 711 | 345 | Dr 711 / Cr 345 |
    | Retur de la client | 711 | — | 345 | Dr 345 / Cr 711 (cu storno: Dr 711 −V / Cr 345 −V) |
    | Venituri | — | 701 | — | factura: linia pe 701 (704 / 708 pentru alte venituri) |
-   | Ajustare inventar plus (în cod: **lipsuri**) | — | 711 | 345 | Dr 711 / Cr 345 |
-   | Ajustare inventar minus (în cod: **plusuri**) | 711 | — | 345 | Dr 345 / Cr 711 |
+   | Ajustare inventar plus (plusuri) | 711 | — | 345 | Dr 345 / Cr 711 |
+   | Ajustare inventar minus (lipsuri) | — | 711 | 345 | Dr 711 / Cr 345 |
 
    Exemplu pentru **materii prime** (clasa „Materie primă", cont de evaluare 301):
 
@@ -195,14 +195,18 @@ Date minime pentru demo:
    |---|---|---|---|---|
    | Recepție stoc de la furnizor | 408 | — | 301 | Dr 301 / Cr 408 |
    | Consum producție (gestiune → producție) | — | 601 | 301 | Dr 601 / Cr 301 |
-   | Ajustare inventar plus (în cod: **lipsuri**) | — | 601 | 301 | Dr 601 / Cr 301 |
-   | Ajustare inventar minus (în cod: **plusuri**) | 601 | — | 301 | Dr 301 / Cr 601 |
+   | Ajustare inventar plus (plusuri) | 601 | — | 301 | Dr 301 / Cr 601 |
+   | Ajustare inventar minus (lipsuri) | — | 601 | 301 | Dr 601 / Cr 301 |
 
-   Sensul inversat al cheilor de ajustare de inventar este o limitare a codului (OBYC-005,
-   secțiunea 9): configurați conturile după sensul real al mișcării, ca în tabele. Plusurile de
-   inventar se înregistrează pe seama contului de cheltuială (607, 601) sau de venit (711), după
-   funcțiunea contului de stoc din OMFP 1802/2014 (de exemplu, la 371: „constatate plus la inventar
-   (607, 758)"). Imputarea și TVA-ul lipsurilor se fac manual (secțiunea 6, „Note de monografie").
+   Plusul la inventar (locația de inventar → gestiune) folosește cheia **Ajustare inventar plus**,
+   lipsa (gestiune → locația de inventar) cheia **Ajustare inventar minus**; până la versiunea
+   19.0.1.0.6 cheile erau inversate (OBYC-005, secțiunea 9). Plusurile de
+   inventar se înregistrează pe seama contului de cheltuială (607 la mărfuri, 601 la materii prime)
+   sau a contului 711 la produse finite, după funcțiunea contului de stoc din OMFP 1802/2014 (la 371:
+   „constatate plus la inventar … (607, 758)", unde 758 privește bunurile primite cu titlu gratuit).
+   Plusurile se evaluează la valoarea justă (pct. 75 alin. (1) lit. d)); verificați costul
+   produsului înainte de ajustare. Imputarea și TVA-ul lipsurilor se fac manual (secțiunea 6,
+   „Note de monografie").
 
    **Transfer între arii prin tranzit** (gestiuni diferite, de exemplu 371.01 Magazin central și
    371.02 Depozit, cu 371.09 Mărfuri în tranzit între gestiuni ca analitic de trecere):
@@ -499,7 +503,7 @@ Observații:
 - [ ] costul de achiziție este pe jurnalul ales în document; recepția avea toată marfa în stoc sau partea livrată a fost tratată manual
 - [ ] livrarea directă furnizor → client are notă cu valoare (nu 0) și nu modifică stocul propriu
 - [ ] liniile notelor de stoc au produs, cantitate semnată (pozitivă pe debit, negativă pe credit) și unitate de măsură
-- [ ] la ajustările de inventar, sensul cheilor plus/minus a fost verificat pe o mișcare reală (OBYC-005); imputarea și TVA-ul lipsurilor sunt înregistrate manual
+- [ ] la ajustările de inventar, plusul folosește regula **Ajustare inventar plus** și lipsa regula **Ajustare inventar minus**; la bazele actualizate de la o versiune anterioară 19.0.1.0.6, regulile au fost verificate (OBYC-005); imputarea și TVA-ul lipsurilor sunt înregistrate manual
 - [ ] **lunar:** soldul 371 (301, 345) = raportul de evaluare a stocului pe arie, la aceeași dată
 - [ ] **lunar:** soldul 408 = recepțiile nefacturate; analitic pe furnizor / recepție, fără solduri rămase din diferențe de preț sau de curs
 - [ ] **lunar:** livrările nefacturate la sfârșitul lunii au factura cu data contabilă în luna livrării sau nota pe 418 cu inversare pe 1 a lunii următoare (OBYC-002), nu pe amândouă
@@ -566,16 +570,27 @@ Observații:
   manuală. Nota Dr 419 = Cr 707 (701), fără TVA nou, se face doar când o factură integrală postată
   înainte de livrare a fost reclasificată manual pe 419; OMFP pct. 311^1 vorbește de sume
   încasate, pentru facturile neîncasate aceasta este practica uzuală, de confirmat cu contabilul.
-- **OBYC-005 — ajustări de inventar cu cheile inversate.** Ieșirea din gestiune spre locația de
-  inventar (lipsă la inventar) folosește cheia **Ajustare inventar plus**, iar intrarea (plus la
-  inventar) cheia **Ajustare inventar minus**. Configurați conturile după sensul real al mișcării
-  (tabelele din secțiunea 5) și verificați pe o ajustare de test.
-- **OBYC-006 — notă OBYC și pentru produsele fără evaluare în timp real.** Pentru un produs cu
-  clasă de evaluare, nota mișcării se generează chiar dacă categoria are evaluare manuală. Puneți
-  clasa de evaluare doar pe produse din categorii cu evaluare în timp real.
-- **OBYC-007 — defecte mărunte:** mesajul de eroare cu acolade, titlul regulii cu cheia tehnică și
-  „None", storno aplicat și liniilor standard ale produselor fără clasă (caz rar), costul de
-  achiziție pe marfă parțial livrată (comportamentul nucleului `stock_landed_costs`, Pasul 10).
+- **OBYC-005 — reparat în 19.0.1.0.6.** Înainte de această versiune, lipsa la inventar folosea
+  cheia **Ajustare inventar plus**, iar plusul cheia **Ajustare inventar minus**. **La actualizare**,
+  regulile configurate după comportamentul vechi (o regulă „plus" care debitează cheltuiala, o
+  regulă „minus" care debitează stocul) trebuie să-și schimbe cheia între ele, altfel plusurile se
+  înregistrează ca lipsuri și invers; actualizarea modulului le semnalează în jurnalul serverului
+  („OBYC-005: account determination rule …"), fără să le modifice.
+- **OBYC-006 — reparat în 19.0.1.0.6.** Nota OBYC se generează doar pentru produsele stocabile
+  din categorii cu evaluare în timp real, cu cantitate nenulă și fără proprietar terț (marfa în
+  custodie nu se evaluează), ca în Odoo standard. Pentru celelalte mișcări nu se mai cere regulă,
+  iar o mișcare pe care nici Odoo standard nu o evaluează (de exemplu furnizor → locația de
+  inventar) se validează fără notă. Lipsa regulii la o mișcare evaluată în timp real oprește în
+  continuare validarea, cu trimitere la configurare. Marfa cu proprietar terț (custodie,
+  consignație primită) nu se înregistrează în 371: se ține în afara bilanțului, în contul 8033,
+  prin notă manuală (OMFP 1802/2014, pct. 284 alin. (2) lit. a)). Pentru produsele cu evaluare
+  periodică (inventar intermitent, pct. 291), intrările se înregistrează pe cheltuieli la factura
+  furnizorului, iar stocul se regularizează la inventarul de la sfârșitul perioadei.
+- **OBYC-007 — reparat în 19.0.1.0.5–19.0.1.0.6:** mesajul de eroare arată tipurile de locații, titlul regulii
+  arată eticheta cheii, fără „None" pentru modificator gol, iar mesajul „regulă lipsă" arată cheia
+  în limba utilizatorului. Nu sunt defecte: storno-ul aplicat și liniilor standard ale produselor
+  fără clasă (retururile se înregistrează în roșu la toate produsele firmelor cu storno) și costul
+  de achiziție pe marfă parțial livrată (comportamentul nucleului `stock_landed_costs`, Pasul 10).
 - **OBYC-008 — facturile de avans din comandă (dedus din cod, netestat).** Asistentul de factură de
   avans din comanda de vânzare cere conturile produsului fără cheie de tranzacție și se oprește
   probabil cu „Transaction key is not defined” pe comenzile cu produse OBYC. Testați pe baza
@@ -625,7 +640,8 @@ produs de pe factura de vânzare și de pe cea de furnizor, apoi capturează ecr
   rezolvarea lor; reverificați `readme/bugs.md` înainte de fiecare ediție a manualului (OBYC-001
   este reparat, dar procedura de corecție a facturilor vechi rămâne utilă la migrări).
 - Etichetele din interfață sunt în română („Zonă de evaluare" în meniu, „Arie de evaluare" pe
-  câmpuri); titlul formularului unei reguli afișează cheia tehnică și „None" pentru modificator gol
-  (de exemplu `stock_delivery - Marfă - Magazin central - None`).
+  câmpuri); de la 19.0.1.0.6 titlul formularului unei reguli afișează eticheta cheii, fără
+  modificatorul gol (de exemplu `Livrare stoc - Marfă - Magazin central`); capturile generate
+  înainte de această versiune arată încă titlul vechi.
 - Unele etichete din nucleul Odoo apar netraduse sau ciudat traduse în capturi (grilele fiscale
   „09 - TAX BASE", „09 - VAT", „24 - TAX BASE", „24 - VAT", butonul „Tăiere" de pe linia de venit); nu țin de acest modul.

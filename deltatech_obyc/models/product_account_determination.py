@@ -59,19 +59,26 @@ class ProductAccountDetermination(models.Model):
 
     @api.depends("transaction_key", "valuation_class_id.name", "valuation_area_id.name", "account_modifier_id.name")
     def _compute_display_name(self):
+        labels = self._get_transaction_key_labels()
         for item in self:
-            item.display_name = (
-                f"{item.transaction_key} - {item.valuation_class_id.name}"
-                f" - {item.valuation_area_id.name} "
-                f"- {item.account_modifier_id.name if item.account_modifier_id else 'None'}"
-            )
+            parts = [
+                labels.get(item.transaction_key),
+                item.valuation_class_id.name,
+                item.valuation_area_id.name,
+                item.account_modifier_id.name,
+            ]
+            item.display_name = " - ".join(part for part in parts if part)
+
+    def _get_transaction_key_labels(self):
+        """Etichetele cheilor de tranzacție în limba utilizatorului."""
+        return dict(self._fields["transaction_key"]._description_selection(self.env))
 
     def _get_rule_account(self, valuation_area, valuation_class, transaction_key, account_modifier, company):
         modifier_name = account_modifier.name if account_modifier else "None"
         valuation_class_name = valuation_class.name
         company_name = company.name
         area_name = valuation_area.name
-        transaction_key_name = dict(self._fields["transaction_key"].selection).get(transaction_key)
+        transaction_key_name = self._get_transaction_key_labels().get(transaction_key)
 
         message = (
             f"Determining accounts for transaction key '{transaction_key_name}', "

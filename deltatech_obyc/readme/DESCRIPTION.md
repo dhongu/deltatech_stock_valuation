@@ -79,9 +79,9 @@ The module implements the following transaction keys:
 | **Landed Costs**              |
 | landed_cost                   | Landed Cost                   | Debit Inventory, Credit the cost line account        | -               |
 
-The impact column gives the intended meaning of each key. In the current code the two inventory
-adjustment keys are swapped (a loss uses `inventory_adjustment_plus`, a gain
-`inventory_adjustment_minus`, see `readme/bugs.md` OBYC-005). The Romanian examples below book
+A gain found at the count (inventory location → internal) uses `inventory_adjustment_plus`, a
+loss (internal → inventory location) `inventory_adjustment_minus`; before 19.0.1.0.6 the two keys
+were swapped (`readme/bugs.md` OBYC-005). The Romanian examples below book
 production directly between the stock accounts and 601 / 711, without a WIP account.
 
 ## ⚙️ Models Introduced
@@ -114,6 +114,9 @@ When a stock move is processed:
     (the Destination Account is ignored)
   - **Stock move entry, Source Account empty:** Dr **Destination Account** / Cr **Valuation Account**
   - **All three accounts empty:** no journal entry
+  - **No entry, no rule needed:** products that are not storable, in a category without real-time
+    valuation, zero quantities, stock owned by a third party, and moves between locations the
+    standard valuation ignores (e.g. supplier → inventory location)
   - **Invoice product line:** sale documents (customer invoice, credit note) use the
     **Destination Account** of the `stock_income` rule; purchase documents (vendor bill, credit
     note) use the **Source Account** of the `stock_receipt` rule; the Valuation Account only
@@ -178,8 +181,8 @@ Romanian chart of accounts. Classes: MF = goods, RM = raw materials, FG = finish
 | dropship_return | MF | 607 | – | 408 | Dr 408 / Cr 607 (storno: Dr 607 −V / Cr 408 −V) |
 | production_issue | RM | – | 601 | 301 | Dr 601 / Cr 301 |
 | production_receipt | FG | 711 | – | 345 | Dr 345 / Cr 711 |
-| inventory_adjustment_plus (in the code: losses, see bugs.md OBYC-005) | MF | – | 607 | 371 | Dr 607 / Cr 371 |
-| inventory_adjustment_minus (in the code: gains, see bugs.md OBYC-005) | MF | 607 | – | 371 | Dr 371 / Cr 607 |
+| inventory_adjustment_plus (gains) | MF | 607 | – | 371 | Dr 371 / Cr 607 |
+| inventory_adjustment_minus (losses) | MF | – | 607 | 371 | Dr 607 / Cr 371 |
 | internal_transfer (same valuation area) | MF | – | – | – | no entry |
 | landed_cost | MF | – | – | 371 | Dr 371 / Cr the cost line account |
 
@@ -256,15 +259,13 @@ the module; they stay on the GR/IR account (408) and are regularized manually.
 
 ### Inventory Management
 
-- **inventory_adjustment_plus**: in the current code used for losses (internal → inventory
-  location, see `readme/bugs.md` OBYC-005)
-  - Destination Account: expense (607), Valuation Account: inventory (371)
-  - Entry: Dr 607 / Cr 371
-
-- **inventory_adjustment_minus**: in the current code used for gains (inventory location →
-  internal, OBYC-005)
+- **inventory_adjustment_plus**: gain found at the count (inventory location → internal)
   - Source Account: 607, Valuation Account: inventory (371)
   - Entry: Dr 371 / Cr 607
+
+- **inventory_adjustment_minus**: loss found at the count (internal → inventory location)
+  - Destination Account: expense (607), Valuation Account: inventory (371)
+  - Entry: Dr 607 / Cr 371
 
 ### Manufacturing
 
