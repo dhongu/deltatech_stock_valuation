@@ -1,3 +1,8 @@
+## 20.0.0.0.11 (2026-10-01)
+
+- Test: reversing a stock journal entry on a company without storno leaves the stock
+  valuation at zero (the fix is in `deltatech_valuation_area` 20.0.1.0.5).
+
 ## 20.0.0.0.10 (2026-10-01)
 
 - Fix: the recompute at posting counts the stock lines without a unit of measure (product unit),

@@ -1,3 +1,11 @@
+## 20.0.1.0.5 (2026-10-01)
+
+- Fix: reversing a stock journal entry on a company without storno doubled the quantity
+  instead of cancelling it. The core moves the amount to the opposite side but copies the
+  quantity with the same sign; the quantity of the entry lines is signed (positive on
+  debit, negative on credit), so it is now inverted together with the side. With storno
+  the line stays on the same side (negative amount) and the quantity is unchanged.
+
 ## 20.0.1.0.4 (2026-10-01)
 
 - Fix (VA-001): the area of a stock move is taken from the warehouse of its internal location when
