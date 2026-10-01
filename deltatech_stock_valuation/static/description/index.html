@@ -70,7 +70,7 @@ env[&quot;product.valuation&quot;]._recompute_all_amount()
 </code></pre>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Evaluare &#238;n paralel cu Odoo standard</h2>
 <p>Modulul nu &#238;nlocuie&#537;te mecanismul standard Odoo (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock_account</code>), ci adaug&#259; un strat suplimentar de raportare
-<strong>garantat consistent cu balan&#539;a contabil&#259;</strong>, util &#238;n contexte cu ajust&#259;ri contabile manuale sau cerin&#539;e de
+<strong>consistent cu balan&#539;a contabil&#259;</strong> (at&#226;t timp c&#226;t toate liniile de pe conturile de stoc au produs), util &#238;n contexte cu ajust&#259;ri contabile manuale sau cerin&#539;e de
 raportare pe centre de cost/depozite.</p>
 <table class="table table-bordered" style="font-size:14px;">
 <thead>
@@ -181,9 +181,14 @@ de stoc, introduce&#539;i cantitatea cu semn.</p>
 6. <strong>With <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code></strong> (recommended for Romanian companies), every storable product needs a
    <strong>Valuation Class</strong>.
 7. <strong>Without <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code></strong>, set <strong>Loss Account</strong> on the virtual inventory locations (inventory
-   adjustments, scrap); otherwise adjustments and scrap post no entries.
+   adjustments, scrap); otherwise adjustments and scrap post no entries. One loss account per
+   location gives one counterpart for every stock account (for example 607 for 371, but 601 is
+   expected for 301 and 608 for 381); with several stock accounts, use <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code>.
 8. <strong>Initial recompute.</strong> After the first installation or a data import, run the full recompute
-   (see <em>Usage</em>, step 7), once for each company.</p>
+   (see <em>Usage</em>, step 7), once for each company. After the upgrade to 19.0.0.0.11 on a database
+   with several companies, reset a background run that was in progress (it did not record its
+   company) and run the full recompute from each company: the upgrade removes the valuation rows
+   written by the old version on the area of another company.</p>
 </div>
 <div class="tab-pane fade py-2" id="tb-panel-usage" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Usage</h2>
@@ -278,8 +283,8 @@ product, unit of measure and quantity by import or integration, and respect the 
 <li><strong>Reversing a stock entry</strong> cancels its effect on the valuation, with or without the <em>storno</em>
   accounting option. Without storno, the quantity sign is reversed together with the side
   (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_valuation_area</code> 19.0.1.0.3 or later), so the quantity is cancelled as well.</li>
-<li><strong>Value-only adjustments</strong> (an entry with an amount but no quantity, for example an average cost
-  correction) change the <strong>amount and the average price</strong>, not the quantity. On 10 pcs / 1,000, a
+<li><strong>Value-only adjustments</strong> (an entry with an amount and quantity 0, for example an average cost
+  correction; set the quantity to 0 explicitly, Odoo pre-fills 1 on a line with a product) change the <strong>amount and the average price</strong>, not the quantity. On 10 pcs / 1,000, a
   +50 correction gives 10 pcs / 1,050 / price 105.00.</li>
 <li>With <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code>, the cost of a delivery appears on the delivery entry, at the delivery date,
   and the customer invoice has no cost lines. Without it, the cost appears on the customer invoice.
@@ -341,8 +346,9 @@ Valuation</strong> is:</p>
 </ul>
 <p>After a full recompute, rows with zero final stock get price 0. Quantities below the rounding
 threshold of the unit of measure are treated as zero.</p>
-<p>During the full recompute, lines of products without a unit of measure on the template are left
-out; a warning in the server log gives their number and amount.</p>
+<p>During the full recompute, lines of products without a unit of measure on the template keep their
+amount in the valuation, but not their quantity; a warning in the server log gives their number
+and amount.</p>
 </div>
 <div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Versions</h2>
@@ -356,6 +362,11 @@ out; a warning in the server log gives their number and amount.</p>
   manual step-by-step cycle cannot be continued from another company (SV-003).</li>
 <li>Fix: steps 2, 3, 4 and 6 of the full recompute no longer read or change the history of other
   companies (SV-009).</li>
+<li>Fix: the upgrade repairs the data written by the old version on multi-company databases: stock
+  journal items moved to the area of another company go back to their company area, and valuation
+  / history rows on the area of another company are removed; step 1 of the full recompute clears
+  the whole history of the company. After the upgrade, reset a background run in progress and run
+  Recompute All from each company.</li>
 <li>Fix: the valuation table on the product is read-only; internal users only read the valuation,
   write access goes to the accounting manager; posting still updates it (SV-004).</li>
 <li>Fix: new valuation rows take the currency of their company; the migration corrects existing

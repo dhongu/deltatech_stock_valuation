@@ -38,7 +38,7 @@ env["product.valuation"]._recompute_all_amount()
 ## Evaluare în paralel cu Odoo standard
 
 Modulul nu înlocuiește mecanismul standard Odoo (`stock_account`), ci adaugă un strat suplimentar de raportare
-**garantat consistent cu balanța contabilă**, util în contexte cu ajustări contabile manuale sau cerințe de
+**consistent cu balanța contabilă** (atât timp cât toate liniile de pe conturile de stoc au produs), util în contexte cu ajustări contabile manuale sau cerințe de
 raportare pe centre de cost/depozite.
 
 | Aspect | Standard Odoo (≤18) | Standard Odoo 19 | deltatech_stock_valuation |

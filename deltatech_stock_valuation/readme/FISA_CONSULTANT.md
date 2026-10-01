@@ -4,7 +4,7 @@
 **Utilizator principal:** contabil stocuri, controller, administrator Odoo (recalcularea)
 **Prioritate:** 🟡 Medie (strat de control peste evaluarea standard; necesar la clienții cu arii de evaluare sau cu corecții contabile manuale pe stocuri)
 
-> Fișă actualizată la 01.10.2026 pe codul versiunii 19.0.0.0.10 a modulului, cu
+> Fișă actualizată la 01.10.2026 pe codul versiunii 19.0.0.0.11 a modulului, cu
 > `deltatech_valuation_area` 19.0.1.0.3 și `deltatech_obyc` 19.0.1.0.4, după auditul contabil
 > din aceeași zi.
 
@@ -684,7 +684,11 @@ contabile, balanță, raportul de stoc).
   - recalcularea completă (manuală sau în fundal) lucrează doar pe compania din care a fost
     pornită; un ciclu pas cu pas început într-o companie nu poate fi continuat din alta;
   - rândurile noi de evaluare primesc moneda companiei lor; rândurile vechi cu altă monedă sunt
-    corectate la actualizarea modulului.
+    corectate la actualizarea modulului;
+  - actualizarea readuce pe aria propriei companii liniile contabile mutate de versiunea veche și
+    șterge rândurile de evaluare / istoric rămase pe aria altei companii. După actualizare, la
+    clienții cu mai multe companii: **Reset** la ciclul de fundal rămas în curs, apoi **Recompute All
+    (Background)** din fiecare companie.
   În manual: configurarea și recalcularea se fac din fiecare companie, pe rând.
 - **OBYC la clienții RO.** Recomandați `deltatech_obyc`, cu limitele lui deschise: venitul
   livrărilor nefacturate (OBYC-002), cheile de ajustare de inventar inversate (OBYC-005), note și

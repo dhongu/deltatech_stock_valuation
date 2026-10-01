@@ -8,6 +8,11 @@
   manual step-by-step cycle cannot be continued from another company (SV-003).
 - Fix: steps 2, 3, 4 and 6 of the full recompute no longer read or change the history of other
   companies (SV-009).
+- Fix: the upgrade repairs the data written by the old version on multi-company databases: stock
+  journal items moved to the area of another company go back to their company area, and valuation
+  / history rows on the area of another company are removed; step 1 of the full recompute clears
+  the whole history of the company. After the upgrade, reset a background run in progress and run
+  Recompute All from each company.
 - Fix: the valuation table on the product is read-only; internal users only read the valuation,
   write access goes to the accounting manager; posting still updates it (SV-004).
 - Fix: new valuation rows take the currency of their company; the migration corrects existing
