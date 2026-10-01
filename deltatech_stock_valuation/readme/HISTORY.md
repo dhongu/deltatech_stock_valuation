@@ -7,7 +7,9 @@
   edited on a done move, incoming move revalued after the stock was consumed) and
   rewrites outgoing values at the global cost. Moves priced from the valuation area now
   keep the unit price they were issued at, as in 19.0; a quantity correction is valued
-  at that same unit price.
+  at that same unit price. This applies only while the company setting *Keep move value
+  on retroactive recompute* (`deltatech_valuation_area`) is enabled (the default); when
+  disabled, the standard Odoo 20 recompute values them at the global cost.
 - `uom.uom.rounding` and the "Product Unit of Measure" precision are gone in 20: the
   residual-quantity check uses `uom.is_zero()` and the "Product Unit" precision.
 - Access rights moved to `security/ir.access.csv`; typed `ir.config_parameter` API.

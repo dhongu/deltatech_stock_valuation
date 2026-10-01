@@ -17,9 +17,10 @@ class StockMoveLine(models.Model):
         În 20 editarea unei mișcări efectuate reia valorizarea
         (`stock.move._set_value(recompute_date=...)`); cu cantitatea veche, ieșirea se
         corectează proporțional, la prețul unitar cu care a fost descărcată (ca
-        `_set_value(correction_quantity=...)` din 19)."""
+        `_set_value(correction_quantity=...)` din 19) — doar cu setarea companiei
+        `valuation_keep_move_value` activă."""
         if any(field in vals for field in _VALUATION_FIELDS):
-            moves = self.move_id.filtered(lambda m: m.is_out and m._dsv_uses_valuation_area_price())
+            moves = self.move_id.filtered(lambda m: m.is_out and m._dsv_keep_move_value())
             if moves:
                 previous_qty = {move.id: move._get_valued_qty() for move in moves}
                 self = self.with_context(dsv_previous_valued_qty=previous_qty)  # noqa: PLW0642

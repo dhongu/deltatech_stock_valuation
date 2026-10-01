@@ -23,7 +23,13 @@ class StockMove(models.Model):
     #   valorizarea tuturor mișcărilor ulterioare ale produsului
     #   (`product.product._correct_inventory_valuation`) și RESCRIE valoarea ieșirilor la
     #   costul mediu/standard global. Pentru ieșirile valorizate la prețul ariei se
-    #   păstrează, ca în 19, prețul unitar cu care au fost descărcate.
+    #   păstrează, ca în 19, prețul unitar cu care au fost descărcate — doar cu setarea
+    #   companiei `valuation_keep_move_value` activă; altfel reluarea rămâne standard 20.
+
+    def _dsv_keep_move_value(self):
+        """Ieșire la prețul ariei a cărei valoare se păstrează la reluarea din core."""
+        self.ensure_one()
+        return self.company_id.valuation_keep_move_value and self._dsv_uses_valuation_area_price()
 
     def _dsv_uses_valuation_area_price(self):
         """Ieșirea din stoc intern a unui produs cu `use_valuation_area_price`
@@ -93,12 +99,16 @@ class StockMove(models.Model):
             ("state", "=", "done"),
         ]
         moves = self.env["stock.move"].search(domain) | self.filtered("is_out")
-        return moves.filtered(lambda m: m._dsv_uses_valuation_area_price())
+        return moves.filtered(lambda m: m._dsv_keep_move_value())
 
     def _set_value(self, recompute_date=None, skip_check=False):
         """Post-procesare: ieșirile din stoc intern ale produselor cu
         `use_valuation_area_price` se valorizează la prețul din product.valuation
-        pentru aria locației sursă (în loc de prețul standard/CMP global)."""
+        pentru aria locației sursă (în loc de prețul standard/CMP global).
+
+        La reluare (`recompute_date`) prețul ariei se reaplică doar dacă setarea
+        companiei `valuation_keep_move_value` e activă; altfel ieșirile rămân la
+        valoarea calculată de reluarea standard 20 (cost mediu/standard global)."""
         if not recompute_date:
             res = super()._set_value(recompute_date=recompute_date, skip_check=skip_check)
             self._dsv_apply_valuation_area_price()
@@ -125,5 +135,7 @@ class StockMove(models.Model):
             if move.value != value:
                 move.value = value
         # ieșirile fără valoare încă (ex. linie adăugată pe o mișcare nevalorizată)
-        self.filtered(lambda m: m not in unit_prices)._dsv_apply_valuation_area_price()
+        self.filtered(
+            lambda m: m not in unit_prices and m.company_id.valuation_keep_move_value
+        )._dsv_apply_valuation_area_price()
         return res

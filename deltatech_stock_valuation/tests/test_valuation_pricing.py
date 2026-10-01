@@ -166,3 +166,27 @@ class TestValuationPricing(AccountTestInvoicingCommon):
         move._action_done()
 
         self.assertNotEqual(move.value, 120.0, "Incoming moves should not use the valuation price")
+
+    # setarea companiei `valuation_keep_move_value` dezactivată: reluarea standard 20
+    # revalorizează ieșirile la costul mediu/standard global (99), nu la prețul ariei
+    def test_outgoing_move_date_change_without_keep_setting(self):
+        self.env.company.valuation_keep_move_value = False
+        self._set_valuation_price(self.product, 60.0)
+        move = self._make_move(self.product, self.internal_loc, self.customer_loc, 2.0)
+        move._action_done()
+        self.assertEqual(move.value, -120.0, "Validation still uses the valuation area price")
+
+        move.date = fields.Datetime.subtract(move.date, days=3)
+
+        self.assertEqual(move.value, -198.0, "Standard 20 recompute values the move at the global cost")
+
+    def test_outgoing_move_quantity_correction_without_keep_setting(self):
+        self.env.company.valuation_keep_move_value = False
+        self._set_valuation_price(self.product, 60.0)
+        move = self._make_move(self.product, self.internal_loc, self.customer_loc, 2.0)
+        move._action_done()
+        self._set_valuation_price(self.product, 80.0)
+
+        move.move_line_ids.quantity = 3.0
+
+        self.assertEqual(move.value, -297.0, "Standard 20 recompute values the move at the global cost")
