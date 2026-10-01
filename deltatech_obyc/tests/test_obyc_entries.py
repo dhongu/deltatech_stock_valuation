@@ -78,6 +78,15 @@ class TestObycEntries(TestCommon):
         cls.sale_journal = cls.env["account.journal"].create(
             {"name": "Test Sale Journal", "code": "TSJ2", "type": "sale", "company_id": cls.env.company.id}
         )
+        cls.account_payable = cls.env["account.account"].create(
+            {"name": "Test Payable", "code": "TPAY02", "account_type": "liability_payable", "reconcile": True}
+        )
+        cls.vendor = cls.env["res.partner"].create(
+            {"name": "Test Vendor OBYC", "property_account_payable_id": cls.account_payable.id}
+        )
+        cls.purchase_journal = cls.env["account.journal"].create(
+            {"name": "Test Purchase Journal", "code": "TPJ2", "type": "purchase", "company_id": cls.env.company.id}
+        )
 
     def _picking(self, picking_type, location, location_dest, qty):
         picking = self.env["stock.picking"].create(
@@ -132,24 +141,23 @@ class TestObycEntries(TestCommon):
         self._validate(return_picking)
         return return_picking
 
-    def _out_invoice(self, lines):
-        invoice = self.env["account.move"].create(
+    def _invoice(self, move_type, lines):
+        is_sale = move_type.startswith("out_")
+        return self.env["account.move"].create(
             {
-                "move_type": "out_invoice",
+                "move_type": move_type,
                 "invoice_date": "2026-01-15",
-                "partner_id": self.partner.id,
-                "journal_id": self.sale_journal.id,
+                "partner_id": (self.partner if is_sale else self.vendor).id,
+                "journal_id": (self.sale_journal if is_sale else self.purchase_journal).id,
                 "invoice_line_ids": [
                     Command.create({"product_id": product.id, "quantity": qty, "price_unit": price, "tax_ids": []})
                     for product, qty, price in lines
                 ],
             }
         )
-        # OBYC-001 (readme/bugs.md): la creare, `_compute_account_id` rulează înainte
-        # de debit/credit și pune linia pe `acc_valuation_id`; recalculul pe toate
-        # liniile odată (ca în `test_account_move_line`) dă contul de venit al regulii
-        invoice.invoice_line_ids._compute_account_id()
-        return invoice
+
+    def _out_invoice(self, lines):
+        return self._invoice("out_invoice", lines)
 
     def test_01_receipt(self):
         lines = self._lines(self._receipt(10.0))
@@ -296,5 +304,54 @@ class TestObycEntries(TestCommon):
                 {"account_id": self.account_income.id, "product_id": self.product.id, "debit": 0.0, "credit": 100.0},
                 {"account_id": account_income_b.id, "product_id": product_b.id, "debit": 0.0, "credit": 80.0},
                 {"account_id": self.account_receivable.id, "product_id": False, "debit": 180.0, "credit": 0.0},
+            ],
+        )
+
+    def test_08_customer_credit_note(self):
+        """Nota de credit către client folosește același cont de venit ca factura
+        (`acc_dest_id` al regulii `stock_income`), cu partea inversată. Contul se alege
+        la creare, fără recalcul (OBYC-001)."""
+        credit_note = self._invoice("out_refund", [(self.product, 1.0, 150.0)])
+        credit_note.action_post()
+        self.assertRecordValues(
+            self._sorted_lines(credit_note),
+            [
+                {"account_id": self.account_income.id, "debit": 150.0, "credit": 0.0},
+                {"account_id": self.account_receivable.id, "debit": 0.0, "credit": 150.0},
+            ],
+        )
+
+    def test_09_vendor_bill(self):
+        """Factura de furnizor după recepție: linia de produs stinge contul de
+        recepții nefacturate al regulii `stock_receipt` (`acc_src_id`), nu debitează
+        din nou stocul. Înainte de fix, linia lua `acc_valuation_id` și stocul se
+        dubla valoric (OBYC-001)."""
+        receipt = self._receipt(10.0)
+        bill = self._invoice("in_invoice", [(self.product, 10.0, 100.0)])
+        bill.action_post()
+        self.assertRecordValues(
+            self._sorted_lines(bill),
+            [
+                {"account_id": self.account_payable.id, "debit": 0.0, "credit": 1000.0},
+                {"account_id": self.account_src.id, "debit": 1000.0, "credit": 0.0},
+            ],
+        )
+        # stocul rămâne debitat o singură dată, de nota recepției
+        stock_lines = self.env["account.move.line"].search(
+            [("account_id", "=", self.account_valuation.id), ("parent_state", "=", "posted")]
+        )
+        self.assertEqual(stock_lines.move_id, receipt.move_ids.account_move_id)
+        self.assertEqual(sum(stock_lines.mapped("balance")), 1000.0)
+
+    def test_10_vendor_credit_note(self):
+        """Nota de credit de la furnizor folosește același cont ca factura
+        (`acc_src_id` al regulii `stock_receipt`), cu partea inversată."""
+        credit_note = self._invoice("in_refund", [(self.product, 2.0, 100.0)])
+        credit_note.action_post()
+        self.assertRecordValues(
+            self._sorted_lines(credit_note),
+            [
+                {"account_id": self.account_payable.id, "debit": 200.0, "credit": 0.0},
+                {"account_id": self.account_src.id, "debit": 0.0, "credit": 200.0},
             ],
         )
