@@ -1,3 +1,8 @@
+## 19.0.0.0.10 (2026-10-01)
+
+- Test: reversing a stock journal entry on a company without storno leaves the stock
+  valuation at zero (the fix is in `deltatech_valuation_area` 19.0.1.0.3).
+
 ## 19.0.0.0.9 (2026-10-01)
 
 - Docs: consultant sheet updated to the current code (11-section structure), screenshots

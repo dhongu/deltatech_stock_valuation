@@ -1,3 +1,11 @@
+## 19.0.1.0.3 (2026-10-01)
+
+- Fix: reversing a stock journal entry on a company without storno doubled the quantity
+  instead of cancelling it. The core moves the amount to the opposite side but copies the
+  quantity with the same sign; the quantity of the entry lines is signed (positive on
+  debit, negative on credit), so it is now inverted together with the side. With storno
+  the line stays on the same side (negative amount) and the quantity is unchanged.
+
 ## 19.0.1.0.2 (2026-10-01)
 
 - Docs: consultant sheet updated to the current code (11-section structure), screenshots
