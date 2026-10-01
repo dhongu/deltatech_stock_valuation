@@ -29,15 +29,15 @@ class AccountMoveLine(models.Model):
             elif line.move_id.is_purchase_document(include_receipts=True):
                 transaction_key = "stock_receipt"  # In SAP is WRX
 
-            account_modifier = self._get_account_modifier()
+            account_modifier = line._get_account_modifier()
 
             _get_rule_account = self.env["product.account.determination"]._get_rule_account
             rule = _get_rule_account(
                 valuation_area=valuation_area,
-                valuation_class=self.product_id.valuation_class_id,
+                valuation_class=line.product_id.valuation_class_id,
                 transaction_key=transaction_key,
                 account_modifier=account_modifier,
-                company=self.company_id,
+                company=line.company_id,
             )
             line.account_id = rule.acc_valuation_id
             if line.debit:
