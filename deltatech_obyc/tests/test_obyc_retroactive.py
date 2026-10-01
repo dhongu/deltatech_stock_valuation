@@ -175,3 +175,25 @@ class TestObycRetroactiveRecompute(TestCommon):
         self.assertAlmostEqual(receipt.value, 1200.0)
         # comportament standard 20: ieșirea e reevaluată la noul cost
         self.assertAlmostEqual(delivery.value, -600.0)
+
+    # setarea companiei `valuation_keep_move_value` dezactivată: produsele OBYC urmează
+    # reluarea standard 20 (aceleași valori ca produsul fără clasă de evaluare)
+    def _disable_keep_move_value(self):
+        self.env.company.valuation_keep_move_value = False
+
+    def test_04_backdated_receipt_obyc_without_keep_setting(self):
+        self._disable_keep_move_value()
+        delivery = self._scenario_backdated_receipt(self.product)
+        self.assertAlmostEqual(delivery.value, -750.0)
+
+    def test_05_edit_done_quantity_obyc_without_keep_setting(self):
+        self._disable_keep_move_value()
+        receipt, delivery = self._scenario_edit_done_quantity(self.product)
+        self.assertAlmostEqual(receipt.value, 2000.0)
+        self.assertAlmostEqual(delivery.value, -666.67, places=2)
+
+    def test_06_vendor_bill_obyc_without_keep_setting(self):
+        self._disable_keep_move_value()
+        receipt, delivery = self._scenario_vendor_bill(self.product)
+        self.assertAlmostEqual(receipt.value, 1200.0)
+        self.assertAlmostEqual(delivery.value, -600.0)

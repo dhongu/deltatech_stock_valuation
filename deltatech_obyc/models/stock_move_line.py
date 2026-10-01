@@ -14,7 +14,8 @@ class StockMoveLine(models.Model):
     # toate ieșirile ulterioare. Până în 19 se reevalua doar mișcarea editată: intrarea
     # din documentele ei, ieșirea proporțional cu corecția de cantitate. Notele OBYC sunt
     # postate din aceste valori, deci pentru produsele OBYC se păstrează comportamentul
-    # din 19 (`obyc_defer_ml_valuation` face ca `stock.move._set_value` să le sară).
+    # din 19 (`obyc_defer_ml_valuation` face ca `stock.move._set_value` să le sară),
+    # doar cu setarea companiei `valuation_keep_move_value` activă.
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -29,7 +30,7 @@ class StockMoveLine(models.Model):
         old_qty_by_ml = {
             ml: ml.quantity
             for ml in self
-            if ml.move_id.product_id.valuation_class_id and (ml.move_id.is_in or ml.move_id.is_out)
+            if ml.move_id and ml.move_id._obyc_keep_move_value() and (ml.move_id.is_in or ml.move_id.is_out)
         }
         res = super(StockMoveLine, self.with_context(obyc_defer_ml_valuation=True)).write(vals)
         if old_qty_by_ml:
@@ -41,14 +42,12 @@ class StockMoveLine(models.Model):
         old_qty_by_ml = old_qty_by_ml or {}
         moves_in = self.env["stock.move"]
         for move, mls in self.grouped("move_id").items():
-            if not move.product_id.valuation_class_id or not (move.is_in or move.is_out):
+            if not move or not move._obyc_keep_move_value() or not (move.is_in or move.is_out):
                 continue
             if move.is_in:
                 moves_in |= move
                 continue
-            delta = sum(
-                ml.quantity - old_qty_by_ml.get(ml, 0) for ml in mls if not ml._should_exclude_for_valuation()
-            )
+            delta = sum(ml.quantity - old_qty_by_ml.get(ml, 0) for ml in mls if not ml._should_exclude_for_valuation())
             if delta:
                 move._obyc_correct_out_value(delta)
         if moves_in:

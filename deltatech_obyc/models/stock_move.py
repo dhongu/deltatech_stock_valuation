@@ -67,8 +67,9 @@ class StockMove(models.Model):
         # 20.0: mutarea datei unei mișcări valorizate reia valorizarea tuturor
         # mișcărilor ulterioare (`_set_value(recompute_date=...)`). Până în 19
         # schimbarea datei lăsa valorile neatinse, iar notele OBYC sunt postate din
-        # ele — păstrăm valorile mișcărilor OBYC.
-        if vals.get("date") and any(self.mapped("product_id.valuation_class_id")):
+        # ele — păstrăm valorile mișcărilor OBYC (doar cu setarea
+        # `valuation_keep_move_value` activă pe companie).
+        if vals.get("date") and any(move._obyc_keep_move_value() for move in self):
             self = self.with_context(obyc_skip_revaluation=True)  # noqa: PLW0642
         return super().write(vals)
 
@@ -79,7 +80,8 @@ class StockMove(models.Model):
         pe ieșirile deja validate) prin `_correct_inventory_valuation`. Notele OBYC
         sunt postate din `value` la validarea mișcării și nu se rescriu, deci pentru
         produsele OBYC se (re)evaluează doar mișcările date, fără reluare. Produsele
-        fără clasă de evaluare păstrează comportamentul standard 20.
+        fără clasă de evaluare — și toate produsele, când setarea companiei
+        `valuation_keep_move_value` e dezactivată — păstrează comportamentul standard 20.
 
         Completează și valoarea mișcărilor dropship OBYC: core-ul le include în
         filtrul `is_in or is_dropship`, dar atribuie `move.value` doar când `is_in`
@@ -87,11 +89,12 @@ class StockMove(models.Model):
         `self.value == 0`, iar nota OBYC generată imediat după (tot în
         `_action_done()`) ar fi postată cu debit=0/credit=0.
         """
-        obyc_moves = self.filtered(lambda m: m.product_id.valuation_class_id)
+        obyc_moves = self.filtered(lambda m: m._obyc_keep_move_value())
         other_moves = self - obyc_moves
         res = None
         if other_moves:
             res = super(StockMove, other_moves)._set_value(recompute_date=recompute_date, skip_check=skip_check)
+            other_moves._obyc_fill_dropship_value()
         if not obyc_moves:
             return res
         if recompute_date and (
@@ -101,9 +104,18 @@ class StockMove(models.Model):
             # `stock.move.line._obyc_update_stock_move_value`)
             return res
         res = super(StockMove, obyc_moves)._set_value(skip_check=True)
-        for move in obyc_moves.filtered(lambda m: m.is_dropship and not m.value):
-            move.value = move.sudo()._get_value()
+        obyc_moves._obyc_fill_dropship_value()
         return res
+
+    def _obyc_keep_move_value(self):
+        """Mișcare OBYC a cărei valoare rămâne cea din momentul validării (ca în 19):
+        produs cu clasă de evaluare și setarea companiei `valuation_keep_move_value`."""
+        self.ensure_one()
+        return bool(self.product_id.valuation_class_id and self.company_id.valuation_keep_move_value)
+
+    def _obyc_fill_dropship_value(self):
+        for move in self.filtered(lambda m: m.product_id.valuation_class_id and m.is_dropship and not m.value):
+            move.value = move.sudo()._get_value()
 
     def _obyc_correct_out_value(self, correction_quantity):
         """Reevaluează o ieșire validată a cărei cantitate s-a schimbat cu

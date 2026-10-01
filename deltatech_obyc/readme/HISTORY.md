@@ -6,6 +6,9 @@
   incoming move is backdated, a done quantity is edited or a vendor bill revalues a receipt.
   For products with an OBYC valuation class the move value stays the one posted at validation
   (as in 19), consistent with the OBYC journal entry; other products keep the Odoo 20 behaviour.
+  This applies only while the company setting *Keep move value on retroactive recompute*
+  (`deltatech_valuation_area`) is enabled (the default); when disabled, OBYC products also
+  follow the standard Odoo 20 recompute.
 
 ## 19.0.1.0.2 (2026-09-30)
 
