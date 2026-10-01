@@ -2,6 +2,7 @@
 # See README.rst file on addons root folder for license details
 
 from odoo.exceptions import UserError
+from odoo.tools import SQL
 
 from .test_common import TestCommon
 
@@ -85,6 +86,14 @@ class TestAccountMoveLine(TestCommon):
 
         cls.account_move_line = cls.out_invoice.line_ids.filtered(lambda line: line.display_type == "product")
 
+    def _clear_line_valuation_area(self):
+        # în 20 constrângerea `_check_valuation_area` (deltatech_valuation_area) rulează și
+        # în testele at_install (registry gata) — linia fără arie se simulează direct în SQL
+        self.env.cr.execute(
+            SQL("UPDATE account_move_line SET valuation_area_id = NULL WHERE id = %s", self.account_move_line.id)
+        )
+        self.account_move_line.invalidate_recordset(["valuation_area_id"])
+
     def test_get_valuation_area_defined(self):
         """Test _get_valuation_area when valuation_area_id is explicitly defined."""
         valuation_area = self.account_move_line._get_valuation_area()
@@ -106,7 +115,7 @@ class TestAccountMoveLine(TestCommon):
 
     def test_get_valuation_area_inherited_from_company(self):
         """Test _get_valuation_area when valuation_area_id is inherited from the company."""
-        self.account_move_line.valuation_area_id = False
+        self._clear_line_valuation_area()
         self.env.company.valuation_area_id = self.valuation_area
 
         valuation_area = self.account_move_line._get_valuation_area()
@@ -118,7 +127,7 @@ class TestAccountMoveLine(TestCommon):
 
     def test_get_valuation_area_undefined_raises_error(self):
         """Test _get_valuation_area raises UserError when no valuation area is defined."""
-        self.account_move_line.valuation_area_id = False
+        self._clear_line_valuation_area()
         self.env.company.valuation_area_id = False
 
         with self.assertRaises(UserError):

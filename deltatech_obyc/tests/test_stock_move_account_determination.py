@@ -94,7 +94,7 @@ class TestStockMoveAccountDetermination(TestCommon):
                 "picking_id": picking_in.id,
                 "product_id": self.product.id,
                 "product_uom_qty": 10.0,
-                "product_uom": self.product.uom_id.id,
+                "uom_id": self.product.uom_id.id,
                 "location_id": self.supplier_location.id,
                 "location_dest_id": self.stock_location.id,
             }
@@ -123,7 +123,7 @@ class TestStockMoveAccountDetermination(TestCommon):
                 "picking_id": picking_out.id,
                 "product_id": self.product.id,
                 "product_uom_qty": 5.0,
-                "product_uom": self.product.uom_id.id,
+                "uom_id": self.product.uom_id.id,
                 "location_id": self.stock_location.id,
                 "location_dest_id": self.customer_location.id,
             }
@@ -161,7 +161,7 @@ class TestStockMoveAccountDetermination(TestCommon):
                 "picking_id": picking_internal.id,
                 "product_id": self.product.id,
                 "product_uom_qty": 3.0,
-                "product_uom": self.product.uom_id.id,
+                "uom_id": self.product.uom_id.id,
                 "location_id": self.stock_location.id,
                 "location_dest_id": internal_location.id,
             }
@@ -187,7 +187,7 @@ class TestStockMoveAccountDetermination(TestCommon):
                 "picking_id": picking_in.id,
                 "product_id": self.product.id,
                 "product_uom_qty": 10.0,
-                "product_uom": self.product.uom_id.id,
+                "uom_id": self.product.uom_id.id,
                 "location_id": self.supplier_location.id,
                 "location_dest_id": self.stock_location.id,
             }

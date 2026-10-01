@@ -89,7 +89,7 @@ class TestNCGeneration(TestCommon):
                         {
                             "product_id": self.product.id,
                             "product_uom_qty": 10.0,
-                            "product_uom": self.product.uom_id.id,
+                            "uom_id": self.product.uom_id.id,
                             "location_id": self.supplier_location.id,
                             "location_dest_id": self.stock_location.id,
                         }
@@ -128,7 +128,7 @@ class TestNCGeneration(TestCommon):
                         {
                             "product_id": self.product.id,
                             "product_uom_qty": 5.0,
-                            "product_uom": self.product.uom_id.id,
+                            "uom_id": self.product.uom_id.id,
                             "location_id": self.stock_location.id,
                             "location_dest_id": self.customer_location.id,
                         }
@@ -157,7 +157,7 @@ class TestNCGeneration(TestCommon):
                         {
                             "product_id": self.product.id,
                             "product_uom_qty": 3.0,
-                            "product_uom": self.product.uom_id.id,
+                            "uom_id": self.product.uom_id.id,
                             "location_id": self.supplier_location.id,
                             "location_dest_id": self.stock_location.id,
                         }
@@ -189,7 +189,7 @@ class TestNCGeneration(TestCommon):
                         {
                             "product_id": self.product.id,
                             "product_uom_qty": qty,
-                            "product_uom": self.product.uom_id.id,
+                            "uom_id": self.product.uom_id.id,
                             "location_id": self.supplier_location.id,
                             "location_dest_id": self.stock_location.id,
                         }
@@ -230,12 +230,9 @@ class TestNCGeneration(TestCommon):
 
         picking = self._make_receipt()
 
-        return_wizard = (
-            self.env["stock.return.picking"].with_context(active_id=picking.id, active_model="stock.picking").create({})
-        )
-        return_wizard.product_return_moves.quantity = 5.0
-        action = return_wizard.action_create_returns()
-        return_picking = self.env["stock.picking"].browse(action["res_id"])
+        # în 20 wizard-ul stock.return.picking a dispărut: returul se creează pe picking
+        return_picking = picking._create_return()
+        return_picking.move_ids.product_uom_qty = 5.0
         self._validate_picking(return_picking)
 
         nc_return = self._get_nc_for_picking(return_picking)

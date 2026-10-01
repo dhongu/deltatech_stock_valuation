@@ -61,7 +61,7 @@ class TestDropshipValuation(TestCommon):
                         {
                             "product_id": self.product.id,
                             "product_uom_qty": qty,
-                            "product_uom": self.product.uom_id.id,
+                            "uom_id": self.product.uom_id.id,
                             "location_id": self.supplier_location.id,
                             "location_dest_id": self.customer_location.id,
                         }
@@ -148,7 +148,7 @@ class TestDropshipDoesNotAffectStockValuation(TestCommon):
                         {
                             "product_id": product.id,
                             "product_uom_qty": qty,
-                            "product_uom": product.uom_id.id,
+                            "uom_id": product.uom_id.id,
                             "location_id": self.supplier_location.id,
                             "location_dest_id": self.stock_location.id,
                         }
@@ -173,7 +173,7 @@ class TestDropshipDoesNotAffectStockValuation(TestCommon):
                         {
                             "product_id": product.id,
                             "product_uom_qty": qty,
-                            "product_uom": product.uom_id.id,
+                            "uom_id": product.uom_id.id,
                             "location_id": self.supplier_location.id,
                             "location_dest_id": self.customer_location.id,
                         }

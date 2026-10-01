@@ -258,8 +258,8 @@ Capturile sunt generate automat în limba RO, pe planul de conturi RO, prin test
 `tests/test_screenshots.py` (tag `fise_screenshots`). Se regenerează cu:
 
 ```bash
-./odoo/odoo-bin -c odoo.conf -d test19 -u deltatech_obyc \
-    --test-tags=fise_screenshots --stop-after-init --http-port=8170
+./odoo/odoo-bin -c odoo.conf -d test20 -u deltatech_obyc \
+    --test-tags=fise_screenshots --stop-after-init --http-port=8070
 ```
 
 ### 10.1 Matricea OBYC de determinare a conturilor

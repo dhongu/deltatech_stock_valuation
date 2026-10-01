@@ -1,3 +1,8 @@
+## 20.0.1.0.2 (2026-10-01)
+
+- Migration to Odoo 20: in 20 `stock.move.value` is negative on outgoing moves; the OBYC
+  journal entry keeps posting the absolute value, so the Dr/Cr amounts are the same as in 19.
+
 ## 19.0.1.0.2 (2026-09-30)
 
 - Own module icon in the flat style of the other modules.

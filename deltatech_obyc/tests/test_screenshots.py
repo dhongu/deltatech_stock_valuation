@@ -11,8 +11,8 @@
 # stock_receipt) și un retur la furnizor cu Storno accounting activ (înregistrare în roșu).
 #
 # Rulare:
-#   ./odoo/odoo-bin -c odoo.conf -d test19 -u deltatech_obyc \
-#       --test-tags=fise_screenshots --stop-after-init --http-port=8170
+#   ./odoo/odoo-bin -c odoo.conf -d test20 -u deltatech_obyc \
+#       --test-tags=fise_screenshots --stop-after-init --http-port=8070
 import unittest
 
 from odoo import Command
@@ -36,7 +36,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         if ScreenshotCase is None:
             raise unittest.SkipTest("l10n_ro_doc_screenshots indisponibil")
         super().setUpClass()
-        cls.prepare_ro_company(name="RO Company")  # RON, drepturi contabile, limba RO, light theme
+        cls.prepare_ro_company(name="Demo OBYC SRL")  # RON, drepturi contabile, limba RO, light theme
         company = cls.env.company
         cls.env.ref("base.user_admin").write({"company_ids": [(4, company.id)], "company_id": company.id})
 
@@ -58,11 +58,17 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         )
 
         # aria de evaluare la nivel de companie, cu jurnal propriu
-        company.use_valuation_area = True
-        company.valuation_area_level = "company"
-        company.set_stock_valuation_at_company_level()
-        cls.valuation_area = company.valuation_area_id
-        cls.valuation_area.write({"name": "Magazin central", "code": "MAG", "stock_journal_id": cls.stock_journal.id})
+        # (fără `valuation_area_level` / `set_stock_valuation_at_company_level` din
+        # deltatech_stock_valuation, care nu e dependență a modulului)
+        cls.valuation_area = env["valuation.area"].create(
+            {
+                "name": "Magazin central",
+                "code": "MAG",
+                "company_id": company.id,
+                "stock_journal_id": cls.stock_journal.id,
+            }
+        )
+        company.write({"use_valuation_area": True, "valuation_area_id": cls.valuation_area.id})
 
         # --- Matricea de reguli OBYC --------------------------------------------------
         det = env["product.account.determination"]
@@ -172,7 +178,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
                         {
                             "product_id": cls.product.id,
                             "product_uom_qty": qty,
-                            "product_uom": cls.product.uom_id.id,
+                            "uom_id": cls.product.uom_id.id,
                             "location_id": cls.supplier_location.id,
                             "location_dest_id": cls.stock_location.id,
                         }
@@ -186,12 +192,9 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
     @classmethod
     def _make_storno_return(cls, picking, qty=5.0):
         cls.env.company.account_storno = True
-        return_wizard = (
-            cls.env["stock.return.picking"].with_context(active_id=picking.id, active_model="stock.picking").create({})
-        )
-        return_wizard.product_return_moves.quantity = qty
-        action = return_wizard.action_create_returns()
-        return_picking = cls.env["stock.picking"].browse(action["res_id"])
+        # în 20 wizard-ul stock.return.picking a dispărut: returul se creează pe picking
+        return_picking = picking._create_return()
+        return_picking.move_ids.product_uom_qty = qty
         cls._validate_picking(return_picking)
         return return_picking.move_ids.account_move_id[:1]
 

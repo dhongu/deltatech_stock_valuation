@@ -4,13 +4,13 @@
 
 {
     "name": "Deltatech OBYC - Account Determination",
-    "version": "19.0.1.0.2",
+    "version": "20.0.1.0.2",
     "summary": "Implementare OBYC-style account mapping pentru tranzacții de stoc",
     "category": "Valuation/Valuation",
     "author": "Terrabit, Dorin Hongu",
     "website": "https://www.terrabit.ro",
     "data": [
-        "security/ir.model.access.csv",
+        "security/ir.access.csv",
         "views/stock_picking_views.xml",
         "views/account_journal_views.xml",
         "views/product_valuation_class_views.xml",

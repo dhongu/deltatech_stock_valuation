@@ -1,0 +1,4 @@
+id,name,model_id,group_id/id,operation,domain
+access_product_account_determination,Access Product Account Determination,product.account.determination,base.group_user,crud,
+access_account_modifier,Access Account Modifier,account.modifier,base.group_user,crud,
+access_product_valuation_class,Access Valuation Class,product.valuation.class,base.group_user,crud,

@@ -63,7 +63,7 @@ class StockMove(models.Model):
     #
     #     return am_vals_list
 
-    def _set_value(self, correction_quantity=None):
+    def _set_value(self, recompute_date=None, skip_check=False):
         """Completează valoarea mișcărilor dropship pentru produsele OBYC.
 
         Core (`stock_account._set_value`) include mișcările dropship în
@@ -73,7 +73,7 @@ class StockMove(models.Model):
         generată imediat după (tot în `_action_done()`) ar fi postată cu
         debit=0/credit=0 — o notă aparent înregistrată, dar fără valoare.
         """
-        res = super()._set_value(correction_quantity=correction_quantity)
+        res = super()._set_value(recompute_date=recompute_date, skip_check=skip_check)
         obyc_dropship_moves = self.filtered(lambda m: m.product_id.valuation_class_id and m.is_dropship and not m.value)
         for move in obyc_dropship_moves:
             move.value = move.sudo()._get_value()
@@ -190,6 +190,9 @@ class StockMove(models.Model):
             else:
                 debit_acc = rule.acc_dest_id
                 credit_acc = rule.acc_valuation_id
+            # în 20 `stock.move.value` e negativ pe ieșiri (în 19 era mereu pozitiv);
+            # nota OBYC folosește magnitudinea, ca în core (`_get_account_move_line_vals`)
+            value = -self.value if self.is_out else self.value
             # cantitatea (SEMNATĂ: negativă pe credit, pozitivă pe debit) și UoM sunt
             # necesare evaluării (deltatech_stock_valuation); aria de evaluare se
             # completează prin compute-ul de pe account.move.line
@@ -199,7 +202,7 @@ class StockMove(models.Model):
                     "account_id": credit_acc.id,
                     "name": self.reference,
                     "debit": 0,
-                    "credit": self.value,
+                    "credit": value,
                     "product_id": self.product_id.id,
                     "quantity": -quantity,
                     "product_uom_id": self.product_id.uom_id.id,
@@ -207,7 +210,7 @@ class StockMove(models.Model):
                 {
                     "account_id": debit_acc.id,
                     "name": self.reference,
-                    "debit": self.value,
+                    "debit": value,
                     "credit": 0,
                     "product_id": self.product_id.id,
                     "quantity": quantity,
