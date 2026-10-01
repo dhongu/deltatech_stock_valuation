@@ -338,8 +338,9 @@ class TestValuationArea(AccountTestInvoicingCommon):
                 "location_dest_id": location_b.id,
             }
         )
+        # verificarea rulează la validare (VA-003), nu la determinarea ariei
         with self.assertRaises(UserError):
-            move._get_valuation_area()
+            move._check_internal_move_valuation_area()
 
     def test_keep_move_value_setting_default(self):
         """Setarea `valuation_keep_move_value` există, e bifată implicit pe o companie

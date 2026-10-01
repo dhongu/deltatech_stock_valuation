@@ -2,4 +2,5 @@
 # See README.rst file on addons root folder for license details
 
 from . import test_valuation_area
+from . import test_valuation_area_bugs
 from . import test_screenshots
