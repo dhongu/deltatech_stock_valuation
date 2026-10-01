@@ -1,7 +1,6 @@
 # © 2025 Deltatech
 # See README.rst file on addons root folder for license details
 
-
 from odoo.exceptions import UserError
 
 from .test_common import TestCommon
@@ -204,7 +203,7 @@ class TestStockMoveAccountDetermination(TestCommon):
         self.assertEqual(rule.acc_valuation_id, self.account_valuation)
 
     def test_05_unknown_transaction_key_message(self):
-        """The error for an unmapped move names the real location usages, not placeholders."""
+        """The error for an unmapped move names the real location usages, not placeholders (OBYC-007)."""
         supplier = self.env.ref("stock.stock_location_suppliers")
         inventory = self.env["stock.location"].create({"name": "Test Inventory Loss", "usage": "inventory"})
         move = self.env["stock.move"].new(
@@ -216,3 +215,4 @@ class TestStockMoveAccountDetermination(TestCommon):
         self.assertIn("supplier", message)
         self.assertIn("inventory", message)
         self.assertNotIn("{", message)
+        self.assertFalse(move._compute_transaction_key(raise_if_not_found=False))

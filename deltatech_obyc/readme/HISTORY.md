@@ -1,9 +1,7 @@
 ## 20.0.1.0.5 (2026-10-01)
 
-- Fix (OBYC-007): the "Transaction key could not be determined" error showed the literal placeholders
-  `{source_usage}` / `{dest_usage}` instead of the location usages — `env._()` interpolates
-  `%(name)s` placeholders, not `{name}`. The message now names the actual source and destination
-  usages (e.g. `internal` to `consume`), in the English text and in the Romanian translation.
+Port of the 19.0 fixes (19.0.1.0.4 to 19.0.1.0.6).
+
 - Fix (OBYC-001): the product line of a customer invoice, a vendor bill or a credit note
   got the valuation account of the rule, because the account was chosen from the line
   debit/credit, still 0 when the line is created. A vendor bill debited the stock account a
@@ -13,6 +11,24 @@
   `stock_income` rule; vendor bill and credit note → source account of the
   `stock_receipt` rule; the valuation account only when that account is empty. Credit
   notes use the same account as the invoice.
+- Fix (OBYC-005): the inventory adjustment keys were swapped — a gain used the
+  `inventory_adjustment_minus` rule and a loss the `inventory_adjustment_plus` rule. A gain
+  now uses `inventory_adjustment_plus` and a loss `inventory_adjustment_minus`. **Rules
+  configured around the old behavior must swap their keys**; the update logs a warning for
+  each rule that looks configured that way and does not change it.
+- Fix (OBYC-006): stock entries were created for products with a valuation class even
+  without real-time valuation, for consumables and for stock owned by a third party, and a
+  missing rule blocked the validation of these moves. The core checks (storable product,
+  real-time valuation, non-zero quantity, no third-party owner) now come before the rule
+  lookup; a move the core does not value and whose locations have no transaction key gets no
+  entry instead of an error.
+- Fix (OBYC-007): the "Transaction key could not be determined" error showed the literal
+  placeholders `{source_usage}` / `{dest_usage}` (`env._()` interpolates `%(name)s`); the "No
+  account determination rule found" message shows the transaction key in the user's language;
+  the rule title shows the key label and no "None" for an empty account modifier.
+- Docs: `readme/bugs.md` aligned with 19.0 (OBYC-001/005/006/007 fixed, OBYC-002/003 analysis,
+  OBYC-004 lowered to P3, OBYC-008/009 added), `DESCRIPTION.md` aligned with 19.0 (account
+  mapping examples follow the code convention), consultant sheet.
 
 ## 20.0.1.0.4 (2026-10-01)
 

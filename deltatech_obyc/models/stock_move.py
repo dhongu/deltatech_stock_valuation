@@ -128,7 +128,7 @@ class StockMove(models.Model):
             else:
                 move._set_value()
 
-    def _compute_transaction_key(self):
+    def _compute_transaction_key(self, raise_if_not_found=True):
         source_usage = self.location_id.usage
         dest_usage = self.location_dest_id.usage
 
@@ -162,10 +162,10 @@ class StockMove(models.Model):
                 tr_key = "internal_transfer_in"
 
             # Inventory adjustments
-            case "internal", "inventory":
-                tr_key = "inventory_adjustment_plus"
             case "inventory", "internal":
-                tr_key = "inventory_adjustment_minus"
+                tr_key = "inventory_adjustment_plus"  # Gain found at the count
+            case "internal", "inventory":
+                tr_key = "inventory_adjustment_minus"  # Loss found at the count
 
             # Production transactions
             case "internal", "production":
@@ -176,6 +176,8 @@ class StockMove(models.Model):
                 tr_key = False
 
         if not tr_key:
+            if not raise_if_not_found:
+                return False
             raise UserError(
                 self.env._(
                     "Transaction key could not be determined for the move from %(source_usage)s to %(dest_usage)s.",
@@ -213,13 +215,32 @@ class StockMove(models.Model):
     def _should_create_account_move(self):
         if not self.product_id.valuation_class_id:
             return super()._should_create_account_move()
+        self.ensure_one()
+
+        # condițiile nucleului, fără contul de evaluare al locației (înlocuit de regula OBYC)
+        # și fără `is_valued`: dropship-ul și transferurile dintre arii de evaluare nu sunt
+        # intrări/ieșiri în nucleu, dar au chei OBYC proprii
+        product = self.product_id.with_company(self.company_id)
+        if not product.is_storable or product.valuation != "real_time":
+            return False
+        if self.uom_id.is_zero(self.quantity):
+            return False
+        if self._is_obyc_owner_stock():
+            return False
+        if not (self.is_valued or self.is_dropship) and not self._compute_transaction_key(raise_if_not_found=False):
+            # combinație de locații fără cheie, pe o mișcare pe care nici nucleul nu o evaluează
+            return False
 
         rule = self._get_rule_account()
-        if not rule.acc_src_id and not rule.acc_dest_id and not rule.acc_valuation_id:
-            should = False
-        else:
-            should = True
-        return should
+        return bool(rule.acc_src_id or rule.acc_dest_id or rule.acc_valuation_id)
+
+    def _is_obyc_owner_stock(self):
+        """Marfă cu proprietar terț (custodie, consignație primită): nucleul nu o evaluează."""
+        self.ensure_one()
+        if self._should_exclude_for_valuation():
+            return True
+        move_lines = self.move_line_ids
+        return bool(move_lines) and all(line._should_exclude_for_valuation() for line in move_lines)
 
     def _is_storno_return(self):
         """Retururile se înregistrează în roșu (storno) când compania are activată
