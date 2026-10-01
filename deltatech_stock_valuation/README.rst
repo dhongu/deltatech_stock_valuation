@@ -84,9 +84,10 @@ Evaluare în paralel cu Odoo standard
 ------------------------------------
 
 Modulul nu înlocuiește mecanismul standard Odoo (``stock_account``), ci
-adaugă un strat suplimentar de raportare **garantat consistent cu
-balanța contabilă**, util în contexte cu ajustări contabile manuale sau
-cerințe de raportare pe centre de cost/depozite.
+adaugă un strat suplimentar de raportare **consistent cu balanța
+contabilă** (atât timp cât toate liniile de pe conturile de stoc au
+produs), util în contexte cu ajustări contabile manuale sau cerințe de
+raportare pe centre de cost/depozite.
 
 +----------------+---------------------------+------------------+---------------------------+
 | Aspect         | Standard Odoo (≤18)       | Standard Odoo 19 | deltatech_stock_valuation |
@@ -221,10 +222,18 @@ Configuration requires the **System Administrator** group.
 
 8. **Without ``deltatech_obyc``**, set **Loss Account** on the virtual
    inventory locations (inventory adjustments, scrap); otherwise
-   adjustments and scrap post no entries.
+   adjustments and scrap post no entries. One loss account per location
+   gives one counterpart for every stock account (for example 607 for
+   371, but 601 is expected for 301 and 608 for 381); with several stock
+   accounts, use ``deltatech_obyc``.
 
 9. **Initial recompute.** After the first installation or a data import,
    run the full recompute (see *Usage*, step 7), once for each company.
+   After the upgrade to 20.0.0.0.10 on a database with several
+   companies, reset a background run that was in progress (it did not
+   record its company) and run the full recompute from each company: the
+   upgrade removes the valuation rows written by the old version on the
+   area of another company.
 
 Usage
 =====
@@ -381,10 +390,11 @@ Good to know:
   or without the *storno* accounting option. Without storno, the
   quantity sign is reversed together with the side (done by
   ``deltatech_valuation_area``), so the quantity is cancelled as well.
-- **Value-only adjustments** (an entry with an amount but no quantity,
-  for example an average cost correction) change the **amount and the
-  average price**, not the quantity. On 10 pcs / 1,000, a +50 correction
-  gives 10 pcs / 1,050 / price 105.00.
+- **Value-only adjustments** (an entry with an amount and quantity 0,
+  for example an average cost correction; set the quantity to 0
+  explicitly, Odoo pre-fills 1 on a line with a product) change the
+  **amount and the average price**, not the quantity. On 10 pcs / 1,000,
+  a +50 correction gives 10 pcs / 1,050 / price 105.00.
 - With ``deltatech_obyc``, the cost of a delivery appears on the
   delivery entry, at the delivery date, and the customer invoice has no
   cost lines. Without it, the cost appears on the customer invoice.
@@ -483,8 +493,8 @@ Quantities below the rounding threshold of the unit of measure are
 treated as zero.
 
 During the full recompute, lines of products without a unit of measure
-on the template are left out; a warning in the server log gives their
-number and amount.
+on the template keep their amount in the valuation, but not their
+quantity; a warning in the server log gives their number and amount.
 
 .. |Account form with the Stock Valuation box ticked| image:: https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_account.png
 .. |AVCO category with Use Valuation Area Price| image:: https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_category_area_price.png
@@ -546,6 +556,13 @@ Changelog
   from another company (SV-003).
 - Fix: steps 2, 3, 4 and 6 of the full recompute no longer read or
   change the history of other companies (SV-009).
+- Fix: the upgrade repairs the data written by the old version on
+  multi-company databases: stock journal items moved to the area of
+  another company go back to their company area, and valuation / history
+  rows on the area of another company are removed; step 1 of the full
+  recompute clears the whole history of the company. After the upgrade,
+  reset a background run in progress and run Recompute All from each
+  company.
 - Fix: the valuation table on the product is read-only; internal users
   only read the valuation, write access goes to the accounting manager;
   posting still updates it (SV-004).

@@ -123,8 +123,8 @@ Good to know:
 - **Reversing a stock entry** cancels its effect on the valuation, with or without the *storno*
   accounting option. Without storno, the quantity sign is reversed together with the side
   (done by `deltatech_valuation_area`), so the quantity is cancelled as well.
-- **Value-only adjustments** (an entry with an amount but no quantity, for example an average cost
-  correction) change the **amount and the average price**, not the quantity. On 10 pcs / 1,000, a
+- **Value-only adjustments** (an entry with an amount and quantity 0, for example an average cost
+  correction; set the quantity to 0 explicitly, Odoo pre-fills 1 on a line with a product) change the **amount and the average price**, not the quantity. On 10 pcs / 1,000, a
   +50 correction gives 10 pcs / 1,050 / price 105.00.
 - With `deltatech_obyc`, the cost of a delivery appears on the delivery entry, at the delivery date,
   and the customer invoice has no cost lines. Without it, the cost appears on the customer invoice.
@@ -209,5 +209,6 @@ Valuation** is:
 After a full recompute, rows with zero final stock get price 0. Quantities below the rounding
 threshold of the unit of measure are treated as zero.
 
-During the full recompute, lines of products without a unit of measure on the template are left
-out; a warning in the server log gives their number and amount.
+During the full recompute, lines of products without a unit of measure on the template keep their
+amount in the valuation, but not their quantity; a warning in the server log gives their number
+and amount.

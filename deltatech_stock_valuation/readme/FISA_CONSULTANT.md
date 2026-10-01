@@ -5,7 +5,7 @@
 **Prioritate:** 🟡 Medie (strat de control peste evaluarea standard; necesar la clienții cu arii de evaluare sau cu corecții contabile manuale pe stocuri)
 
 > Fișă adusă pe Odoo 20 la 01.10.2026, pornind de la fișa versiunii 19.0 (structura cu 11
-> secțiuni), pe codul versiunii 20.0.0.0.9 a modulului.
+> secțiuni), pe codul versiunii 20.0.0.0.10 a modulului.
 
 ---
 
@@ -457,7 +457,10 @@ standard a liniilor contabile nu o afișează). Pentru pasul 7 nu există captur
 - **Mai multe companii** (de la 20.0.0.0.10): salvarea setărilor și recalcularea completă (manuală
   sau în fundal) lucrează doar pe compania curentă, respectiv pe compania din care a fost pornită;
   un ciclu pas cu pas început într-o companie nu poate fi continuat din alta; rândurile noi de
-  evaluare primesc moneda companiei lor. Configurarea și recalcularea se fac din fiecare companie.
+  evaluare primesc moneda companiei lor. Actualizarea readuce pe aria propriei companii liniile
+  contabile mutate de versiunea veche și șterge rândurile de evaluare / istoric rămase pe aria altei
+  companii; după actualizare: **Reset** la ciclul de fundal rămas în curs, apoi **Recompute All
+  (Background)** din fiecare companie. Configurarea și recalcularea se fac din fiecare companie.
 - Evaluarea depinde de calitatea notelor contabile: o notă cu produs greșit sau fără produs pe un
   cont de stoc creează diferențe față de balanță, pe care modulul nu le corectează singur.
 - Utilizatorii interni au doar drept de citire pe Product Valuation și Product Valuation History;

@@ -300,3 +300,64 @@ class TestKnownBugs(AccountTestInvoicingCommon):
         )
         with self.assertRaises(AccessError):
             action.with_user(user).run()
+
+    # curățarea datelor vechi (M1 din verificarea Pacioli) și invariantul de sold ----------
+
+    def test_cleanup_cross_company_rows_from_old_version(self):
+        """Actualizarea readuce pe aria companiei liniile mutate de versiunea veche și
+        șterge evaluările / istoricul rămase pe aria altei companii."""
+        move_b = self._create_entry(self.company_b, self.product_b_only, 500.0, 5.0, area=self.area_b)
+        move_b.with_company(self.company_b).action_post()
+        line_b = self._stock_line(move_b)
+        History = self.env["product.valuation.history"]
+        # starea lăsată de versiunea veche: linia lui B pe aria lui A, istoric (B, arie A)
+        self.env.cr.execute(
+            "UPDATE account_move_line SET valuation_area_id = %s WHERE id = %s", [self.area_a.id, line_b.id]
+        )
+        self.env.cr.execute(
+            "UPDATE product_valuation_history SET valuation_area_id = %s WHERE company_id = %s",
+            [self.area_a.id, self.company_b.id],
+        )
+        History.invalidate_model()
+
+        History._cleanup_cross_company_rows()
+
+        self.assertEqual(line_b.valuation_area_id, self.area_b)
+        self.assertFalse(
+            History.search([("company_id", "=", self.company_b.id), ("valuation_area_id", "=", self.area_a.id)])
+        )
+
+        History.with_company(self.company_b)._recompute_all_amount()
+        self.env["product.valuation"].with_company(self.company_b)._recompute_all_amount()
+        self.assertEqual(self._valuation(self.company_b, self.product_b_only, self.area_b).amount, 500.0)
+
+    def test_full_recompute_matches_account_balance_per_company(self):
+        """După recalculul complet al ambelor companii, valoarea evaluată pe cont și companie
+        este egală cu soldul contului de stoc al companiei."""
+        self._create_entry(self.company_a, self.product, 1000.0, 10.0).action_post()
+        self._create_entry(self.company_a, self.product_b_only, 300.0, 3.0).action_post()
+        move_b = self._create_entry(self.company_b, self.product, 500.0, 5.0, area=self.area_b)
+        move_b.with_company(self.company_b).action_post()
+
+        for company in self.company_a | self.company_b:
+            self.env["product.valuation.history"].with_company(company)._recompute_all_amount()
+            self.env["product.valuation"].with_company(company)._recompute_all_amount()
+
+        for company in self.company_a | self.company_b:
+            balance = sum(
+                self.env["account.move.line"]
+                .search(
+                    [
+                        ("account_id", "=", self.account_stock_val.id),
+                        ("company_id", "=", company.id),
+                        ("parent_state", "=", "posted"),
+                    ]
+                )
+                .mapped("balance")
+            )
+            valued = sum(
+                self.env["product.valuation"]
+                .search([("account_id", "=", self.account_stock_val.id), ("company_id", "=", company.id)])
+                .mapped("amount")
+            )
+            self.assertAlmostEqual(valued, balance, places=2, msg=company.name)

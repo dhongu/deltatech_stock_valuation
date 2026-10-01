@@ -901,20 +901,22 @@ class ProductValuationHistory(models.Model):
         row = self.env.cr.dictfetchone()
         if row and row["cnt"]:
             _logger.warning(
-                "deltatech_stock_valuation: %d linii contabile excluse din evaluare (UoM produs lipsă), valoare totală: %s",
+                "deltatech_stock_valuation: %d linii contabile cu produs fără UoM: valoarea intră în evaluare, "
+                "cantitatea nu (UoM produs lipsă), valoare totală: %s",
                 row["cnt"],
                 row["valoare"] or 0,
             )
 
         if 1 in execute_step:
             _logger.info("Stergere linii istoric")
+            # tot istoricul companiei, indiferent de arie: la nivel de companie există o singură
+            # arie, iar rândurile pe aria altei companii (scrise de versiunile dinainte de
+            # 19.0.0.0.11) nu trebuie să supraviețuiască recalculului
             self.env.cr.execute(
-                """
-                DELETE FROM product_valuation_history
-                WHERE company_id = %(company_id)s
-                  AND (valuation_area_id = %(valuation_area_id)s OR valuation_area_id IS NULL);
-            """,
-                params,
+                SQL(
+                    "DELETE FROM product_valuation_history WHERE company_id = %(company_id)s",
+                    company_id=params["company_id"],
+                )
             )
 
         if 2 in execute_step:
@@ -1281,3 +1283,62 @@ class ProductValuationHistory(models.Model):
             )
         except Exception:  # pragma: no cover - notification must never break the cron
             _logger.exception("Could not send stock valuation refresh notification")
+
+    @api.model
+    def _cleanup_cross_company_rows(self):
+        """
+        Repară datele scrise de versiunile dinainte de 19.0.0.0.11 / 20.0.0.0.10 pe bazele cu mai multe
+        companii (SV-002, SV-009): liniile contabile ale unei companii mutate pe aria altei
+        companii și rândurile de evaluare / istoric ale unei companii pe aria alteia.
+
+        - liniile de pe conturile de stoc ale companiilor la nivel „company" revin pe aria
+          propriei companii;
+        - rândurile de evaluare și istoric cu aria altei companii se șterg (sunt date derivate,
+          refăcute de recalculul complet al companiei).
+
+        :return: numărul de rânduri de istoric șterse
+        """
+        cr = self.env.cr
+        cr.execute(
+            SQL(
+                """
+                UPDATE account_move_line aml
+                SET valuation_area_id = c.valuation_area_id
+                FROM valuation_area va, res_company c, account_account acc
+                WHERE aml.valuation_area_id = va.id
+                  AND va.company_id != aml.company_id
+                  AND c.id = aml.company_id
+                  AND c.valuation_area_level = 'company'
+                  AND c.valuation_area_id IS NOT NULL
+                  AND acc.id = aml.account_id
+                  AND acc.is_for_stock_valuation
+                """
+            )
+        )
+        _logger.info("deltatech_stock_valuation: %d linii contabile readuse pe aria companiei", cr.rowcount)
+        removed = 0
+        for table in ("product_valuation_history", "product_valuation"):
+            cr.execute(
+                SQL(
+                    """
+                    DELETE FROM %(table)s pv
+                    USING valuation_area va
+                    WHERE pv.valuation_area_id = va.id
+                      AND va.company_id != pv.company_id
+                    """,
+                    table=SQL.identifier(table),
+                )
+            )
+            if table == "product_valuation_history":
+                removed = cr.rowcount
+            if cr.rowcount:
+                _logger.warning(
+                    "deltatech_stock_valuation: %d rânduri din %s pe aria altei companii au fost șterse; "
+                    "rulați Recompute All (Background) din fiecare companie.",
+                    cr.rowcount,
+                    table,
+                )
+        self.env["account.move.line"].invalidate_model(["valuation_area_id"])
+        self.env["product.valuation.history"].invalidate_model()
+        self.env["product.valuation"].invalidate_model()
+        return removed

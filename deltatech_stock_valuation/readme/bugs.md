@@ -129,6 +129,11 @@ the 20.0 code. Line numbers refer to the 20.0 branch.
   companies' rows; step 6 deleted empty rows by area only.
 - **Fix:** step 2 passes `company_id` to `_get_sql_select()` / `_get_sql_sub_select()`; steps 3, 4
   and 6 filter on the company; steps 3 and 6 are written with `SQL()`.
+  Step 1 now deletes the whole history of the company. The post-migration of 20.0.0.0.10
+  (`_cleanup_cross_company_rows()`) repairs the data left by the old version: stock journal items on
+  the area of another company go back to their company area, and valuation / history rows on the
+  area of another company are removed (found by the accounting review, which noted that
+  `l10n_ro_stock_provision` sums the history of a company over all areas).
 - **Test:** `test_known_bugs.test_sv003_full_recompute_steps_are_scoped_to_company`.
 
 ## Review limitations
