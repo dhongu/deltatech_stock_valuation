@@ -18,6 +18,23 @@ This module implements an account determination mechanism inspired by SAP OBYC (
 - Automatically selects source, destination, and valuation accounts during stock moves
 - Transaction key determination logic for common inventory operations
 
+## ⚠️ Cost of Goods Sold Is Booked at Delivery
+
+For products with an OBYC valuation class, this module intentionally changes the standard
+Odoo 19 behavior:
+
+- **Standard Odoo 19 (real-time valuation):** the cost of goods sold is booked when the
+  customer invoice is posted (COGS lines on the invoice).
+- **With OBYC:** the cost of goods sold is booked at delivery, on the journal entry of the
+  stock move (`stock_delivery` key, e.g. Dr 607 / Cr 371 for goods, Dr 711 / Cr 345 for
+  finished products). The customer invoice only records the revenue and the VAT
+  (Dr 4111 / Cr 707 + 4427) and has no COGS lines, so the cost is not booked twice.
+
+This follows the Romanian accounting rules (OMFP 1802/2014, items 95, 283, 290 and
+440–441): goods are removed from stock when control is transferred, which is usually the
+delivery, not the invoice. See `readme/bugs.md` for the cases not covered yet (delivered but
+not invoiced at month end, consignment, invoices issued before delivery).
+
 ## 🔄 Transaction Key Mapping (Default Logic)
 
 | Source Location | Destination Location | Transaction Key |

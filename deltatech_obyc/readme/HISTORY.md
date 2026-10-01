@@ -12,6 +12,8 @@
 - Fix: an invoice with two or more products with an OBYC valuation class failed with
   "Expected singleton". `account.move.line._compute_account_id` read the product,
   account modifier and company from all the lines (`self`) instead of the current line.
+- Docs: the description states that, with OBYC, the cost of goods sold is booked at
+  delivery, not at invoicing; known limitations are listed in `readme/bugs.md`.
 
 ## 19.0.1.0.2 (2026-09-30)
 
