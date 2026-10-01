@@ -2,6 +2,8 @@
 
 - Test: reversing a stock journal entry on a company without storno leaves the stock
   valuation at zero (the fix is in `deltatech_valuation_area` 19.0.1.0.3).
+- Test: with storno, reversing a stock entry leaves the valuation at zero, including a
+  zero-value line (move at cost 0).
 
 ## 19.0.0.0.9 (2026-10-01)
 
