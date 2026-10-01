@@ -14,9 +14,15 @@ class ProductTemplate(models.Model):
         company_dependent=True,
     )
 
+    def _get_valuation_class(self):
+        """Clasa de evaluare a produsului; dacă produsul nu are, cea a categoriei."""
+        self.ensure_one()
+        return self.valuation_class_id or self.categ_id.valuation_class_id
+
     def _get_product_accounts(self):
         res = super()._get_product_accounts()
-        if self.valuation_class_id:
+        valuation_class = self._get_valuation_class()
+        if valuation_class:
             for key in res:
                 res[key] = self.env["account.account"]
             transaction_key = self.env.context.get("transaction_key")
@@ -32,7 +38,7 @@ class ProductTemplate(models.Model):
                 _get_rule_account = self.env["product.account.determination"]._get_rule_account
                 rule = _get_rule_account(
                     valuation_area=valuation_area,
-                    valuation_class=self.valuation_class_id,
+                    valuation_class=valuation_class,
                     transaction_key=transaction_key,
                     account_modifier=account_modifier,
                     company=self.env.company,

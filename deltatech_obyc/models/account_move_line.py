@@ -17,7 +17,7 @@ class AccountMoveLine(models.Model):
 
         product_lines = self.filtered(lambda line: line.display_type == "product" and line.move_id.is_invoice(True))
         for line in product_lines:
-            if not line.product_id.valuation_class_id:
+            if not line.product_id._get_valuation_class():
                 continue
 
             valuation_area = line._get_valuation_area()
@@ -34,7 +34,7 @@ class AccountMoveLine(models.Model):
             _get_rule_account = self.env["product.account.determination"]._get_rule_account
             rule = _get_rule_account(
                 valuation_area=valuation_area,
-                valuation_class=line.product_id.valuation_class_id,
+                valuation_class=line.product_id._get_valuation_class(),
                 transaction_key=transaction_key,
                 account_modifier=account_modifier,
                 company=line.company_id,

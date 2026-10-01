@@ -1,3 +1,8 @@
+## 19.0.1.0.6 (2026-10-01)
+
+- New: valuation class on the product category. A product without its own valuation class
+  uses the class of its category; the class set on the product still takes priority.
+
 ## 19.0.1.0.5 (2026-10-01)
 
 - Fix: the "Transaction key could not be determined" error showed the literal placeholders
