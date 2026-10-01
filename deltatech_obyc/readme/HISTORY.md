@@ -2,6 +2,10 @@
 
 - Migration to Odoo 20: in 20 `stock.move.value` is negative on outgoing moves; the OBYC
   journal entry keeps posting the absolute value, so the Dr/Cr amounts are the same as in 19.
+- Odoo 20 replays the valuation and rewrites the value of outgoing moves already done when an
+  incoming move is backdated, a done quantity is edited or a vendor bill revalues a receipt.
+  For products with an OBYC valuation class the move value stays the one posted at validation
+  (as in 19), consistent with the OBYC journal entry; other products keep the Odoo 20 behaviour.
 
 ## 19.0.1.0.2 (2026-09-30)
 

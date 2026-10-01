@@ -13,4 +13,5 @@ from . import product_account_determination
 
 
 from . import stock_move
+from . import stock_move_line
 from . import stock_landing_cost

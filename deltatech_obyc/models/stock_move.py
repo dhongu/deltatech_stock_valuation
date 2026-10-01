@@ -63,21 +63,58 @@ class StockMove(models.Model):
     #
     #     return am_vals_list
 
-    def _set_value(self, recompute_date=None, skip_check=False):
-        """Completează valoarea mișcărilor dropship pentru produsele OBYC.
+    def write(self, vals):
+        # 20.0: mutarea datei unei mișcări valorizate reia valorizarea tuturor
+        # mișcărilor ulterioare (`_set_value(recompute_date=...)`). Până în 19
+        # schimbarea datei lăsa valorile neatinse, iar notele OBYC sunt postate din
+        # ele — păstrăm valorile mișcărilor OBYC.
+        if vals.get("date") and any(self.mapped("product_id.valuation_class_id")):
+            self = self.with_context(obyc_skip_revaluation=True)  # noqa: PLW0642
+        return super().write(vals)
 
-        Core (`stock_account._set_value`) include mișcările dropship în
-        filtrul `is_in or is_dropship`, dar atribuie `move.value` doar când
-        `is_in` e adevărat. Fără acest fix, `_get_account_move_line_vals()`
-        de mai jos ar folosi `self.value == 0`, iar nota contabilă OBYC
-        generată imediat după (tot în `_action_done()`) ar fi postată cu
-        debit=0/credit=0 — o notă aparent înregistrată, dar fără valoare.
+    def _set_value(self, recompute_date=None, skip_check=False):
+        """Valorizarea mișcărilor OBYC, ca în 19.
+
+        20.0 reia valorizarea mișcărilor de după una reevaluată (și rescrie `value`
+        pe ieșirile deja validate) prin `_correct_inventory_valuation`. Notele OBYC
+        sunt postate din `value` la validarea mișcării și nu se rescriu, deci pentru
+        produsele OBYC se (re)evaluează doar mișcările date, fără reluare. Produsele
+        fără clasă de evaluare păstrează comportamentul standard 20.
+
+        Completează și valoarea mișcărilor dropship OBYC: core-ul le include în
+        filtrul `is_in or is_dropship`, dar atribuie `move.value` doar când `is_in`
+        e adevărat. Fără acest fix, `_get_account_move_line_vals()` ar folosi
+        `self.value == 0`, iar nota OBYC generată imediat după (tot în
+        `_action_done()`) ar fi postată cu debit=0/credit=0.
         """
-        res = super()._set_value(recompute_date=recompute_date, skip_check=skip_check)
-        obyc_dropship_moves = self.filtered(lambda m: m.product_id.valuation_class_id and m.is_dropship and not m.value)
-        for move in obyc_dropship_moves:
+        obyc_moves = self.filtered(lambda m: m.product_id.valuation_class_id)
+        other_moves = self - obyc_moves
+        res = None
+        if other_moves:
+            res = super(StockMove, other_moves)._set_value(recompute_date=recompute_date, skip_check=skip_check)
+        if not obyc_moves:
+            return res
+        if recompute_date and (
+            self.env.context.get("obyc_skip_revaluation") or self.env.context.get("obyc_defer_ml_valuation")
+        ):
+            # schimbare de dată sau linii editate (reevaluate de
+            # `stock.move.line._obyc_update_stock_move_value`)
+            return res
+        res = super(StockMove, obyc_moves)._set_value(skip_check=True)
+        for move in obyc_moves.filtered(lambda m: m.is_dropship and not m.value):
             move.value = move.sudo()._get_value()
         return res
+
+    def _obyc_correct_out_value(self, correction_quantity):
+        """Reevaluează o ieșire validată a cărei cantitate s-a schimbat cu
+        `correction_quantity` (19.0 `_set_value(correction_quantity=...)`):
+        corecția se evaluează la valoarea unitară curentă a mișcării."""
+        for move in self:
+            previous_qty = move.quantity - correction_quantity
+            if previous_qty:
+                move.value += move.value / previous_qty * correction_quantity
+            else:
+                move._set_value()
 
     def _compute_transaction_key(self):
         source_usage = self.location_id.usage
