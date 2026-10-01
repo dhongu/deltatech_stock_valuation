@@ -36,6 +36,10 @@ Review date: 2026-10-01. Target version: Odoo 19.
 - **Validation needed:** Start from company B with scheduler default A; verify every step touches B only. Also test company switching during a manual run, stop/resume, and attempts to overlap refreshes.
 - **Note:** merges the finding "background recompute runs on the default company of the cron user" from the consultant-sheet review with VALUATION-001 of a separate code review (2026-10-01).
 
+- **Additional audit evidence:** Background-start methods persist global progress and notification user, but no target company. Cron code has no company context, and history deletion/rebuild uses `self.env.company`. The step and product cursor are also shared across manual company contexts.
+- **Additional impact:** A refresh requested for company B can delete/rebuild company A history instead. Switching companies between manual steps can execute incomplete sequences. This deletion/rebuild risk is the reason for the P1 assessment in the consolidated audit.
+- **Additional validation:** Start from B with scheduler default A; verify every step touches B only. Test company switching, stop/resume, and overlapping starts. No database cron reproduction was run.
+
 ## SV-004 — P3: Product Valuation rows can be added by hand and are lost at the next full recompute
 
 - **Status:** Open.
