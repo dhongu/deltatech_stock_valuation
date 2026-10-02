@@ -216,3 +216,36 @@ class TestStockMoveAccountDetermination(TestCommon):
         self.assertIn("inventory", message)
         self.assertNotIn("{", message)
         self.assertFalse(move._compute_transaction_key(raise_if_not_found=False))
+
+    def test_06_valuation_class_from_category(self):
+        """A product without its own valuation class uses the class of its category;
+        the class set on the product still takes priority."""
+        other_class = self.env["product.valuation.class"].create({"name": "Other Class", "code": "OTHER"})
+        category = self.env["product.category"].create(
+            {"name": "Category With Class", "valuation_class_id": self.valuation_class.id}
+        )
+        product = self.env["product.product"].create(
+            {"name": "Product Without Class", "is_storable": True, "categ_id": category.id}
+        )
+        self.assertEqual(product._get_valuation_class(), self.valuation_class)
+
+        move = self.env["stock.move"].create(
+            {
+                "product_id": product.id,
+                "product_uom_qty": 1.0,
+                "product_uom": product.uom_id.id,
+                "location_id": self.supplier_location.id,
+                "location_dest_id": self.stock_location.id,
+                "picking_type_id": self.picking_type_in.id,
+            }
+        )
+        rule = move._get_rule_account()
+        self.assertEqual(rule.acc_valuation_id, self.account_valuation)
+
+        product.valuation_class_id = other_class
+        self.assertEqual(product._get_valuation_class(), other_class)
+
+        product.valuation_class_id = False
+        category.valuation_class_id = False
+        self.assertFalse(product._get_valuation_class())
+        self.assertFalse(move._get_rule_account())
