@@ -1,3 +1,7 @@
+## 20.0.0.0.12 (2026-10-02)
+
+- The Usage screenshots on the Apps page are narrower (1245 px at most), so they no longer fill the whole page.
+
 ## 20.0.0.0.11 (2026-10-01)
 
 - Test: reversing a stock journal entry on a company without storno leaves the stock
