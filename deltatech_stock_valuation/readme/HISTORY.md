@@ -1,3 +1,7 @@
+## 19.0.0.0.12 (2026-10-02)
+
+- The Usage screenshots on the Apps page are narrower (1245 px at most), so they no longer fill the whole page.
+
 ## 19.0.0.0.11 (2026-10-01)
 
 - Fix: the recompute at posting counts the stock lines without a unit of measure (product unit),
