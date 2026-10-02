@@ -159,3 +159,11 @@ code review (local source inspection and isolated reproductions, no database-bac
 test). SV-001..007 were verified on `origin/19.0` on 2026-10-01 and fixed in 19.0.0.0.11, each with
 a database-backed regression test in `tests/test_known_bugs.py` that failed before the fix; SV-009
 was found during that verification. SV-008 remains open.
+
+## Reverification — 2026-10-01
+
+Compared the current local `19.0` source with the original audit snapshot. Repository HEAD: `ccfe68b`. This pass verifies source changes; module integration tests and upgrade migrations were not executed on an Odoo database.
+
+- **SV-003 — fixed in source:** the changed implementation addresses the originally documented failure. See the fix description and regression tests above. Deployment and database upgrade are outside this verification.
+- **SV-006 — fixed in source:** the changed implementation addresses the originally documented failure. See the fix description and regression tests above. Deployment and database upgrade are outside this verification.
+- **SV-007 — fixed in source:** the changed implementation addresses the originally documented failure. See the fix description and regression tests above. Deployment and database upgrade are outside this verification.
