@@ -11,7 +11,9 @@ class ProductTemplate(models.Model):
     product_valuation_ids = fields.One2many("product.valuation", "product_tmpl_id")
 
     def recompute_valuation_amount(self):
-        valuations = self.env["product.valuation"]
+        # evaluarea e date derivate, scrise doar de contabilul-șef (vezi ir.model.access.csv)
+        Valuation = self.env["product.valuation"].sudo()
+        valuations = Valuation
         for product in self:
             for variant in product.product_variant_ids:
                 company = variant.company_id or self.env.company
@@ -23,8 +25,6 @@ class ProductTemplate(models.Model):
                     account.is_for_stock_valuation = True
 
                 valuation_area = company.valuation_area_id
-                valuations |= self.env["product.valuation"].get_valuation(
-                    variant.id, valuation_area.id, account.id, company.id
-                )
+                valuations |= Valuation.get_valuation(variant.id, valuation_area.id, account.id, company.id)
 
         valuations._recompute_amount()

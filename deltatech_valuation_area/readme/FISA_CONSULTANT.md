@@ -96,16 +96,17 @@ Datele minime pentru demo (sunt și cele din capturi):
 
 ## 5. Configurare inițială
 
-1. **Inventar → Configurare → Setări**, secțiunea **Evaluare**: bifați **Folosește zonă de
+1. **Inventar → Configurare → Setări**, secțiunea **Evaluare**: bifați **Folosește arii de
    evaluare** (pasul 1). Câmpul pentru aria implicită apare sub bifă, dar îl completați abia
    după ce creați ariile (pașii 2–3).
-2. **Inventar → Configurare → Zonă de evaluare** (grupul *Gestiunea depozitului*): creați ariile.
+2. **Inventar → Configurare → Arii de evaluare** (meniul e vizibil doar pentru *Contabilitate /
+   Administrator*, singurul grup care poate scrie ariile): creați ariile.
 3. Reveniți în Setări și alegeți **Arie de evaluare** = aria implicită a companiei; **Salvează**.
 4. **Inventar → Configurare → Depozite**: completați **Arie de evaluare** pe depozitele evaluate
    separat (pasul 4).
 5. **Inventar → Configurare → Locații** (meniul apare doar cu setarea **Locații de stocare**
-   activă): completați **Arie de evaluare** pe locațiile interne — **inclusiv pe locația de stoc
-   a fiecărui depozit** (vezi pasul 4 de ce).
+   activă): completați **Arie de evaluare** doar pe locațiile interne care au altă arie decât
+   depozitul lor; celelalte iau aria depozitului (pasul 4).
 6. Pentru ca stocul să genereze note contabile automate (pasul 6): categoria produsului cu
    evaluarea **Perpetuă (la facturare)** și, pe locația de ajustare a inventarului, contul de
    pierderi completat. Contul de pe locație e unul singur pentru toate produsele: 607 e corect doar
@@ -115,7 +116,7 @@ Datele minime pentru demo (sunt și cele din capturi):
 
 ### Pasul 1 — Activarea ariilor pe companie
 
-**Inventar → Configurare → Setări**, secțiunea **Evaluare**. Bifați **Folosește zonă de
+**Inventar → Configurare → Setări**, secțiunea **Evaluare**. Bifați **Folosește arii de
 evaluare**; sub bifă apare câmpul **Arie de evaluare** — aria implicită a companiei, folosită
 când nici locația, nici depozitul nu au arie. Apăsați **Salvează**.
 
@@ -125,11 +126,11 @@ reveniți aici să alegeți aria implicită (vezi secțiunea 5, punctul 3).
 Cât timp bifa nu e activă, modulul nu completează și nu cere aria nicăieri. Setarea e per
 companie: celelalte companii din bază nu sunt afectate.
 
-![Setări Inventar — Folosește zonă de evaluare și aria implicită](screenshots/01_setari_use_valuation_area.png)
+![Setări Inventar — Folosește arii de evaluare și aria implicită](screenshots/01_setari_use_valuation_area.png)
 
 ### Pasul 2 — Lista ariilor de evaluare
 
-**Inventar → Configurare → Zonă de evaluare**. Lista arată, pentru fiecare arie, **Cod**,
+**Inventar → Configurare → Arii de evaluare**. Lista arată, pentru fiecare arie, **Cod**,
 **Nume**, **Companie** și **Jurnal de stoc**. Butonul **Nou(ă)** creează o arie nouă.
 
 ![Lista ariilor de evaluare](screenshots/02_valuation_area_list.png)
@@ -143,7 +144,7 @@ Deschideți o arie din listă (sau creați una). Completați:
 | **Cod** ① | cod scurt, obligatoriu; apare în numele afișat `[COD] Nume` (regulile de conturi din `deltatech_obyc` se leagă de arie, nu de cod) |
 | **Nume** | denumirea ariei, obligatorie |
 | **Companie** | compania căreia îi aparține aria (implicit compania curentă) |
-| **Jurnal de stoc** ② | jurnalul pe care se înregistrează notele de stoc ale ariei — **folosit doar dacă este instalat `deltatech_obyc`** |
+| **Jurnal de stoc** ② | jurnalul pe care se înregistrează notele de stoc ale ariei — **folosit doar dacă este instalat `deltatech_obyc`**; se pot alege doar jurnale de tip *Diverse* ale companiei ariei |
 
 Numele afișat al ariei are forma **`[COD] Nume`** (ex. „[STD] Arie standard").
 
@@ -162,11 +163,11 @@ arată aria fiecărui depozit; o completați din formularul depozitului, câmpul
 de lângă adresă. În captură, **Depozit central** are aria **[DEP] Arie depozit**, care înlocuiește
 aria implicită a companiei pe mișcările depozitului.
 
-**Atenție:** aria depozitului se aplică doar mișcărilor care **poartă depozitul** — cele generate
-din reguli de aprovizionare (ex. livrări din comenzi de vânzare, recepții din comenzi de
-achiziție). Ajustările de inventar și transferurile create manual nu poartă depozitul și cad pe
-aria implicită a companiei. De aceea completați aceeași arie și pe **locația de stoc** a
-depozitului (pasul 5) — așa este configurat și demo-ul (DC/Stoc = [DEP]).
+Aria depozitului se aplică tuturor mișcărilor pe locațiile lui interne, inclusiv ajustărilor de
+inventar și transferurilor create manual: depozitul se deduce din locație (de la versiunea
+19.0.1.0.4; înainte, aceste mișcări cădeau pe aria implicită a companiei, VA-001). Aria pusă pe o
+locație (pasul 5) are prioritate față de cea a depozitului. În demo, DC/Stoc are explicit aceeași
+arie [DEP] ca depozitul.
 
 ![Lista depozitelor cu coloana Arie de evaluare](screenshots/04_depozit_valuation_area.png)
 
@@ -176,10 +177,11 @@ depozitului (pasul 5) — așa este configurat și demo-ul (DC/Stoc = [DEP]).
 câmpul **Arie de evaluare** ① (vizibil doar pentru Inventar / Administrator). Aria locației are
 **prioritate maximă** și se ia doar pentru locațiile de tip **Intern**.
 
-Aria **nu se moștenește** de la locația părinte: fiecare locație internă (inclusiv sublocațiile,
-rafturile și locațiile interne ale rutelor în mai mulți pași: Intrare, Ieșire, Ambalare) trebuie
-configurată explicit; o sublocație fără arie cade pe depozit sau pe companie. Cu `deltatech_obyc`,
-o mișcare între o locație cu arie și una fără arie este refuzată (secțiunea 9).
+Aria **nu se moștenește** de la locația părinte: o locație internă fără arie proprie (inclusiv
+sublocațiile, rafturile și locațiile interne ale rutelor în mai mulți pași: Intrare, Ieșire,
+Ambalare) ia aria depozitului ei, apoi pe cea a companiei. O mișcare între două locații interne
+este refuzată la validare dacă ariile lor efective (proprie → depozit → companie) diferă
+(secțiunea 9).
 
 ![Formularul locației — Arie de evaluare](screenshots/05_locatie_valuation_area.png)
 
@@ -274,8 +276,9 @@ Cazul fără storno privește în practică firmele din alte țări (de exemplu 
 Irlanda). Înainte de versiunea 19.0.1.0.3, pe o companie fără storno cantitatea se copia cu același
 semn, iar inversul unei intrări număra încă o intrare (de exemplu 10 buc. la 0 lei în loc de 0).
 Notele inversate înainte de actualizare pot avea deci cantitatea greșită: verificați-le
-(secțiunea 8). Corecția cantității pe liniile existente nu se poate face din interfață (o notă
-manuală nu primește cantitate, VA-002); se face prin script sau import, stabilite cu Terrabit.
+(secțiunea 8). Corecția cantității pe liniile existente se face cu o notă manuală care poartă produsul,
+cantitatea și aria (coloanele opționale din **Elemente jurnal**, de la versiunea 19.0.1.0.4),
+stabilită cu contabilul.
 
 ![Formularul liniei 371 — Cantitate +5 și Produs](screenshots/07_linie_stoc_cantitate.png)
 
@@ -307,7 +310,7 @@ linia primește aria primei mișcări (vezi secțiunea 11).
 Cât timp compania folosește ariile, linia cu produs stocabil **nu poate rămâne fără arie**:
 golirea ei blochează salvarea cu mesajul de la secțiunea 9. Dacă compania nu are arie implicită
 și linia nu are o mișcare legată, chiar alegerea **oricărui produs** pe linie (inclusiv un
-serviciu sau un consumabil) e refuzată („Zona de evaluare nu este definită") — pe facturi și pe
+serviciu sau un consumabil) e refuzată („Aria de evaluare nu este definită") — pe facturi și pe
 orice linie contabilă cu produs, creată de alte documente. Aria se completează automat pe toate
 liniile cu produs, nu doar pe cele cu produs stocabil; doar golirea ei e blocată strict pentru
 produsele stocabile.
@@ -416,16 +419,16 @@ structura cerută (corespondența arie ↔ depozit SAF-T) este **de verificat** 
 liniile de factură/notă cu produs (orice produs, nu doar stocabil); blocarea liniilor cu produs
 stocabil fără arie.
 
-**Ce rămâne manual:** definirea ariilor și a jurnalelor; completarea ariei pe fiecare depozit și
-pe fiecare locație internă (fără moștenire). Notele contabile manuale nu pot primi produs,
-cantitate sau arie din interfață (vezi pasul 8).
+**Ce rămâne manual:** definirea ariilor și a jurnalelor; completarea ariei pe fiecare depozit și pe
+locațiile interne care au altă arie decât depozitul lor. Pe notele contabile manuale, produsul,
+cantitatea, UM și aria se completează din coloanele opționale ale listei **Elemente jurnal**
+(de la versiunea 19.0.1.0.4).
 
 ## 8. Verificări pentru consultant
 
-- [ ] compania are bifat **Folosește zonă de evaluare** și o **Arie de evaluare** implicită
+- [ ] compania are bifat **Folosește arii de evaluare** și o **Arie de evaluare** implicită
 - [ ] fiecare arie are **Cod** și, dacă se folosește `deltatech_obyc`, **Jurnal de stoc** al aceleiași companii
-- [ ] depozitele evaluate separat au aria completată **și** locația lor de stoc are aceeași arie
-- [ ] fiecare sublocație internă relevantă are aria setată explicit (nu se moștenește)
+- [ ] depozitele evaluate separat au aria completată; locațiile cu altă arie decât depozitul lor o au setată explicit
 - [ ] pe o notă de stoc automată (ex. ajustare de inventar), coloana **Arie de evaluare** arată aria locației, pe toate liniile cu produs
 - [ ] în **Elemente jurnal**, linia de debit a notei de stoc are **Cantitate** pozitivă, iar linia de credit cantitate negativă, egală în valoare absolută
 - [ ] pe o factură de furnizor cu produs stocabil, tab-ul **Elemente jurnal** arată aria pe linia produsului (aria recepției legate sau, fără comandă, aria implicită)
@@ -445,9 +448,9 @@ cantitate sau arie din interfață (vezi pasul 8).
 
 | Mesaj | Cauză | Remediere |
 |---|---|---|
-| „Zona de evaluare este obligatorie pentru produsele stocabile. Dacă produsul nu este stocabil, o puteți lăsa necompletată." | pe o linie de notă/factură cu produs stocabil s-a golit **Arie de evaluare**, iar compania folosește ariile | completați aria pe linie |
-| „Zona de evaluare nu este definită" | compania folosește ariile, dar nu are arie implicită, iar linia (sau mișcarea) nu găsește arie pe locație/depozit; apare chiar la alegerea oricărui produs (și serviciu) pe linia unei facturi | alegeți aria implicită în Setări (pasul 1) sau completați aria pe locație/depozit |
-| „Locațiile sursă și destinație trebuie să aibă aceeași zonă de evaluare pentru mișcările interne." | se determină aria unei mișcări între două locații interne cu arii diferite **sau când doar una dintre ele are arie** (de exemplu DC/Stoc [DEP] → o sublocație fără arie); în practică doar cu `deltatech_obyc`, pentru produsele cu clasă de evaluare (vezi secțiunea 11) | păstrați sursa și destinația în aceeași arie. Ruta printr-o locație de tranzit produce note doar cu `deltatech_obyc` **și** cu reguli definite pentru `internal_transfer_out` / `internal_transfer_in`; fără ele, transferul nu generează nicio notă și valoarea rămâne pe aria sursă. Ruta prin tranzit **nu este o soluție validată** (secțiunea 11) |
+| „Aria de evaluare este obligatorie pentru produsele stocabile. Dacă produsul nu este stocabil, o puteți lăsa necompletată." | pe o linie de notă/factură cu produs stocabil s-a golit **Arie de evaluare**, iar compania folosește ariile | completați aria pe linie |
+| „Aria de evaluare nu este definită" | compania folosește ariile, dar nu are arie implicită, iar linia (sau mișcarea) nu găsește arie pe locație/depozit; apare chiar la alegerea oricărui produs (și serviciu) pe linia unei facturi | alegeți aria implicită în Setări (pasul 1) sau completați aria pe locație/depozit |
+| „Locațiile sursă și destinație trebuie să aibă aceeași arie de evaluare pentru mișcările interne." | la validarea unei mișcări (sau a unei linii a ei, de exemplu la putaway pe o sublocație) între două locații interne ale căror arii efective (proprie → depozit → companie) diferă; cu sau fără `deltatech_obyc` (de la versiunea 19.0.1.0.4) | păstrați sursa și destinația în aceeași arie. Ruta printr-o locație de tranzit produce note doar cu `deltatech_obyc` **și** cu reguli definite pentru `internal_transfer_out` / `internal_transfer_in`; fără ele, transferul nu generează nicio notă și valoarea rămâne pe aria sursă. Ruta prin tranzit **nu este o soluție validată** (secțiunea 11) |
 
 ## 10. Capturi de ecran
 
@@ -473,27 +476,25 @@ Regenerare:
 
 ## 11. Observații pentru manual
 
-- **Terminologie:** interfața RO folosește atât „zonă de evaluare" (meniul, bifa din Setări,
-  mesajele de eroare), cât și „arie de evaluare" (câmpurile, titlul listei). Sunt același lucru;
-  manualul poate folosi „arie de evaluare" și menționa că meniul se numește „Zonă de evaluare".
-- **Transferurile între gestiuni din arii diferite nu sunt suportate.** Blocarea lor este o
-  limitare tehnică a produsului, nu o cerință legală, și se verifică doar când se determină aria
-  mișcării. Cu acest modul singur, un transfer intern între două locații interne nu generează notă
-  în Odoo 19, deci **nu este blocat** (verificat pe 01.10.2026). **Consecința:** stocul fizic
-  ajunge în gestiunea B, dar valoarea și cantitatea pe arie rămân pe aria A, fără nicio eroare
-  (contrar OMFP pct. 290 și 284(1)). Cu `deltatech_obyc`, pentru produsele cu clasă de evaluare
-  OBYC, validarea între arii diferite este refuzată (dedus din cod, neverificat pe o bază de test).
+- **Terminologie:** de la versiunea 19.0.1.0.4 interfața RO folosește peste tot „arie de evaluare"
+  (meniul **Arii de evaluare**, bifa din Setări, mesajele de eroare); pe bazele existente,
+  traducerile se reîncarcă la actualizarea modulului.
+- **Transferurile directe între gestiuni din arii diferite sunt refuzate** la validare (de la
+  versiunea 19.0.1.0.4, cu sau fără `deltatech_obyc`). Blocarea este o limitare tehnică a
+  produsului, nu o cerință legală. Înainte de 19.0.1.0.4, fără `deltatech_obyc`, un astfel de
+  transfer trecea fără eroare: stocul fizic ajungea în gestiunea B, dar valoarea și cantitatea pe
+  arie rămâneau pe aria A (contrar OMFP pct. 290 și 284(1)); verificați transferurile vechi.
   Ruta prin tranzit (aria A → tranzit → aria B) produce note doar cu `deltatech_obyc` și reguli
   pentru `internal_transfer_out` / `internal_transfer_in`; valoarea efectivă a acestor note nu a
   fost verificată pe o bază de test. **Până la suportul complet** (planificat, roadmap evaluare pe
-  depozit), **nu faceți transferuri între gestiuni din arii diferite**; dacă au fost făcute,
-  corecția pe arie se stabilește cu contabilul (Dr 371 aria B = Cr 371 aria A, la costul de ieșire)
-  și se introduce prin import sau integrare, pentru că o notă manuală nu poate primi produs,
-  cantitate și arie din interfață (VA-002).
-- **Aria depozitului** se aplică doar mișcărilor care poartă depozitul (din reguli de
-  aprovizionare); pentru restul, aria trebuie pusă pe locația de stoc. Efect contabil (VA-001): la
-  inventar, plusurile și lipsurile ajung pe aria greșită, deci compensarea lor și imputarea
-  lipsurilor se fac pe gestiunea, adică pe gestionarul, greșit.
+  depozit), **nu folosiți ruta prin tranzit între arii**; transferurile vechi între arii se
+  corectează pe arie cu contabilul (Dr 371 aria B = Cr 371 aria A, la costul de ieșire), cu o notă
+  manuală care poartă produsul, cantitatea și aria (coloanele opționale din **Elemente jurnal**).
+- **Aria depozitului** se aplică, de la versiunea 19.0.1.0.4, tuturor mișcărilor pe locațiile lui
+  interne. Înainte, ajustările de inventar și transferurile manuale cădeau pe aria implicită a
+  companiei dacă locația de stoc nu avea arie proprie (VA-001): plusurile și lipsurile de inventar
+  ajungeau pe aria greșită, deci compensarea lor și imputarea lipsurilor se făceau pe gestionarul
+  greșit. Verificați notele de inventar anterioare pe bazele configurate doar pe depozit.
 - **Aria pe factură** se ia doar din prima mișcare de stoc legată de linie (VA-005): o linie
   acoperită de mișcări din două arii pune toată valoarea pe aria primei mișcări.
 - **Aria pe liniile fără stoc** (VA-006): aria se pune pe orice linie cu produs, inclusiv servicii;

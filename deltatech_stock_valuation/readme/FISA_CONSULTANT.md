@@ -4,7 +4,7 @@
 **Utilizator principal:** contabil stocuri, controller, administrator Odoo (recalcularea)
 **Prioritate:** 🟡 Medie (strat de control peste evaluarea standard; necesar la clienții cu arii de evaluare sau cu corecții contabile manuale pe stocuri)
 
-> Fișă actualizată la 01.10.2026 pe codul versiunii 19.0.0.0.10 a modulului, cu
+> Fișă actualizată la 01.10.2026 pe codul versiunii 19.0.0.0.11 a modulului, cu
 > `deltatech_valuation_area` 19.0.1.0.3 și `deltatech_obyc` 19.0.1.0.4, după auditul contabil
 > din aceeași zi.
 
@@ -13,10 +13,9 @@
 > respectă OMFP 1802/2014 pct. 283 și 284 pentru recepțiile și livrările nefacturate, decât dacă
 > se aplică procedura de închidere din secțiunea 6 („Închiderea lunii”).
 
-> ⛔ **Baze cu mai multe companii:** nu salvați setările de evaluare și nu rulați recalcularea
-> completă până la remedierea SV-002 și SV-003 din `readme/bugs.md`. Riscul privește integritatea
-> datelor (linii contabile mutate pe aria altei companii, istoric șters și refăcut pe altă
-> companie), nu performanța. Detalii în secțiunea 11.
+> **Baze cu mai multe companii:** de la versiunea 19.0.0.0.11, salvarea setărilor și recalcularea
+> completă lucrează doar pe compania curentă (SV-002, SV-003 remediate). Configurați și recalculați
+> separat, din fiecare companie. Detalii în secțiunea 11.
 
 ---
 
@@ -189,8 +188,8 @@ Date minime pentru demo:
 
 ## 5. Configurare inițială
 
-> Pe o bază cu **mai multe companii**, opriți-vă aici: salvarea setărilor (pasul 3) și
-> recalcularea (pasul 6) pot modifica datele altei companii (SV-002, SV-003). Vezi secțiunea 11.
+> Pe o bază cu **mai multe companii**, faceți configurarea din fiecare companie: salvarea setărilor
+> (pasul 3) și recalcularea (pasul 6) privesc doar compania curentă. Vezi secțiunea 11.
 
 1. **Zona de evaluare** — în **Inventar → Configurare → Setări**, secțiunea **Evaluare**, bifați
    **Folosește zonă de evaluare** (vine din `deltatech_valuation_area`) și alegeți **Arie de
@@ -362,8 +361,6 @@ antetului). Verificați pe rândul lunii:
 
 ### Pasul 7 — Recalculați complet evaluarea (doar când e nevoie)
 
-> Doar pe baze cu **o singură companie**, până la remedierea SV-003 (secțiunea 11).
-
 Recalcularea completă este necesară după prima instalare, după un import de date sau după corecții
 retroactive masive; fluxul zilnic nu o cere (pasul 5). Din **Inventar → Configurare → Setări**,
 secțiunea **Evaluare**, apăsați **Recompute All (Background)** și confirmați mesajul.
@@ -371,8 +368,10 @@ secțiunea **Evaluare**, apăsați **Recompute All (Background)** și confirmaț
 - Ciclul repornește de la pasul 1 din 7, iar o acțiune planificată (la 2 minute) execută automat
   câte un pas la fiecare rulare și se oprește singură la final. Durata minimă este de circa 12–14
   minute; pasul 5 rulează în loturi de produse și poate cere mai multe rulări pe baze mari.
-- Recalcularea se face pentru compania implicită a utilizatorului acțiunii planificate, nu pentru
-  compania din care ați apăsat butonul (SV-003).
+- Recalcularea se face pentru **compania din care ați apăsat butonul**, pe tot ciclul, chiar dacă
+  acțiunea planificată rulează cu altă companie implicită. Pe o bază cu mai multe companii, porniți
+  recalcularea din fiecare companie, pe rând (un ciclu nou se poate porni după ce cel curent s-a
+  terminat).
 - Cât rulează, apare **Running…**, iar butonul devine **Stop Background Refresh**. O a doua pornire
   este blocată.
 - Utilizatorul care a pornit ciclul primește o **notificare** după fiecare pas, cu pasul și durata,
@@ -395,10 +394,10 @@ captură proprie; ecranul de pornire este captura 03.
 
 Pe formularul produsului (**Inventar → Produse → Produse** → produsul), tab-ul **Contabilitate**
 afișează, sub conturile de venituri și cheltuieli, tabelul evaluărilor produsului: variantă, arie,
-cont, preț, cantitate, valoare. Cantitatea și valoarea nu se pot modifica; pe un rând cu cantitate
-zero se pot corecta varianta, aria, contul și prețul. Cu **Adaugă o linie** se poate crea un rând
-manual, dar recalcularea completă îl șterge; rămân doar rândurile care rezultă din note — nu îl
-folosiți pentru corecții (SV-004).
+cont, preț, cantitate, valoare. Tabelul este **doar pentru citire**: rândurile rezultă din notele
+contabile și nu se pot adăuga sau modifica manual; corecțiile se fac prin note contabile. Utilizatorii
+interni au doar drept de citire pe evaluare; scrierea directă e rezervată grupului **Contabilitate /
+Administrator**.
 
 În captură, butonul **În stoc** arată 0,00: notele din exemplu sunt introduse direct în
 contabilitate, fără recepție și livrare în Inventar, deci nu există stoc fizic. Pe o bază reală, cu
@@ -565,7 +564,7 @@ Modulul nu alimentează direct nicio declarație ANAF.
 ### Configurare și flux
 
 - [ ] compania are **Folosește zonă de evaluare** bifat, **Arie de evaluare** completată și **Valuation Area Level** = **Company**
-- [ ] baza are **o singură companie**; dacă are mai multe, setările nu au fost salvate și recalcularea nu a fost rulată (SV-002, SV-003)
+- [ ] pe o bază cu mai multe companii: setările au fost salvate și recalcularea a fost rulată **din fiecare companie** (fiecare ciclu privește doar compania din care a fost pornit)
 - [ ] conturile de stoc relevante (371 și celelalte din categorii) au bifa **Evaluare stoc**
 - [ ] categoriile au **Costul mediu (AVCO)** și **Perpetuă (la facturare)**; pe o categorie FIFO caseta **Use Valuation Area Price** nu apare
 - [ ] cu `deltatech_obyc`: toate produsele stocabile au **Clasă de evaluare**
@@ -679,18 +678,18 @@ contabile, balanță, raportul de stoc).
 
 ## 11. Observații pentru manual
 
-- **Mai multe companii — avertisment ferm.** Până la remedierea SV-002 și SV-003 din
-  `readme/bugs.md`, pe o bază cu mai multe companii **nu salvați setările de evaluare și nu rulați
-  recalcularea completă**:
-  - salvarea setărilor trece pe aria companiei curente liniile de pe conturile marcate **ale
-    tuturor companiilor** (SV-002);
-  - recalcularea în fundal rulează pentru compania implicită a utilizatorului acțiunii planificate,
-    nu pentru compania din care ați apăsat butonul: istoricul altei companii este șters și refăcut,
-    iar compania cerută rămâne neactualizată (SV-003);
-  - rândurile noi create pentru altă companie decât cea curentă pot primi moneda companiei curente
-    (SV-006).
-  Este o problemă de integritate a datelor, nu de performanță; o copie de test nu o face sigură în
-  producție.
+- **Mai multe companii.** De la versiunea 19.0.0.0.11 (SV-002, SV-003, SV-006 remediate):
+  - salvarea setărilor trece pe aria companiei doar liniile **companiei curente** de pe conturile
+    marcate, inclusiv pe cele fără arie;
+  - recalcularea completă (manuală sau în fundal) lucrează doar pe compania din care a fost
+    pornită; un ciclu pas cu pas început într-o companie nu poate fi continuat din alta;
+  - rândurile noi de evaluare primesc moneda companiei lor; rândurile vechi cu altă monedă sunt
+    corectate la actualizarea modulului;
+  - actualizarea readuce pe aria propriei companii liniile contabile mutate de versiunea veche și
+    șterge rândurile de evaluare / istoric rămase pe aria altei companii. După actualizare, la
+    clienții cu mai multe companii: **Reset** la ciclul de fundal rămas în curs, apoi **Recompute All
+    (Background)** din fiecare companie.
+  În manual: configurarea și recalcularea se fac din fiecare companie, pe rând.
 - **OBYC la clienții RO.** Recomandați `deltatech_obyc`, cu limitele lui deschise: venitul
   livrărilor nefacturate (OBYC-002), cheile de ajustare de inventar inversate (OBYC-005), note și
   pe categoriile periodice (OBYC-006), diferențele de preț factură / recepție netratate. Dacă clientul rămâne fără OBYC, includeți

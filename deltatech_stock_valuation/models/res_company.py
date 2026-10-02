@@ -3,6 +3,7 @@
 # See README.rst file on addons root folder for license details
 
 from odoo import fields, models
+from odoo.tools import SQL
 
 
 class ResCompany(models.Model):
@@ -40,15 +41,20 @@ class ResCompany(models.Model):
         accounts = self.env["account.account"].search([("is_for_stock_valuation", "=", True)])
         if not accounts:
             return
-        params = {
-            "account_ids": tuple(accounts.ids),
-            "valuation_area_id": self.valuation_area_id.id,
-        }
-
+        self.env["account.move.line"].flush_model(["valuation_area_id"])
+        # conturile pot fi partajate între companii: se mută doar liniile companiei curente,
+        # inclusiv cele fără arie (NULL nu e prins de `!=`)
         self.env.cr.execute(
-            """
+            SQL(
+                """
                 UPDATE account_move_line SET valuation_area_id = %(valuation_area_id)s
-                where account_id in %(account_ids)s and valuation_area_id != %(valuation_area_id)s
-            """,
-            params,
+                WHERE account_id IN %(account_ids)s
+                  AND company_id = %(company_id)s
+                  AND (valuation_area_id IS NULL OR valuation_area_id != %(valuation_area_id)s)
+                """,
+                account_ids=tuple(accounts.ids),
+                company_id=self.id,
+                valuation_area_id=self.valuation_area_id.id,
+            )
         )
+        self.env["account.move.line"].invalidate_model(["valuation_area_id"])

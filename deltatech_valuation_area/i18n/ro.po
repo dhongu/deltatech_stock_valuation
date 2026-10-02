@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-31 10:25+0000\n"
-"PO-Revision-Date: 2026-07-31 10:25+0000\n"
+"POT-Creation-Date: 2026-10-01 09:23+0000\n"
+"PO-Revision-Date: 2026-10-01 09:23+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ro\n"
@@ -58,11 +58,6 @@ msgid "Display Name"
 msgstr "Nume afișat"
 
 #. module: deltatech_valuation_area
-#: model:ir.ui.menu,name:deltatech_valuation_area.menu_valuation_area
-msgid "Evaluation Area"
-msgstr "Zonă de evaluare"
-
-#. module: deltatech_valuation_area
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_account_move_line__id
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_company__id
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_config_settings__id
@@ -101,12 +96,12 @@ msgstr "Nume"
 #. module: deltatech_valuation_area
 #: model_terms:ir.ui.view,arch_db:deltatech_valuation_area.res_config_settings_view_form
 msgid "Set valuation area for the company."
-msgstr "Setați zona de evaluare pentru companie."
+msgstr "Setați aria de evaluare pentru companie."
 
 #. module: deltatech_valuation_area
 #: model:ir.model.fields,help:deltatech_valuation_area.field_valuation_area__code
-msgid "Short code used in account determination"
-msgstr "Cod scurt folosit în determinarea contului"
+msgid "Short code shown in front of the area name, as [CODE] Name."
+msgstr "Cod scurt afișat în fața numelui ariei, ca [COD] Nume."
 
 #. module: deltatech_valuation_area
 #. odoo-python
@@ -115,7 +110,7 @@ msgid ""
 "Source and destination locations must have the same valuation area for "
 "internal moves."
 msgstr ""
-"Locațiile sursă și destinație trebuie să aibă aceeași zonă de evaluare "
+"Locațiile sursă și destinație trebuie să aibă aceeași arie de evaluare "
 "pentru mișcările interne."
 
 #. module: deltatech_valuation_area
@@ -132,15 +127,14 @@ msgstr "Mișcare stoc"
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_company__use_valuation_area
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_config_settings__use_valuation_area
 msgid "Use Valuation Area"
-msgstr "Folosește zonă de evaluare"
+msgstr "Folosește arii de evaluare"
 
 #. module: deltatech_valuation_area
 #: model_terms:ir.ui.view,arch_db:deltatech_valuation_area.res_config_settings_view_form
 msgid "Use valuation area for this company."
-msgstr "Folosește zonă de evaluare pentru această companie."
+msgstr "Folosește arii de evaluare pentru această companie."
 
 #. module: deltatech_valuation_area
-#: model:ir.actions.act_window,name:deltatech_valuation_area.action_valuation_area
 #: model:ir.model,name:deltatech_valuation_area.model_valuation_area
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_account_move_line__valuation_area_id
 #: model:ir.model.fields,field_description:deltatech_valuation_area.field_res_company__valuation_area_id
@@ -157,15 +151,21 @@ msgid ""
 "Valuation Area is required for stockable products. If the product is not "
 "stockable, you can leave it empty."
 msgstr ""
-"Zona de evaluare este obligatorie pentru produsele stocabile. Dacă produsul "
+"Aria de evaluare este obligatorie pentru produsele stocabile. Dacă produsul "
 "nu este stocabil, o puteți lăsa necompletată."
+
+#. module: deltatech_valuation_area
+#: model:ir.actions.act_window,name:deltatech_valuation_area.action_valuation_area
+#: model:ir.ui.menu,name:deltatech_valuation_area.menu_valuation_area
+msgid "Valuation Areas"
+msgstr "Arii de evaluare"
 
 #. module: deltatech_valuation_area
 #. odoo-python
 #: code:addons/deltatech_valuation_area/models/account_move_line.py:0
 #: code:addons/deltatech_valuation_area/models/stock_move.py:0
 msgid "Valuation area is not defined"
-msgstr "Zona de evaluare nu este definită"
+msgstr "Aria de evaluare nu este definită"
 
 #. module: deltatech_valuation_area
 #: model:ir.model,name:deltatech_valuation_area.model_stock_warehouse

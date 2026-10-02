@@ -24,13 +24,19 @@ de **Valuation Area** (nivel de evaluare per depozit sau locație).
 
 La generarea liniilor contabile dintr-o mișcare de stoc, aria se determină în ordinea:
 
-1. **Locația destinație** (dacă este internă) — prioritate maximă
-2. **Locația sursă** (dacă este internă)
-3. **Depozitul** asociat mișcării
+1. **Locația destinație** (dacă este internă): aria locației, altfel aria depozitului căruia îi
+   aparține locația — prioritate maximă
+2. **Locația sursă** (dacă este internă): aria locației, altfel aria depozitului ei
+3. **Depozitul de aprovizionare** al mișcării
 4. **Compania** — fallback implicit
 
+Depozitul se deduce din locație, deci ajustările de inventar și transferurile manuale (care nu au
+depozit de aprovizionare) iau aria depozitului chiar dacă locația de stoc nu are arie proprie.
+
 > ⚠️ **Constrângere:** Transferurile interne între locații cu arii de evaluare diferite nu sunt permise.
-> Sursa și destinația trebuie să aparțină aceleiași arii de evaluare.
+> Verificarea se face la validarea mișcării (inclusiv pe liniile ei, de exemplu la putaway pe o
+> sublocație), indiferent dacă se generează sau nu notă contabilă. Trecerea dintre arii se face printr-o
+> locație de tranzit.
 
 ### Propagarea ariei pe liniile contabile
 
@@ -39,23 +45,27 @@ res.company.valuation_area_id       ← fallback implicit
 stock.warehouse.valuation_area_id   ← per depozit
 stock.location.valuation_area_id    ← per locație (prioritate maximă)
         ↓
-stock.move._get_valuation_area()    ← determină aria din locații
+stock.move._get_valuation_area()    ← determină aria din locații / depozitul locației
         ↓
 account.move.line.valuation_area_id ← stocat pe linia contabilă
 ```
 
-Metoda `_prepare_account_move_line` este extinsă pentru a injecta automat `valuation_area_id`
-pe fiecare linie contabilă generată din mișcările de stoc.
+Metoda `_get_account_move_line_vals` este extinsă pentru a injecta automat `valuation_area_id`,
+cantitatea semnată și unitatea de măsură pe fiecare linie contabilă generată din mișcările de stoc.
+
+Pe notele contabile manuale (corecții, solduri inițiale), lista **Elemente jurnal** are coloanele
+opționale **Produs**, **Cantitate**, **UM** și **Arie de evaluare**; lista generală a elementelor de
+jurnal are coloanele opționale **Cantitate** și **Arie de evaluare**.
 
 ### Configurare
 
-Ariile de evaluare se configurează din meniul **Inventar > Configurare > Arii de Evaluare**.
-Pentru fiecare arie se specifică:
+Ariile de evaluare se configurează din meniul **Inventar > Configurare > Arii de evaluare**, vizibil
+doar managerului contabil (singurul cu drept de scriere pe arii). Pentru fiecare arie se specifică:
 
 - **Nume** — denumire descriptivă
-- **Cod** — cod scurt utilizat în determinarea conturilor contabile
+- **Cod** — cod scurt afișat în fața numelui (`[COD] Nume`)
 - **Companie** — compania căreia îi aparține aria
-- **Jurnal stoc** — jurnalul contabil pentru tranzacțiile de stoc din această arie
+- **Jurnal stoc** — un jurnal de tip *Diverse* al companiei, pentru tranzacțiile de stoc din această arie
 
 ### Metodă de evaluare suportată
 

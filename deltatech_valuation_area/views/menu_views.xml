@@ -1,13 +1,12 @@
 <odoo>
 
-  <!-- Meniu principal pentru configurarea OBYC -->
-
-
+    <!-- ariile se scriu doar de managerul contabil (vezi ir.model.access.csv) -->
     <menuitem
         id="menu_valuation_area"
-        name="Evaluation Area"
+        name="Valuation Areas"
         action="action_valuation_area"
         parent="stock.menu_warehouse_config"
+        groups="account.group_account_manager"
         sequence="10"
     />
 
