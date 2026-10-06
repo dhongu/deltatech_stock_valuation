@@ -167,3 +167,33 @@ Compared the current local `19.0` source with the original audit snapshot. Repos
 - **SV-003 — fixed in source:** the changed implementation addresses the originally documented failure. See the fix description and regression tests above. Deployment and database upgrade are outside this verification.
 - **SV-006 — fixed in source:** the changed implementation addresses the originally documented failure. See the fix description and regression tests above. Deployment and database upgrade are outside this verification.
 - **SV-007 — fixed in source:** the changed implementation addresses the originally documented failure. See the fix description and regression tests above. Deployment and database upgrade are outside this verification.
+
+## SV-010 — Area-price valuation fails for products using OBYC account determination
+
+- **Priority:** P1
+- **Status:** Open (2026-10-02).
+- **Source:** `models/stock_move.py, _get_valuation_area_price; deltatech_obyc/models/product_template.py, _get_product_accounts`.
+- **Trigger:** Enable Use Valuation Area Price on an AVCO category and assign an OBYC valuation class to its product, then validate an outgoing move.
+- **Observed behavior:** The area-price helper calls get_product_accounts without transaction_key or OBYC rule context. The OBYC override rejects such calls, raising Transaction key is not defined before the area-price query. Outgoing validation can fail rather than use the configured valuation.
+- **Evidence:** Executed the actual extracted helpers with super/environment shims; the call raises UserError. Core get_product_accounts delegates to _get_product_accounts. Reproduction: audit_coverage/reproductions/valuation_context.py; no database posting.
+- **Suggested fix / regression check:** Resolve the valuation account through the OBYC rule for the move, or supply the full rule context; test both modules installed together.
+
+## SV-011 — Resetting refresh progress can redirect an active background run to the cron company
+
+- **Priority:** P2
+- **Status:** Open (2026-10-02).
+- **Source:** `models/res_config_settings.py, reset_refresh_valuation_step; models/product_valuation.py, _auto_refresh_step`.
+- **Trigger:** While a background cycle for company B is active, an administrator calls the public reset method through RPC or a custom action. The standard manual reset button is currently commented out.
+- **Observed behavior:** Reset clears the saved company and resets step/cursor without checking or disabling the cron. Its next invocation falls back to the cron environment company A and starts step 1 there. This bypasses the company guard used by manual stepping.
+- **Evidence:** Executed the extracted reset and observed cleared company/progress; inspected active-cron handling and fallback in _auto_refresh_step. Source/mocked evidence only, no cron database execution.
+- **Suggested fix / regression check:** Reject reset while a cycle is running, or stop it atomically before clearing the run identity; test reset/resume with different initiating and scheduler companies.
+
+## SV-012 — Valuation rows are readable across unauthorized companies
+
+- **Priority:** P1
+- **Status:** Open (2026-10-02).
+- **Source:** `security/ir.model.access.csv; security/security.xml; models/product_valuation.py`.
+- **Trigger:** An internal user limited to company A searches or reads product.valuation or product.valuation.history while company B has valuation records.
+- **Observed behavior:** Both models grant base.group_user read access. The manifest-loaded security XML is empty and there are no company record rules in this suite for these newly defined models. A company_id field or company default alone does not filter searches, so valuation quantities, costs and history from B are exposed. Accounting managers also receive unrestricted write permissions.
+- **Evidence:** Inspected model definitions, ACL CSVs, manifests and all suite security declarations. No database ACL reproduction; an unrelated installed extension could add its own rules.
+- **Suggested fix / regression check:** Add company record rules for both models using allowed_company_ids and verify read/write isolation through ORM and RPC, including shared products.

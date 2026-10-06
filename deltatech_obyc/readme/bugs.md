@@ -100,3 +100,13 @@ Review date: 2026-10-01. Target version: Odoo 19.
 - **Expected failure:** In Odoo 19 a stock → transit move is neither `is_in` nor `is_out`, so `_set_value()` does not fill `stock.move.value`; the OBYC entry would be posted with value and quantity 0.
 - **Impact:** The value does not move between the areas although the entry looks posted.
 - **Validation needed:** A test of the transit route with both rules defined, checking the value of both entries.
+
+## OBYC-010 — All internal users can modify account determination rules across companies
+
+- **Priority:** P1
+- **Status:** Open (2026-10-02).
+- **Source:** `security/ir.model.access.csv; models/product_account_determination.py`.
+- **Trigger:** A non-accounting internal user invokes create/write/unlink on product.account.determination through RPC.
+- **Observed behavior:** The ACL gives base.group_user all four permissions and there are no company rules for this new model in the declared suite. Users can alter or delete rules for another company, affecting the accounts selected on subsequent invoices and stock entries. Menu visibility does not restrict these model operations.
+- **Evidence:** Reviewed the ACL, new model, rule lookup and manifest security loading. No database/RPC reproduction; findings assume no external extension adds stricter global rules.
+- **Suggested fix / regression check:** Limit configuration writes to an appropriate accounting administration group and enforce company isolation with record rules. Cover direct ORM/RPC mutations by a normal internal user.

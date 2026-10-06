@@ -1,3 +1,8 @@
+## 19.0.1.0.5 (2026-10-06)
+
+- In the valuation area dropdown the code is shown in a second, dimmed column; the areas can
+  also be searched by code. The plain name, `[CODE] Name`, is unchanged.
+
 ## 19.0.1.0.4 (2026-10-01)
 
 - Fix (VA-001): the area of a stock move is taken from the warehouse of its internal location when

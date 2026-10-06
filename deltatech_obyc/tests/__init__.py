@@ -8,3 +8,4 @@ from . import test_nc_generation
 from . import test_dropship_valuation
 from . import test_screenshots
 from . import test_obyc_entries
+from . import test_formatted_display_name
