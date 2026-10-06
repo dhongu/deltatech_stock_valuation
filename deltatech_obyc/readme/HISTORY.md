@@ -1,3 +1,8 @@
+## 19.0.1.0.7 (2026-10-06)
+
+- In the valuation class and account modifier dropdowns the code is shown in a second, dimmed
+  column; both can also be searched by code. The plain name, `[CODE] Name`, is unchanged.
+
 ## 19.0.1.0.6 (2026-10-01)
 
 - Fix (OBYC-005): the inventory adjustment keys were swapped — a gain used the
