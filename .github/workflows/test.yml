@@ -13,6 +13,8 @@ on:
       - "**/screenshots/**"
       - "**/static/description/**"
       - "**/i18n/**"
+      - "**/index.html"
+      - "scripts/**"
   push:
     branches:
       - "20.0"
