@@ -249,3 +249,32 @@ class TestStockMoveAccountDetermination(TestCommon):
         category.valuation_class_id = False
         self.assertFalse(product._get_valuation_class())
         self.assertFalse(move._get_rule_account())
+
+    def test_07_valuation_class_from_parent_category(self):
+        """A category without a class inherits the one of its nearest parent with a class."""
+        other_class = self.env["product.valuation.class"].create({"name": "Child Class", "code": "CHILD"})
+        parent = self.env["product.category"].create(
+            {"name": "Parent With Class", "valuation_class_id": self.valuation_class.id}
+        )
+        middle = self.env["product.category"].create({"name": "Middle", "parent_id": parent.id})
+        child = self.env["product.category"].create({"name": "Child", "parent_id": middle.id})
+        product = self.env["product.product"].create(
+            {"name": "Product In Child", "is_storable": True, "categ_id": child.id}
+        )
+        self.assertEqual(product._get_valuation_class(), self.valuation_class)
+
+        middle.valuation_class_id = other_class
+        self.assertEqual(product._get_valuation_class(), other_class)
+
+        child.valuation_class_id = self.valuation_class
+        self.assertEqual(product._get_valuation_class(), self.valuation_class)
+
+        product.valuation_class_id = other_class
+        self.assertEqual(product._get_valuation_class(), other_class)
+
+        product.valuation_class_id = False
+        parent.valuation_class_id = False
+        middle.valuation_class_id = False
+        child.valuation_class_id = False
+        self.assertFalse(product._get_valuation_class())
+        self.assertFalse(self.env["product.category"]._get_valuation_class())
