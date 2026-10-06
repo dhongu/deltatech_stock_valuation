@@ -1,3 +1,8 @@
+## 20.0.1.0.8 (2026-10-06)
+
+- In the valuation class and account modifier dropdowns the code is shown in a second, dimmed
+  column; both can also be searched by code. The plain name, `[CODE] Name`, is unchanged.
+
 ## 20.0.1.0.7 (2026-10-01)
 
 - New: valuation class on the product category. A product without its own valuation class
