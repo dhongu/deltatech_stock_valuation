@@ -75,7 +75,9 @@ class StockMove(models.Model):
         debit=0/credit=0 — o notă aparent înregistrată, dar fără valoare.
         """
         res = super()._set_value(correction_quantity=correction_quantity)
-        obyc_dropship_moves = self.filtered(lambda m: m.product_id.valuation_class_id and m.is_dropship and not m.value)
+        obyc_dropship_moves = self.filtered(
+            lambda m: m.product_id._get_valuation_class() and m.is_dropship and not m.value
+        )
         for move in obyc_dropship_moves:
             move.value = move.sudo()._get_value()
         return res
@@ -144,7 +146,7 @@ class StockMove(models.Model):
 
     def _get_rule_account(self):
         self.ensure_one()
-        if not self.product_id.valuation_class_id:
+        if not self.product_id._get_valuation_class():
             return self.env["product.account.determination"]
         transaction_key = self._compute_transaction_key()
         account_modifier = self.env["account.modifier"]
@@ -156,7 +158,7 @@ class StockMove(models.Model):
 
         rule = _get_rule_account(
             valuation_area=valuation_area,
-            valuation_class=self.product_id.valuation_class_id,
+            valuation_class=self.product_id._get_valuation_class(),
             transaction_key=transaction_key,
             account_modifier=account_modifier,
             company=self.company_id,
@@ -164,8 +166,39 @@ class StockMove(models.Model):
 
         return rule
 
+    def _get_obyc_debit_credit_accounts(self, rule):
+        """Conturile de debit și de credit ale notei, din regula OBYC."""
+        if rule.acc_src_id:
+            return rule.acc_valuation_id, rule.acc_src_id
+        return rule.acc_dest_id, rule.acc_valuation_id
+
+    def _is_obyc_reclassification(self):
+        """Transfer intern a cărui regulă are conturi diferite pe cele două părți
+        (ex. 3028 → 371): schimbă doar contul de stoc, nu și cantitatea. Transferul
+        obișnuit are regula fără conturi sau cu același cont, deci rămâne fără notă."""
+        self.ensure_one()
+        if not self.product_id._get_valuation_class():
+            return False
+        if self._compute_transaction_key(raise_if_not_found=False) != "internal_transfer":
+            return False
+        debit_acc, credit_acc = self._get_obyc_debit_credit_accounts(self._get_rule_account())
+        return bool(debit_acc and credit_acc and debit_acc != credit_acc)
+
+    def _set_obyc_reclassification_value(self):
+        """Nucleul evaluează doar intrările, ieșirile și dropship-ul; transferul intern
+        de reclasificare se evaluează la costul curent al produsului."""
+        for move in self:
+            product = move.product_id.with_company(move.company_id)
+            value = 0.0
+            for move_line in move.move_line_ids:
+                cost = product.standard_price
+                if product.lot_valuated and move_line.lot_id:
+                    cost = move_line.lot_id.with_company(move.company_id).standard_price
+                value += cost * move_line.quantity_product_uom
+            move.value = value
+
     def _should_create_account_move(self):
-        if not self.product_id.valuation_class_id:
+        if not self.product_id._get_valuation_class():
             return super()._should_create_account_move()
         self.ensure_one()
 
@@ -184,7 +217,13 @@ class StockMove(models.Model):
             return False
 
         rule = self._get_rule_account()
-        return bool(rule.acc_src_id or rule.acc_dest_id or rule.acc_valuation_id)
+        if not (rule.acc_src_id or rule.acc_dest_id or rule.acc_valuation_id):
+            return False
+        debit_acc, credit_acc = self._get_obyc_debit_credit_accounts(rule)
+        if self._compute_transaction_key(raise_if_not_found=False) == "internal_transfer":
+            # transferul intern are notă doar dacă schimbă contul de stoc
+            return bool(debit_acc and credit_acc and debit_acc != credit_acc)
+        return not (debit_acc and debit_acc == credit_acc)
 
     def _is_obyc_owner_stock(self):
         """Marfă cu proprietar terț (custodie, consignație primită): nucleul nu o evaluează."""
@@ -201,21 +240,18 @@ class StockMove(models.Model):
         return bool(self.company_id.account_storno and self.origin_returned_move_id)
 
     def _get_account_move_line_vals(self):
-        if not self.product_id.valuation_class_id:
+        if not self.product_id._get_valuation_class():
             vals_list = super()._get_account_move_line_vals()
         else:
             rule = self._get_rule_account()
 
-            if rule.acc_src_id:
-                debit_acc = rule.acc_valuation_id
-                credit_acc = rule.acc_src_id
-            else:
-                debit_acc = rule.acc_dest_id
-                credit_acc = rule.acc_valuation_id
+            debit_acc, credit_acc = self._get_obyc_debit_credit_accounts(rule)
             # cantitatea (SEMNATĂ: negativă pe credit, pozitivă pe debit) și UoM sunt
             # necesare evaluării (deltatech_stock_valuation); aria de evaluare se
             # completează prin compute-ul de pe account.move.line
             quantity = self._get_valued_qty()
+            if not quantity and self._is_obyc_reclassification():
+                quantity = sum(self.move_line_ids.mapped("quantity_product_uom"))
             vals_list = [
                 {
                     "account_id": credit_acc.id,
@@ -255,7 +291,7 @@ class StockMove(models.Model):
         evaluare OBYC; recordset gol dacă nu se aplică."""
         self.ensure_one()
         journal = self.env["account.journal"]
-        if self.product_id.valuation_class_id:
+        if self.product_id._get_valuation_class():
             valuation_area = self._get_valuation_area(raise_if_not_found=False)
             if valuation_area and valuation_area.stock_journal_id:
                 journal = valuation_area.stock_journal_id
@@ -265,6 +301,10 @@ class StockMove(models.Model):
         """Grupează mișcările pe jurnalul ariei de evaluare: mișcările OBYC dintr-o
         arie cu jurnal propriu primesc nota pe acel jurnal; restul merg pe
         comportamentul standard (jurnalul de stoc al companiei)."""
+        reclassification_moves = self.filtered(
+            lambda m: m._should_create_account_move() and m._is_obyc_reclassification()
+        )
+        reclassification_moves._set_obyc_reclassification_value()
         result = self.env["account.move"]
         default_moves = self.browse()
         by_journal = {}
