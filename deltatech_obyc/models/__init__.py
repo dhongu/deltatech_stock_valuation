@@ -8,7 +8,9 @@ from . import account_move_line
 from . import account_journal
 
 from . import product_valuation_class
+from . import product_category
 from . import product_template
+from . import product_product
 from . import account_modifier
 from . import product_account_determination
 

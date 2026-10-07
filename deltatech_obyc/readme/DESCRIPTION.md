@@ -184,12 +184,19 @@ Romanian chart of accounts. Classes: MF = goods, RM = raw materials, FG = finish
 | inventory_adjustment_plus (gains) | MF | 607 | – | 371 | Dr 371 / Cr 607 |
 | inventory_adjustment_minus (losses) | MF | – | 607 | 371 | Dr 607 / Cr 371 |
 | internal_transfer (same valuation area) | MF | – | – | – | no entry |
+| internal_transfer + modifier "Reclassification" | MF | 3028 | – | 371 | Dr 371 / Cr 3028 (valued at the current cost, quantity unchanged) |
 | landed_cost | MF | – | – | 371 | Dr 371 / Cr the cost line account |
 
 The `dropship`, `dropship_return` and `stock_receipt` rules must use the same 408 account: the
 vendor bill of a drop shipment takes its account from the `stock_receipt` rule.
 
 Each of these mappings can vary by product class or warehouse (valuation area).
+
+An internal transfer creates an entry only when the debit and credit accounts of its rule are
+different. Use this for a **reclassification** (e.g. consumables 3028 sold as goods 371): create
+an account modifier "Reclassification", an operation type that uses it, and an
+`internal_transfer` rule with the modifier, the old stock account as Source Account and the new
+one as Valuation Account. The transfer is valued at the current cost of the product.
 
 ## 🔍 Comparison with SAP OBYC
 

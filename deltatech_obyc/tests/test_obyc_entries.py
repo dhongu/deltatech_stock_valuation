@@ -470,3 +470,70 @@ class TestObycEntries(TestCommon):
         picking = self._picking(self.picking_type_in, self.supplier_location, inventory_location, 2.0)
         self.assertEqual(picking.state, "done")
         self.assertFalse(picking.move_ids.account_move_id)
+
+    def _reclassification_setup(self):
+        """Transfer intern cu modificator „Reclasificare": Dr 371 (nou) / Cr cont stoc (vechi)."""
+        account_goods = self.env["account.account"].create(
+            {"name": "Test Goods 371", "code": "TGD371", "account_type": "asset_current"}
+        )
+        modifier = self.env["account.modifier"].create({"name": "Reclasificare", "code": "RECLAS"})
+        picking_type = self.env.ref("stock.picking_type_internal").copy(
+            {"name": "Reclasificare", "sequence_code": "RCL", "account_modifier_id": modifier.id}
+        )
+        base = {
+            "valuation_class_id": self.valuation_class.id,
+            "valuation_area_id": self.valuation_area.id,
+            "company_id": self.env.company.id,
+        }
+        self.env["product.account.determination"].create(
+            {
+                **base,
+                "transaction_key": "internal_transfer",
+                "account_modifier_id": modifier.id,
+                "acc_src_id": self.account_valuation.id,
+                "acc_valuation_id": account_goods.id,
+            }
+        )
+        # transferul obișnuit: regula fără conturi, deci fără notă
+        self.env["product.account.determination"].create({**base, "transaction_key": "internal_transfer"})
+        location = self.env["stock.location"].create(
+            {"name": "Reclass Shelf", "usage": "internal", "location_id": self.stock_location.id}
+        )
+        return account_goods, picking_type, location
+
+    def test_08_internal_transfer_without_accounts_has_no_entry(self):
+        _goods, _picking_type, location = self._reclassification_setup()
+        self._receipt(10.0)
+        transfer = self._picking(self.env.ref("stock.picking_type_internal"), self.stock_location, location, 10.0)
+        self.assertFalse(transfer.move_ids.account_move_id)
+
+    def test_09_internal_transfer_reclassification(self):
+        """3028 → 371 pe un transfer intern, apoi livrarea scade 371."""
+        account_goods, picking_type, location = self._reclassification_setup()
+        self.env["product.account.determination"].search(
+            [("transaction_key", "=", "stock_delivery")]
+        ).acc_valuation_id = account_goods
+        self._receipt(10.0)
+        transfer = self._picking(picking_type, self.stock_location, location, 10.0)
+        self.assertAlmostEqual(transfer.move_ids.value, 1000.0)
+        self.assertRecordValues(
+            self._lines(transfer),
+            sorted(
+                [
+                    {"account_id": self.account_valuation.id, "debit": 0.0, "credit": 1000.0, "quantity": -10.0},
+                    {"account_id": account_goods.id, "debit": 1000.0, "credit": 0.0, "quantity": 10.0},
+                ],
+                key=lambda v: self.env["account.account"].browse(v["account_id"]).code,
+            ),
+        )
+        delivery = self._picking(self.picking_type_out, location, self.customer_location, 4.0)
+        self.assertRecordValues(
+            self._lines(delivery),
+            sorted(
+                [
+                    {"account_id": self.account_dest.id, "debit": 400.0, "credit": 0.0, "quantity": 4.0},
+                    {"account_id": account_goods.id, "debit": 0.0, "credit": 400.0, "quantity": -4.0},
+                ],
+                key=lambda v: self.env["account.account"].browse(v["account_id"]).code,
+            ),
+        )

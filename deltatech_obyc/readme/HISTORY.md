@@ -1,3 +1,26 @@
+## 20.0.1.0.9 (2026-10-06)
+
+- New: reclassification by internal transfer. An internal transfer whose `internal_transfer`
+  rule has different accounts on the two sides (e.g. Dr 371 / Cr 3028, selected through the
+  account modifier of the operation type) now creates a stock entry, valued at the current
+  cost of the product; the quantity in stock does not change. A transfer whose rule has no
+  accounts, or the same account on both sides, still creates no entry.
+- A stock entry is no longer created when the debit and credit accounts of the rule are the
+  same.
+- New: the valuation class of a category is inherited. If a product has no class of its own
+  and its category has none either, the class of the nearest parent category that has one
+  is used.
+
+## 20.0.1.0.8 (2026-10-06)
+
+- In the valuation class and account modifier dropdowns the code is shown in a second, dimmed
+  column; both can also be searched by code. The plain name, `[CODE] Name`, is unchanged.
+
+## 20.0.1.0.7 (2026-10-01)
+
+- New: valuation class on the product category. A product without its own valuation class
+  uses the class of its category; the class set on the product still takes priority.
+
 ## 20.0.1.0.6 (2026-10-01)
 
 Port of the 19.0 documentation fixes after the accounting audit and the OBYC-001 fix,
