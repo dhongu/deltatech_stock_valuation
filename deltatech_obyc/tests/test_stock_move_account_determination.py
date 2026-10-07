@@ -233,7 +233,6 @@ class TestStockMoveAccountDetermination(TestCommon):
             {
                 "product_id": product.id,
                 "product_uom_qty": 1.0,
-                "product_uom": product.uom_id.id,
                 "location_id": self.supplier_location.id,
                 "location_dest_id": self.stock_location.id,
                 "picking_type_id": self.picking_type_in.id,
