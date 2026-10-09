@@ -1,3 +1,14 @@
+## 20.0.1.0.11 (2026-10-09)
+
+- Docs: the consultant sheet now marks account 357 as not recommended for drop shipments
+  (Dr 357 / Cr 401 or 408 is outside the function of the account in OMFP 1802/2014; 357 is only
+  for goods really held by a third party, through 371 -> 357 -> 607), and words the VAT point
+  precisely: the supplier invoice does not set the delivery date (art. 281 (6) Fiscal Code) but
+  can bring forward the VAT chargeability (art. 282 (2) a)). It also states that a carrier is not
+  a third party for account 357 (goods in transit stay in 371, or 327 if bought and on the way
+  to us) and how a cash-on-delivery amount collected by a courier is recorded (461). No code
+  change.
+
 ## 20.0.1.0.10 (2026-10-09)
 
 - Docs: the consultant sheet now explains the two ways to record a drop shipment (direct,
