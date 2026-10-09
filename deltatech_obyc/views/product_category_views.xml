@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="view_product_category_form_valuation_class" model="ir.ui.view">
+        <field name="name">product.category.form.valuation.class</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Valuation Class" name="valuation_class_group" groups="account.group_account_user">
+                    <field name="valuation_class_id" options="{'no_create': True}" />
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
