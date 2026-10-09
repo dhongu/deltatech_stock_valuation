@@ -446,7 +446,27 @@ Observații:
 - **Livrarea directă (dropship)** generează notă cu valoare: mișcarea furnizor → client se
   valorizează (înainte nota ieșea cu 0). Livrarea directă nu modifică stocul propriu și nici
   costul mediu al produsului. Nota directă Dr 607 / Cr 408, fără trecere prin 371, este o
-  simplificare acceptabilă: marfa nu intră în gestiunea proprie.
+  simplificare acceptabilă: marfa nu intră în gestiunea proprie. Sunt două moduri de a
+  înregistra livrarea directă, iar alegerea se face din configurare:
+  - **(a) Direct, fără stoc** — regula **Livrare directă** (Dr 607 / Cr 408), o singură notă pe
+    mișcarea furnizor → client. Este varianta implicită. Economic e corectă; formal, contrapartida
+    lui 607 nu este cea din funcțiunea contului când stocurile se țin în inventar permanent.
+  - **(b) Prin gestiune, în 2 pași** — se configurează ruta cu recepție în gestiune (furnizor →
+    gestiune, regula **Recepție stoc de la furnizor**: Dr 371 / Cr 408) urmată de livrare
+    (gestiune → client, regula **Livrare stoc**: Dr 607 / Cr 371). Soldul 371 rămâne zero,
+    iar marfa apare în fișa de magazie și în rapoartele de stoc. Este varianta care respectă
+    funcțiunile conturilor 371, 408 și 607 (OMFP 1802/2014, pct. 290); marfa trece fizic prin
+    gestiune, deci nu mai este livrare directă propriu-zisă.
+  - **Contul 357 nu se folosește** la livrarea directă: este pentru marfa proprie aflată la un
+    terț (consignație, custodie), cu marfa trecută întâi prin 371 (Dr 357 / Cr 371), nu pentru
+    marfa livrată direct de furnizor. Factura furnizorului nu transferă proprietatea; faptul
+    generator este transferul dreptului de a dispune de bunuri (art. 281 alin. (6) Cod fiscal).
+  - **Limită:** o mișcare generează o singură notă cu două linii, deci Dr 371 / Cr 408 urmat de
+    Dr 607 / Cr 371 pe o **singură** mișcare furnizor → client nu se poate obține din
+    configurare (vezi `readme/ROADMAP.md`).
+  - Dacă factura furnizorului vine **înainte** de livrarea la client, tratați-o ca avans
+    (Dr 409 / Cr 401), nu ca stoc; marfa pe drum la sfârșitul lunii, cu riscurile transferate,
+    se ține în 327. Cele două cazuri se înregistrează manual.
 - **Liniile notelor de stoc** poartă produsul, **cantitatea semnată** (pozitivă pe debit,
   negativă pe credit; la storno semnul se inversează odată cu suma) și unitatea de măsură —
   necesare evaluării cantitativ-valorice din `deltatech_stock_valuation`. La inversarea unei note
