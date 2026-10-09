@@ -461,6 +461,24 @@ Observații:
   - **Factura furnizorului nu determină data livrării** și nici a transferului dreptului de a
     dispune de bunuri (art. 281 alin. (6) Cod fiscal); poate însă muta **exigibilitatea TVA**,
     dacă se emite înaintea livrării (art. 282 alin. (2) lit. a)).
+  - **Transportatorul nu este „terț”** în sensul contului 357: curierul sau firma de transport
+    execută doar transportul, nu păstrează, nu prelucrează și nu vinde marfa în consignație
+    (OMFP 1802/2014, pct. 276 alin. (2) enumeră doar custodia, prelucrarea și consignația).
+    Faptul că marfa se află la curier nu justifică 357; contează momentul în care trec
+    riscurile și beneficiile:
+    - livrare directă sau vânzare fermă prin curier: marfa rămâne în 371 până la transferul
+      riscului (la livrare sau la predarea către curier, după termenii comerciali — alegerea se
+      scrie în politica contabilă), apoi Dr 607 / Cr 371;
+    - marfă cumpărată, pe drum spre depozit la sfârșitul lunii, cu riscurile transferate:
+      **327** (Dr 327 / Cr 401), nu 357;
+    - 357 rămâne pentru consignație, custodie, prelucrare și marfa trimisă pe probă, unde terțul
+      este consignatarul, custodele sau clientul, nu curierul.
+  - **Ramburs încasat de curier:** curierul este mandatar la încasare, nu custode al mărfii;
+    rambursul nu schimbă cine deține marfa. Până la virarea banilor curierul ne datorează suma:
+    Dr 461 (analitic pe curier) / Cr 4111, apoi Dr 5121 / Cr 461 la virare; comisionul curierului
+    se înregistrează separat (Dr 624 + 4426 / Cr 401). Pentru un curier privat, 461 este mai
+    fidel decât 5125 (folosit literal pentru mandatul poștal, pct. 302 alin. (2)); alegerea se
+    confirmă cu contabilul clientului.
   - **Limită:** o mișcare generează o singură notă cu două linii, deci Dr 371 / Cr 408 urmat de
     Dr 607 / Cr 371 pe o **singură** mișcare furnizor → client nu se poate obține din
     configurare (vezi `readme/ROADMAP.md`).
