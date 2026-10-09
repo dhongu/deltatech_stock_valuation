@@ -1,3 +1,10 @@
+## 20.0.1.0.10 (2026-10-09)
+
+- Docs: the consultant sheet now explains the two ways to record a drop shipment (direct,
+  Dr 607 / Cr 408, or through the warehouse in two steps, Dr 371 / Cr 408 then Dr 607 / Cr 371),
+  and that account 357 is not used for it. New `readme/ROADMAP.md` with the sketch for several
+  transaction keys on the same stock move. No code change.
+
 ## 20.0.1.0.9 (2026-10-06)
 
 - New: reclassification by internal transfer. An internal transfer whose `internal_transfer`
