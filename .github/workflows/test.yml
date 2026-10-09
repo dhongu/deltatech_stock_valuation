@@ -12,6 +12,8 @@ on:
       - "**/readme/**"
       - "**/screenshots/**"
       - "**/static/description/**"
+      # Apps Store image the manifest `images` key may point to (addon root only).
+      - "*/images/**"
       - "**/i18n/**"
       - "**/index.html"
       - "scripts/**"
