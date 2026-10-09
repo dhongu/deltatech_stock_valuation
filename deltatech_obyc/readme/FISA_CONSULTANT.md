@@ -448,10 +448,19 @@ Observații:
     iar marfa apare în fișa de magazie și în rapoartele de stoc. Este varianta care respectă
     funcțiunile conturilor 371, 408 și 607 (OMFP 1802/2014, pct. 290); marfa trece fizic prin
     gestiune, deci nu mai este livrare directă propriu-zisă.
-  - **Contul 357 nu se folosește** la livrarea directă: este pentru marfa proprie aflată la un
+  - **Contul 357 este nerecomandat** la livrarea directă: este pentru marfa proprie aflată la un
     terț (consignație, custodie), cu marfa trecută întâi prin 371 (Dr 357 / Cr 371), nu pentru
-    marfa livrată direct de furnizor. Factura furnizorului nu transferă proprietatea; faptul
-    generator este transferul dreptului de a dispune de bunuri (art. 281 alin. (6) Cod fiscal).
+    marfa livrată direct de furnizor. Corespondența Dr 357 / Cr 401 sau Dr 357 / Cr 408 nu este
+    prevăzută în funcțiunea conturilor din OMFP 1802/2014 (357 se alimentează doar din 371);
+    efectul fiscal este nul (costul ajunge oricum în 607), dar la control este o corespondență
+    neprevăzută. Unele articole de specialitate propun 357 în locul lui 371; fără temei în
+    OMFP, nu îl folosiți decât dacă marfa rămâne efectiv la furnizor, în custodie (contract de
+    custodie, transferul riscurilor, proces-verbal de predare-primire), și atunci pe traseul
+    371 → 357 → 607. Dacă regula este totuși configurată cu 357 pe contul de evaluare,
+    documentați alegerea împreună cu contabilul clientului.
+  - **Factura furnizorului nu determină data livrării** și nici a transferului dreptului de a
+    dispune de bunuri (art. 281 alin. (6) Cod fiscal); poate însă muta **exigibilitatea TVA**,
+    dacă se emite înaintea livrării (art. 282 alin. (2) lit. a)).
   - **Limită:** o mișcare generează o singură notă cu două linii, deci Dr 371 / Cr 408 urmat de
     Dr 607 / Cr 371 pe o **singură** mișcare furnizor → client nu se poate obține din
     configurare (vezi `readme/ROADMAP.md`).
