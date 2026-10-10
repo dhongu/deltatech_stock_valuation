@@ -7,7 +7,7 @@
   <div>
     <span class="d-inline-block rounded-pill fw-bold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">Odoo 19.0</span>
     <span class="d-inline-block rounded-pill fw-semibold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">Valuation/Valuation</span>
-    <span class="d-inline-block rounded-pill fw-semibold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">LGPL-3</span>
+    <span class="d-inline-block rounded-pill fw-semibold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">OPL-1</span>
     <span class="d-inline-block rounded-pill fw-semibold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">Odoo.sh &bull; On-premise</span>
   </div>
 </div>
@@ -91,6 +91,10 @@ Metoda FIFO necesit&#259; urm&#259;rirea straturilor individuale de cost, inform
 </div>
 <div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Versions</h2>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.6 (2026-10-10)</h2>
+<ul>
+<li>The module license changes from LGPL-3 to OPL-1 (same as the rest of the suite), so that OPL-1 modules can depend on it on Odoo Apps. No code change.</li>
+</ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.5 (2026-10-06)</h2>
 <ul>
 <li>In the valuation area dropdown the code is shown in a second, dimmed column; the areas can
@@ -98,17 +102,17 @@ Metoda FIFO necesit&#259; urm&#259;rirea straturilor individuale de cost, inform
 </ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.4 (2026-10-01)</h2>
 <ul>
-<li>Fix (VA-001): the area of a stock move is taken from the warehouse of its internal location when
+<li>Fix: the area of a stock move is taken from the warehouse of its internal location when
   the location has no area of its own; inventory adjustments and manual transfers no longer fall
   back to the company default area.</li>
-<li>Fix (VA-003): internal moves between locations of different areas are now refused when the move
+<li>Fix: internal moves between locations of different areas are now refused when the move
   is validated, for the move and for each of its lines, with or without <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code>.</li>
-<li>Fix (VA-002): optional Product, Quantity and UoM columns on the journal items of manual entries;
+<li>Fix: optional Product, Quantity and UoM columns on the journal items of manual entries;
   optional Quantity and Valuation Area columns on the journal items list.</li>
-<li>Fix (VA-004): Romanian wording unified on "arie de evaluare" (translations reloaded on upgrade);
+<li>Fix: Romanian wording unified on "arie de evaluare" (translations reloaded on upgrade);
   menu "Valuation Areas" visible only to accounting managers; area form in a sheet; stock journal
   limited to general journals of the area company; clearer help on the code; settings layout.</li>
-<li>Docs: description and consultant sheet updated; <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/bugs.md</code> statuses.</li>
+<li>Docs: description and consultant sheet updated.</li>
 </ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.3 (2026-10-01)</h2>
 <ul>
@@ -121,15 +125,13 @@ Metoda FIFO necesit&#259; urm&#259;rirea straturilor individuale de cost, inform
   quantity: the line has no amount sign to cancel it, so its quantity is now inverted too.</li>
 <li>Docs: consultant sheet revised after the accounting audit: legal basis, receipt / delivery /
   invoice gaps, inventory difference accounts per stock class, shortages (VAT and profit tax),
-  reconciliation per area, transfers between areas and the sign convention on reversals; new
-  known bugs VA-005 and VA-006 in <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/bugs.md</code>; D300 from tax tags for the month-end entries.</li>
+  reconciliation per area, transfers between areas and the sign convention on reversals; D300 from tax tags for the month-end entries.</li>
 </ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.2 (2026-10-01)</h2>
 <ul>
 <li>Docs: consultant sheet updated to the current code (11-section structure), screenshots
   regenerated in Romanian on the Romanian chart of accounts; the screenshot test now posts
   real stock entries and checks them before taking the screenshots.</li>
-<li>Docs: known bugs listed in <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/bugs.md</code>.</li>
 </ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.1 (2026-09-30)</h2>
 <ul>

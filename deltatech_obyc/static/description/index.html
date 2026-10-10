@@ -7,7 +7,7 @@
   <div>
     <span class="d-inline-block rounded-pill fw-bold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">Odoo 19.0</span>
     <span class="d-inline-block rounded-pill fw-semibold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">Valuation/Valuation</span>
-    <span class="d-inline-block rounded-pill fw-semibold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">LGPL-3</span>
+    <span class="d-inline-block rounded-pill fw-semibold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">OPL-1</span>
     <span class="d-inline-block rounded-pill fw-semibold m-1" style="background-color:#00432a;color:#ffffff;padding:8px 16px;font-size:12px;">Odoo.sh &bull; On-premise</span>
   </div>
 </div>
@@ -602,6 +602,28 @@ entry Dr 371.02 / Cr 371.09</li>
 </div>
 <div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Versions</h2>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.13 (2026-10-10)</h2>
+<ul>
+<li>The module license changes from LGPL-3 to OPL-1 (same as the rest of the suite), so that OPL-1 modules can depend on it on Odoo Apps. No code change.</li>
+</ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.12 (2026-10-09)</h2>
+<ul>
+<li>Docs: the consultant sheet now marks account 357 as not recommended for drop shipments
+  (Dr 357 / Cr 401 or 408 is outside the function of the account in OMFP 1802/2014; 357 is only
+  for goods really held by a third party, through 371 -&gt; 357 -&gt; 607), and words the VAT point
+  precisely: the supplier invoice does not set the delivery date (art. 281 (6) Fiscal Code) but
+  can bring forward the VAT chargeability (art. 282 (2) a)). It also states that a carrier is not
+  a third party for account 357 (goods in transit stay in 371, or 327 if bought and on the way
+  to us) and how a cash-on-delivery amount collected by a courier is recorded (461). No code
+  change.</li>
+</ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.11 (2026-10-09)</h2>
+<ul>
+<li>Docs: the consultant sheet now explains the two ways to record a drop shipment (direct,
+  Dr 607 / Cr 408, or through the warehouse in two steps, Dr 371 / Cr 408 then Dr 607 / Cr 371),
+  and that account 357 is not used for it. New <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/ROADMAP.md</code> with the sketch for several
+  transaction keys on the same stock move. No code change.</li>
+</ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.10 (2026-10-05)</h2>
 <ul>
 <li>New: reclassification by internal transfer. An internal transfer whose <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">internal_transfer</code>
@@ -630,33 +652,32 @@ entry Dr 371.02 / Cr 371.09</li>
 </ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.6 (2026-10-01)</h2>
 <ul>
-<li>Fix (OBYC-005): the inventory adjustment keys were swapped &#8212; a gain used the
+<li>Fix: the inventory adjustment keys were swapped &#8212; a gain used the
   <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">inventory_adjustment_minus</code> rule and a loss the <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">inventory_adjustment_plus</code> rule. A gain
   now uses <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">inventory_adjustment_plus</code> and a loss <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">inventory_adjustment_minus</code>. <strong>Rules
   configured around the old behavior must swap their keys</strong>; the update logs a warning for
   each rule that looks configured that way and does not change it.</li>
-<li>Fix (OBYC-006): stock entries were created for products with a valuation class even
+<li>Fix: stock entries were created for products with a valuation class even
   without real-time valuation, for consumables and for stock owned by a third party, and a
   missing rule blocked the validation of these moves. The core checks (storable product,
   real-time valuation, non-zero quantity, no third-party owner) now come before the rule
   lookup; a move the core does not value and whose locations have no transaction key gets no
   entry instead of an error.</li>
-<li>Fix (OBYC-007): the "No account
+<li>Fix: the "No account
   determination rule found" message shows the transaction key in the user's language; the rule
   title shows the key label and no "None" for an empty account modifier.</li>
-<li>Docs: <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/bugs.md</code> (OBYC-002/003 with the analysis of the core accrued revenue wizard and
-  of the consignment flow, OBYC-004 lowered to P3), <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">DESCRIPTION.md</code> and the consultant sheet.</li>
+<li>Docs: <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">DESCRIPTION.md</code> and the consultant sheet.</li>
 </ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.5 (2026-10-01)</h2>
 <ul>
-<li>Fix (OBYC-007): the "Transaction key could not be determined" error showed the literal placeholders
+<li>Fix: the "Transaction key could not be determined" error showed the literal placeholders
   <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">{source_usage}</code> / <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">{dest_usage}</code> instead of the location usages &#8212; <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">env._()</code> interpolates
   <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">%(name)s</code> placeholders, not <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">{name}</code>. The message now names the actual source and destination
   usages (e.g. <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">internal</code> to <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">consume</code>), in the English text and in the Romanian translation.</li>
 </ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.4 (2026-10-01)</h2>
 <ul>
-<li>Fix (OBYC-001): the product line of a customer invoice, a vendor bill or a credit note
+<li>Fix: the product line of a customer invoice, a vendor bill or a credit note
   got the valuation account of the rule, because the account was chosen from the line
   debit/credit, still 0 when the line is created. A vendor bill debited the stock account a
   second time (after the receipt entry) and left the GR/IR account (408) open; customer
@@ -665,47 +686,15 @@ entry Dr 371.02 / Cr 371.09</li>
   <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock_income</code> rule; vendor bill and credit note &#8594; source account of the
   <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock_receipt</code> rule; the valuation account only when that account is empty. Credit
   notes use the same account as the invoice.</li>
-<li>Docs: consultant sheet corrected after the accounting audit and the OBYC-001 fix: invoice
+<li>Docs: consultant sheet corrected after the accounting audit and a posting fix: invoice
   accounts per document type, credit notes with storno, configuration for finished products,
   raw materials and production, vendor bill on 408, landed cost account, inventory differences
   (shortages, imputation, VAT, profit tax), price and exchange differences on 408, month-end
-  procedure for deliveries not invoiced (OBYC-002) compatible with the D300 computed from tax
+  procedure for deliveries not invoiced, compatible with the D300 computed from tax
   tags; screenshots 01 and 10 regenerated, 11 (vendor bill) added. <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">DESCRIPTION.md</code>: account
-  mapping examples follow the code convention. <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/bugs.md</code>: OBYC-008 and OBYC-009 added.</li>
+  mapping examples follow the code convention.</li>
 </ul>
-<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.3 (2026-10-01)</h2>
-<ul>
-<li>Fix: validating a landed cost on a product with an OBYC valuation class crashed with
-  <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">AttributeError: 'int' object has no attribute 'id'</code>. <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">_get_product_accounts</code> returned
-  account ids instead of <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">account.account</code> records, which the core (fiscal position
-  <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">map_account</code>, landed cost entries) expects.</li>
-<li>Fix: a customer invoice for a product with an OBYC valuation class in real-time valuation
-  could not be posted ("Transaction key is not defined"). The core builds the COGS lines
-  of the invoice without a transaction key. With OBYC the cost of goods sold is already
-  booked at delivery (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock_delivery</code> key), so the invoice now gets no COGS lines for
-  these products; other products keep the standard behavior.</li>
-<li>Fix: an invoice with two or more products with an OBYC valuation class failed with
-  "Expected singleton". <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">account.move.line._compute_account_id</code> read the product,
-  account modifier and company from all the lines (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">self</code>) instead of the current line.</li>
-<li>Docs: the description states that, with OBYC, the cost of goods sold is booked at
-  delivery, not at invoicing; known limitations are listed in <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/bugs.md</code>.</li>
-<li>Docs: consultant sheet updated to the current code (cost of goods sold at delivery, landed
-  cost, storno returns, journal per valuation area), 10 screenshots regenerated in Romanian;
-  the screenshot test checks the journal entries before taking the screenshots. Known bugs
-  OBYC-005 (inventory adjustment keys swapped), OBYC-006 (OBYC entry without real-time
-  valuation) and OBYC-007 (smaller defects) added to <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/bugs.md</code>.</li>
-</ul>
-<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.2 (2026-09-30)</h2>
-<ul>
-<li>Own module icon in the flat style of the other modules.</li>
-</ul>
-<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.1 (2026-08-19)</h2>
-<ul>
-<li>Fix: dropship moves (supplier -&gt; customer) for products with an OBYC valuation class were
-  not valued &#8212; <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock.move.value</code> stayed 0, because the <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock_account</code> core fills this
-  field only for <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">is_in</code> moves, not for <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">is_dropship</code> ones. The journal entry generated
-  right after was posted with debit=0/credit=0 &#8212; apparently recorded, but with no value.</li>
-</ul>
+<p><em>Older releases are listed in the module's HISTORY file.</em></p>
 </div>
 </div>
 
