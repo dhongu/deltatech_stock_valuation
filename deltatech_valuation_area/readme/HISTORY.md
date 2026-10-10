@@ -5,17 +5,17 @@
 
 ## 19.0.1.0.4 (2026-10-01)
 
-- Fix (VA-001): the area of a stock move is taken from the warehouse of its internal location when
+- Fix: the area of a stock move is taken from the warehouse of its internal location when
   the location has no area of its own; inventory adjustments and manual transfers no longer fall
   back to the company default area.
-- Fix (VA-003): internal moves between locations of different areas are now refused when the move
+- Fix: internal moves between locations of different areas are now refused when the move
   is validated, for the move and for each of its lines, with or without `deltatech_obyc`.
-- Fix (VA-002): optional Product, Quantity and UoM columns on the journal items of manual entries;
+- Fix: optional Product, Quantity and UoM columns on the journal items of manual entries;
   optional Quantity and Valuation Area columns on the journal items list.
-- Fix (VA-004): Romanian wording unified on "arie de evaluare" (translations reloaded on upgrade);
+- Fix: Romanian wording unified on "arie de evaluare" (translations reloaded on upgrade);
   menu "Valuation Areas" visible only to accounting managers; area form in a sheet; stock journal
   limited to general journals of the area company; clearer help on the code; settings layout.
-- Docs: description and consultant sheet updated; `readme/bugs.md` statuses.
+- Docs: description and consultant sheet updated.
 
 ## 19.0.1.0.3 (2026-10-01)
 
@@ -28,15 +28,13 @@
   quantity: the line has no amount sign to cancel it, so its quantity is now inverted too.
 - Docs: consultant sheet revised after the accounting audit: legal basis, receipt / delivery /
   invoice gaps, inventory difference accounts per stock class, shortages (VAT and profit tax),
-  reconciliation per area, transfers between areas and the sign convention on reversals; new
-  known bugs VA-005 and VA-006 in `readme/bugs.md`; D300 from tax tags for the month-end entries.
+  reconciliation per area, transfers between areas and the sign convention on reversals; D300 from tax tags for the month-end entries.
 
 ## 19.0.1.0.2 (2026-10-01)
 
 - Docs: consultant sheet updated to the current code (11-section structure), screenshots
   regenerated in Romanian on the Romanian chart of accounts; the screenshot test now posts
   real stock entries and checks them before taking the screenshots.
-- Docs: known bugs listed in `readme/bugs.md`.
 
 ## 19.0.1.0.1 (2026-09-30)
 

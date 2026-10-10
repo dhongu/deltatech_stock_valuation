@@ -36,7 +36,7 @@
   clients and a month-end procedure for receipts and deliveries not invoiced without OBYC;
   a value-only adjustment changes the value and the average price; reversal with and without
   storno; month-end and stock count reconciliation; legal basis (OMFP 1802/2014, Fiscal Code);
-  firm warning for multi-company databases. `readme/bugs.md`: SV-005 updated, SV-008 added.
+  firm warning for multi-company databases.
 - Docs: the screenshot test puts a supplier on the receipt entry; screenshots regenerated.
 
 ## 19.0.0.0.9 (2026-10-01)
@@ -44,7 +44,6 @@
 - Docs: consultant sheet updated to the current code (11-section structure), screenshots
   regenerated in Romanian on the Romanian chart of accounts; the screenshot test now posts
   real stock entries and checks them before taking the screenshots.
-- Docs: known bugs listed in `readme/bugs.md` (SV-001..007).
 
 ## 19.0.0.0.8 (2026-09-30)
 

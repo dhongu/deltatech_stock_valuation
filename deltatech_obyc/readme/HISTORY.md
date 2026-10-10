@@ -44,33 +44,32 @@
 
 ## 19.0.1.0.6 (2026-10-01)
 
-- Fix (OBYC-005): the inventory adjustment keys were swapped — a gain used the
+- Fix: the inventory adjustment keys were swapped — a gain used the
   `inventory_adjustment_minus` rule and a loss the `inventory_adjustment_plus` rule. A gain
   now uses `inventory_adjustment_plus` and a loss `inventory_adjustment_minus`. **Rules
   configured around the old behavior must swap their keys**; the update logs a warning for
   each rule that looks configured that way and does not change it.
-- Fix (OBYC-006): stock entries were created for products with a valuation class even
+- Fix: stock entries were created for products with a valuation class even
   without real-time valuation, for consumables and for stock owned by a third party, and a
   missing rule blocked the validation of these moves. The core checks (storable product,
   real-time valuation, non-zero quantity, no third-party owner) now come before the rule
   lookup; a move the core does not value and whose locations have no transaction key gets no
   entry instead of an error.
-- Fix (OBYC-007): the "No account
+- Fix: the "No account
   determination rule found" message shows the transaction key in the user's language; the rule
   title shows the key label and no "None" for an empty account modifier.
-- Docs: `readme/bugs.md` (OBYC-002/003 with the analysis of the core accrued revenue wizard and
-  of the consignment flow, OBYC-004 lowered to P3), `DESCRIPTION.md` and the consultant sheet.
+- Docs: `DESCRIPTION.md` and the consultant sheet.
 
 ## 19.0.1.0.5 (2026-10-01)
 
-- Fix (OBYC-007): the "Transaction key could not be determined" error showed the literal placeholders
+- Fix: the "Transaction key could not be determined" error showed the literal placeholders
   `{source_usage}` / `{dest_usage}` instead of the location usages — `env._()` interpolates
   `%(name)s` placeholders, not `{name}`. The message now names the actual source and destination
   usages (e.g. `internal` to `consume`), in the English text and in the Romanian translation.
 
 ## 19.0.1.0.4 (2026-10-01)
 
-- Fix (OBYC-001): the product line of a customer invoice, a vendor bill or a credit note
+- Fix: the product line of a customer invoice, a vendor bill or a credit note
   got the valuation account of the rule, because the account was chosen from the line
   debit/credit, still 0 when the line is created. A vendor bill debited the stock account a
   second time (after the receipt entry) and left the GR/IR account (408) open; customer
@@ -79,13 +78,13 @@
   `stock_income` rule; vendor bill and credit note → source account of the
   `stock_receipt` rule; the valuation account only when that account is empty. Credit
   notes use the same account as the invoice.
-- Docs: consultant sheet corrected after the accounting audit and the OBYC-001 fix: invoice
+- Docs: consultant sheet corrected after the accounting audit and a posting fix: invoice
   accounts per document type, credit notes with storno, configuration for finished products,
   raw materials and production, vendor bill on 408, landed cost account, inventory differences
   (shortages, imputation, VAT, profit tax), price and exchange differences on 408, month-end
-  procedure for deliveries not invoiced (OBYC-002) compatible with the D300 computed from tax
+  procedure for deliveries not invoiced, compatible with the D300 computed from tax
   tags; screenshots 01 and 10 regenerated, 11 (vendor bill) added. `DESCRIPTION.md`: account
-  mapping examples follow the code convention. `readme/bugs.md`: OBYC-008 and OBYC-009 added.
+  mapping examples follow the code convention.
 
 ## 19.0.1.0.3 (2026-10-01)
 
@@ -102,12 +101,10 @@
   "Expected singleton". `account.move.line._compute_account_id` read the product,
   account modifier and company from all the lines (`self`) instead of the current line.
 - Docs: the description states that, with OBYC, the cost of goods sold is booked at
-  delivery, not at invoicing; known limitations are listed in `readme/bugs.md`.
+  delivery, not at invoicing.
 - Docs: consultant sheet updated to the current code (cost of goods sold at delivery, landed
   cost, storno returns, journal per valuation area), 10 screenshots regenerated in Romanian;
-  the screenshot test checks the journal entries before taking the screenshots. Known bugs
-  OBYC-005 (inventory adjustment keys swapped), OBYC-006 (OBYC entry without real-time
-  valuation) and OBYC-007 (smaller defects) added to `readme/bugs.md`.
+  the screenshot test checks the journal entries before taking the screenshots.
 
 ## 19.0.1.0.2 (2026-09-30)
 
