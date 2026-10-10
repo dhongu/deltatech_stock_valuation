@@ -223,7 +223,7 @@ validated, so the valuation and the stock accounts stay aligned.</p>
 371000 Merchandise) and tick <strong>Stock Valuation</strong>. Only the lines of the marked accounts enter the
 valuation. When you save the valuation settings, the stock accounts of your product categories are
 marked automatically; you can also tick the box by hand.</p>
-<p><img alt="Account form with the Stock Valuation box ticked" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_account.png" /></p>
+<p><img class="img-fluid d-block" style="max-width:100%;height:auto;" alt="Account form with the Stock Valuation box ticked" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_account.png" /></p>
 <p><strong>Step 2 &#8212; Set up the product category</strong></p>
 <p>Go to <strong>Inventory &#8594; Configuration &#8594; Products &#8594; Product Categories</strong> and open the category. Check that the
 <strong>Costing Method</strong> is <strong>Average Cost (AVCO)</strong> and the <strong>Inventory Valuation</strong> is <strong>Perpetual (at
@@ -247,7 +247,7 @@ price.</p>
   3 pcs becomes &#8722;300.00. With the setting unticked, the standard Odoo 20 recompute rewrites them at
   the global average cost.</li>
 </ul>
-<p><img alt="AVCO category with Use Valuation Area Price" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_category_area_price.png" /></p>
+<p><img class="img-fluid d-block" style="max-width:100%;height:auto;" alt="AVCO category with Use Valuation Area Price" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_category_area_price.png" /></p>
 <p><strong>Step 3 &#8212; Check the valuation settings</strong></p>
 <p>Go to <strong>Inventory &#8594; Configuration &#8594; Settings</strong>, section <strong>Valuation</strong>. You should see <strong>Use Valuation
 Area</strong> ticked and the area of your company. Under <strong>Stock Valuation</strong>, <strong>Valuation Area Level</strong> must
@@ -261,7 +261,7 @@ area price keep their unit price after a retroactive correction, consistent with
 entries already posted. Unticked, the standard Odoo 20 recompute rewrites those moves at the global
 average cost, but the posted journal entries are <strong>not</strong> corrected, so the stock value and the
 accounting can diverge.</p>
-<p><img alt="Inventory settings, Valuation section" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_settings.png" /></p>
+<p><img class="img-fluid d-block" style="max-width:100%;height:auto;" alt="Inventory settings, Valuation section" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_settings.png" /></p>
 <p><strong>Step 4 &#8212; Post your stock entries</strong></p>
 <p>Journal entries are posted as usual. You find them in <strong>Accounting &#8594; Accounting &#8594; Transactions &#8594;
 Journal Entries</strong> (the app is called <strong>Invoicing</strong> without Enterprise). Where they come from
@@ -322,8 +322,8 @@ this automatically. For manual stock entries (corrections, opening balances), lo
 product, unit of measure and quantity by import or integration, and respect the sign: the
 standard journal entry form has no <strong>Product</strong> and <strong>Quantity</strong> columns on the <strong>Journal Items</strong>
 tab.</p>
-<p><img alt="Posted receipt entry, Dr 371 / Cr 408" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_receipt_entry.png" /></p>
-<p><img alt="Journal lines with the signed quantity" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_signed_quantity.png" /></p>
+<p><img class="img-fluid d-block" style="max-width:100%;height:auto;" alt="Posted receipt entry, Dr 371 / Cr 408" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_receipt_entry.png" /></p>
+<p><img class="img-fluid d-block" style="max-width:100%;height:auto;" alt="Journal lines with the signed quantity" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_signed_quantity.png" /></p>
 <p>Good to know:</p>
 <ul>
 <li><strong>Reversing a stock entry</strong> cancels its effect on the valuation, with or without the <em>storno</em>
@@ -345,14 +345,14 @@ After a receipt of 10 pcs / 1,000 and a delivery of 4 pcs / 400, you will see <s
 <strong>Amount</strong> 600.00 and <strong>Price</strong> 100.00. The total of the <strong>Amount</strong> column on an account equals the
 account balance, as long as all lines of that account have a product and an area.</p>
 <p>The records are <strong>read-only</strong>: they are created and updated from the journal entries.</p>
-<p><img alt="Product Valuation, current balance" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_list.png" /></p>
+<p><img class="img-fluid d-block" style="max-width:100%;height:auto;" alt="Product Valuation, current balance" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_list.png" /></p>
 <p><strong>Step 6 &#8212; Review the monthly history</strong></p>
 <p>Go to <strong>Inventory &#8594; Products &#8594; Product Valuation History</strong>. Each row is one month (format YYYYMM)
 for a product &#215; area &#215; account, with the initial balance, the movements of the month and the final
 balance. <strong>Quantity In</strong>, <strong>Debit</strong>, <strong>Quantity Out</strong> and <strong>Credit</strong> are hidden by default: show
 them from the optional columns menu in the list header. Use this view to reconcile with the
 accounting balance month by month: <strong>Final Amount</strong> is the closing balance of the month.</p>
-<p><img alt="Product Valuation History" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_history.png" /></p>
+<p><img class="img-fluid d-block" style="max-width:100%;height:auto;" alt="Product Valuation History" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_history.png" /></p>
 <p><strong>Step 7 &#8212; Recompute the whole valuation (only when needed)</strong></p>
 <p>A full recompute is needed after the first installation, after a data import or after large
 retroactive accounting corrections. It is not needed in daily work. Only a <strong>System Administrator</strong>
@@ -387,7 +387,7 @@ and cannot be added or edited by hand; corrections are made through journal entr
 in Inventory, the <strong>On Hand</strong> button of the product shows 0.00: there is no physical stock. With
 real receipts and deliveries (and <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code>), the quantity in the table matches the physical
 stock.</p>
-<p><img alt="Product form, valuation table on the Accounting tab" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_product_tab.png" /></p>
+<p><img class="img-fluid d-block" style="max-width:100%;height:auto;" alt="Product form, valuation table on the Accounting tab" src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_stock_valuation/stock_valuation_product_tab.png" /></p>
 <p><strong>How the price is computed</strong></p>
 <p>On every posting, set-back-to-draft, cancellation or deletion of an entry, the price in <strong>Product
 Valuation</strong> is:</p>
