@@ -1,6 +1,6 @@
 # 📦 Deltatech OBYC - Product Account Determination
 
-## Description
+## 📝 Description
 This module implements an account determination mechanism inspired by SAP OBYC (OBject-based valuation and account determination for inventorY and Cost management). It allows automatic selection of accounts based on:
 
 - **Transaction Key** (e.g. stock_receipt, stock_delivery)
@@ -154,7 +154,7 @@ This flexible structure allows defining complex accounting rules for various typ
 
 ## 📌 Usage Examples
 
-### Basic Configuration
+### 🔧 Basic Configuration
 
 To configure the module:
 
@@ -163,7 +163,7 @@ To configure the module:
 3. Define account modifiers (optional)
 4. Configure account determination rules in `product.account.determination`
 
-### Typical Account Mappings
+### 🗂️ Typical Account Mappings
 
 Romanian chart of accounts. Classes: MF = goods, RM = raw materials, FG = finished products.
 
@@ -240,7 +240,7 @@ the module; they stay on the GR/IR account (408) and are regularized manually.
 
 ## 📊 Transaction Key Use Cases
 
-### Purchase Flow
+### 🛒 Purchase Flow
 
 - **stock_receipt**: goods received from a supplier
   - Source Account: GR/IR clearing (408), Valuation Account: inventory (371)
@@ -250,7 +250,7 @@ the module; they stay on the GR/IR account (408) and are regularized manually.
   - Destination Account: GR/IR clearing (408), Valuation Account: inventory (371)
   - Entry: Dr 408 / Cr 371; with storno accounting: Dr 371 −V / Cr 408 −V
 
-### Sales Flow
+### 💰 Sales Flow
 
 - **stock_delivery**: goods delivered to a customer (cost of goods sold at delivery)
   - Destination Account: COGS (607, or 711 for finished products), Valuation Account: inventory
@@ -264,7 +264,7 @@ the module; they stay on the GR/IR account (408) and are regularized manually.
   - Destination Account: revenue (707, or 701 for finished products)
   - The customer invoice and credit note product lines use this account; no stock entry
 
-### Inventory Management
+### 📦 Inventory Management
 
 - **inventory_adjustment_plus**: gain found at the count (inventory location → internal)
   - Source Account: 607, Valuation Account: inventory (371)
@@ -274,7 +274,7 @@ the module; they stay on the GR/IR account (408) and are regularized manually.
   - Destination Account: expense (607), Valuation Account: inventory (371)
   - Entry: Dr 607 / Cr 371
 
-### Manufacturing
+### 🏭 Manufacturing
 
 - **production_issue**: materials consumed in production
   - Destination Account: 601, Valuation Account: raw materials (301)
@@ -284,7 +284,7 @@ the module; they stay on the GR/IR account (408) and are regularized manually.
   - Source Account: 711, Valuation Account: finished products (345)
   - Entry: Dr 345 / Cr 711
 
-### Special Cases
+### ⭐ Special Cases
 
 - **dropship**: direct delivery from supplier to customer
   - Source Account: GR/IR clearing (408), Valuation Account: COGS (607)

@@ -1,3 +1,7 @@
+## 19.0.1.0.14 (2026-10-10)
+
+- Docs: emoji symbols added to the remaining headings of the module description, for a uniform look on the Odoo Apps page. No code change.
+
 ## 19.0.1.0.13 (2026-10-10)
 
 - The module license changes from LGPL-3 to OPL-1 (same as the rest of the suite), so that OPL-1 modules can depend on it on Odoo Apps. No code change.
