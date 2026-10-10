@@ -1,3 +1,7 @@
+## 20.0.1.0.12 (2026-10-10)
+
+- The module license changes from LGPL-3 to OPL-1 (same as the rest of the suite), so that OPL-1 modules can depend on it on Odoo Apps. No code change.
+
 ## 20.0.1.0.11 (2026-10-09)
 
 - Docs: the consultant sheet now marks account 357 as not recommended for drop shipments

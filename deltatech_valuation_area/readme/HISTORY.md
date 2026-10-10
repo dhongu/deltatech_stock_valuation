@@ -1,3 +1,7 @@
+## 20.0.1.0.6 (2026-10-10)
+
+- The module license changes from LGPL-3 to OPL-1 (same as the rest of the suite), so that OPL-1 modules can depend on it on Odoo Apps. No code change.
+
 ## 20.0.1.0.5 (2026-10-01)
 
 - Fix: reversing a stock journal entry on a company without storno doubled the quantity

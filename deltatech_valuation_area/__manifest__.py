@@ -4,7 +4,7 @@
 
 {
     "name": "Deltatech Stock Valuation Area",
-    "version": "20.0.1.0.5",
+    "version": "20.0.1.0.6",
     "summary": "Stock Valuation Area Management",
     "category": "Valuation/Valuation",
     "author": "Terrabit, Dorin Hongu",
@@ -19,7 +19,7 @@
         "views/account_move_view.xml",
     ],
     "depends": ["stock", "account", "stock_account"],
-    "license": "LGPL-3",
+    "license": "OPL-1",
     "images": ["static/description/main_screenshot.png"],
     "development_status": "Beta",
     "maintainers": ["dhongu"],
