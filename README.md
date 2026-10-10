@@ -25,9 +25,9 @@ Available addons
 ----------------
 addon | version | maintainers | summary
 --- | --- | --- | ---
-[deltatech_obyc](deltatech_obyc/) | 19.0.1.0.1 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Implementare OBYC-style account mapping pentru tranzacții de stoc
-[deltatech_stock_valuation](deltatech_stock_valuation/) | 19.0.0.0.7 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Product Stock Valuation
-[deltatech_valuation_area](deltatech_valuation_area/) | 19.0.1.0.0 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Stock Valuation Area Management
+[deltatech_obyc](deltatech_obyc/) | 19.0.1.0.10 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Implementare OBYC-style account mapping pentru tranzacții de stoc
+[deltatech_stock_valuation](deltatech_stock_valuation/) | 19.0.0.0.12 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Product Stock Valuation
+[deltatech_valuation_area](deltatech_valuation_area/) | 19.0.1.0.5 | <a href='https://github.com/dhongu'><img src='https://github.com/dhongu.png' width='32' height='32' style='border-radius:50%;' alt='dhongu'/></a> | Stock Valuation Area Management
 
 [//]: # (end addons)
 
