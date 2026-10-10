@@ -49,7 +49,7 @@
 <p class="mb-4" style="font-size:16px;line-height:1.65;max-width:780px;">Modul pentru calculul &#537;i urm&#259;rirea evalu&#259;rii stocului de produse pe arie de evaluare &#537;i cont contabil,
 inspirat din conceptul SAP Material Valuation (MBEW &amp; MBEWH).</p>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Func&#539;ionalit&#259;&#539;i principale</h2>
-<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-3 mt-1 mb-4"><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Cost mediu ponderat</span><div class="mt-1">calculat per produs, arie de evaluare &#537;i cont contabil</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Evaluare din note contabile</span><div class="mt-1">&#8212; valorile sunt determinate direct din &#238;nregistr&#259;rile contabile, nu din mi&#537;c&#259;rile de stoc</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Istoric lunar</span><div class="mt-1">al evalu&#259;rilor (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.valuation.history</code>) pentru urm&#259;rirea evolu&#539;iei &#238;n timp</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Conturi contabile dedicate</span><div class="mt-1">&#8212; se marcheaz&#259; conturile utilizate la evaluarea stocului (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">is_for_stock_valuation</code>)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Arie de evaluare pe linii</span><div class="mt-1">&#8212; aria e obligatorie pe orice linie contabil&#259; cu produs stocabil (regula vine din <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_valuation_area</code>) &#537;i se completeaz&#259; automat cu aria companiei</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Configurare nivel arie de evaluare</span><div class="mt-1">per companie (nivelul suportat de recalculare este Company)</div></div></li><li class="col"><div class="border rounded-3 p-3 h-100"><span class="fw-bold">Recalculare complet&#259; &#238;n fundal</span><div class="mt-1">, per companie, din set&#259;ri (doar pentru administratori de sistem)</div></div></li></ul>
+<ul class="list-unstyled row row-cols-1 row-cols-md-2 g-2 mt-1 mb-4"><li class="col"><div class="border rounded-3 px-3 py-2 h-100"><span class="fw-bold">Cost mediu ponderat</span><div>calculat per produs, arie de evaluare &#537;i cont contabil</div></div></li><li class="col"><div class="border rounded-3 px-3 py-2 h-100"><span class="fw-bold">Evaluare din note contabile</span><div>&#8212; valorile sunt determinate direct din &#238;nregistr&#259;rile contabile, nu din mi&#537;c&#259;rile de stoc</div></div></li><li class="col"><div class="border rounded-3 px-3 py-2 h-100"><span class="fw-bold">Istoric lunar</span><div>al evalu&#259;rilor (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.valuation.history</code>) pentru urm&#259;rirea evolu&#539;iei &#238;n timp</div></div></li><li class="col"><div class="border rounded-3 px-3 py-2 h-100"><span class="fw-bold">Conturi contabile dedicate</span><div>&#8212; se marcheaz&#259; conturile utilizate la evaluarea stocului (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">is_for_stock_valuation</code>)</div></div></li><li class="col"><div class="border rounded-3 px-3 py-2 h-100"><span class="fw-bold">Arie de evaluare pe linii</span><div>&#8212; aria e obligatorie pe orice linie contabil&#259; cu produs stocabil (regula vine din <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_valuation_area</code>) &#537;i se completeaz&#259; automat cu aria companiei</div></div></li><li class="col"><div class="border rounded-3 px-3 py-2 h-100"><span class="fw-bold">Configurare nivel arie de evaluare</span><div>per companie (nivelul suportat de recalculare este Company)</div></div></li><li class="col"><div class="border rounded-3 px-3 py-2 h-100"><span class="fw-bold">Recalculare complet&#259; &#238;n fundal</span><div>, per companie, din set&#259;ri (doar pentru administratori de sistem)</div></div></li></ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Modele introduse</h2>
 <ul>
 <li><code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">product.valuation</code> &#8212; evaluarea curent&#259; a unui produs pe arie de evaluare, cont &#537;i companie (pre&#539;, cantitate, valoare)</li>
@@ -557,8 +557,12 @@ and amount.</p>
          class="card h-100 text-decoration-none border" style="color:#212529;">
         <div class="card-body p-3">
           <div class="d-flex align-items-center mb-2">
-            <span class="d-inline-block text-center fw-bold rounded me-2 flex-shrink-0"
-                  style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">OA</span>
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">OA</span>
+              <img src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_obyc/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
             <span>
               <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">Deltatech OBYC - Account Determination</span>
               <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
@@ -573,8 +577,12 @@ and amount.</p>
          class="card h-100 text-decoration-none border" style="color:#212529;">
         <div class="card-body p-3">
           <div class="d-flex align-items-center mb-2">
-            <span class="d-inline-block text-center fw-bold rounded me-2 flex-shrink-0"
-                  style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">SV</span>
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">SV</span>
+              <img src="https://apps.odoocdn.com/apps/assets/20.0/deltatech_valuation_area/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
             <span>
               <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">Deltatech Stock Valuation Area</span>
               <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
