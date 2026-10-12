@@ -3,7 +3,7 @@
 
 
 {
-    "name": "Deltatech Stock Valuation Area",
+    "name": "Stock Valuation Area",
     "version": "20.0.1.0.6",
     "summary": "Stock Valuation Area Management",
     "category": "Valuation/Valuation",
