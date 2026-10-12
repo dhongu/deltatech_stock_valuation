@@ -3,7 +3,7 @@
 
 
 {
-    "name": "Deltatech OBYC - Account Determination",
+    "name": "OBYC - Account Determination",
     "version": "19.0.1.0.14",
     "summary": "Implementare OBYC-style account mapping pentru tranzacții de stoc",
     "category": "Valuation/Valuation",
