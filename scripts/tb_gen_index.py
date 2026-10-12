@@ -26,7 +26,10 @@ Reguli sanitizer Apps Store (moștenite din tb_skin_index v5, validate pe store 
     (Confirmat pe module live, ex. bom_excel_import / NextERP.)
 
 Structura paginii (doar EN):
-  HERO verde brand (icon.png + nume + summary + badge-uri din manifest)
+  HERO verde brand, pe un rând: icon.png | nume + summary (din banner.json, altfel din
+  manifest) + badge-uri din manifest
+  (versiune, categorie, găzduire, licență) | panou cu teste și bara de acoperire din
+  scripts/test_stats.json (panoul lipsește la modulele fără teste)
   NAV-PILLS cu taburi: Overview / Presentation / Configuration / Usage / Română / Versions
     - Overview      = DESCRIPTION.md (+ CONTEXT.md la final); listele de funcții cu
                       ≥3 itemi devin carduri Bootstrap cu bifă verde. Dacă modulul
@@ -72,6 +75,7 @@ Utilizare:
 import argparse
 import ast
 import html as html_mod
+import json
 import logging
 import os
 import re
@@ -114,6 +118,13 @@ MD_EXTENSIONS = ["tables", "fenced_code", "sane_lists"]
 # documenta, de mână, și rămăsese deja o versiune în urmă până a apucat să iasă pe store.
 FRAMEWORK_FRAGMENT = "FRAMEWORK_FEATURES.md"
 
+# Badge-ul de teste din antet: `scripts/test_stats.json` al suitei, scris de
+# scripts/tb_test_stats.py (teste numărate din cod, acoperire din Codecov). Fără fișier,
+# badge-ul lipsește, deci suitele care nu-l produc rămân neschimbate. Acoperirea apare doar
+# de la COVERAGE_MIN în sus; sub prag, badge-ul arată doar numărul de teste.
+TEST_STATS = os.path.join("scripts", "test_stats.json")
+COVERAGE_MIN = 70
+
 # ----------------------------------------------------------------------------- #
 # Stringurile vizibile ale paginii, pe limbi
 #
@@ -135,7 +146,8 @@ I18N = {
         "stat_partner": "Odoo Partner &mdash; implementation &amp; support",
         "scope_title": "What the price covers",
         "scope_licence": "<strong>The module licence only.</strong> Assistance, installation, "
-        "configuration, data migration and training are not included and are quoted separately.",
+        "configuration, data migration and training are not included and are quoted separately "
+        "&mdash; except for Terrabit implementation customers, whose subscription covers them.",
         "scope_used": "<strong>These modules are not shelfware.</strong> We build and maintain them "
         "for our own Odoo implementations &mdash; they run in production at our customers, which is "
         "why they keep up with each Odoo release and with the changes ANAF publishes.",
@@ -157,7 +169,24 @@ I18N = {
         "cross_title": "More apps by Terrabit",
         "cross_body": "Other modules from the same publisher, built to work together.",
         "cross_all": "All apps &rarr;",
+        "deps_title": "What the price includes",
+        "deps_intro_own": "The price of this module on Odoo Apps, <strong>%(total)s</strong>, already includes the "
+        "modules it needs: Odoo Apps adds them to the same order, so you pay once. The module itself costs "
+        "%(own)s.",
+        "deps_intro_free": "This module is free; its price on Odoo Apps, <strong>%(total)s</strong>, is the price "
+        "of the modules it needs, added to the same order.",
+        "deps_auto": "It installs itself once these modules are present, so it is not charged separately.",
+        "deps_free_price": "free",
+        "deps_own_row": "This module",
+        "deps_total_row": "Price on Odoo Apps",
         "badge_hosting": "Odoo.sh &bull; On-premise",
+        "quality_test": "1 automated test",
+        "quality_tests": "%(n)s automated tests",
+        "quality_coverage": "%(p)s%% code coverage",
+        "subscription_title": "For projects implemented by Terrabit,",
+        "subscription_body": "the post-implementation subscription includes access to our module portfolio, with no "
+        "separate purchase, together with upgrades to every new Odoo version and support from the developers who "
+        "build the modules.",
         "rating_free_title": "Did this module help you?",
         "rating_free_body": "It is free, built and maintained by the Terrabit developers. If it saved you time, "
         "a rating on this page is the best way to say thanks &mdash; and it helps other Odoo users find it too. "
@@ -178,7 +207,8 @@ I18N = {
         "scope_title": "Ce acoper&#259; pre&#539;ul",
         "scope_licence": "<strong>Doar licen&#539;a modulului.</strong> Asisten&#539;a, instalarea, "
         "configurarea, migrarea datelor &#537;i instruirea nu sunt incluse &#537;i se "
-        "contracteaz&#259; separat.",
+        "contracteaz&#259; separat &mdash; cu excep&#539;ia clien&#539;ilor de implementare "
+        "Terrabit, la care sunt cuprinse &#238;n abonament.",
         "scope_used": "<strong>Modulele nu stau pe raft.</strong> Le construim &#537;i le "
         "&#238;ntre&#539;inem pentru propriile noastre implement&#259;ri Odoo &mdash; ruleaz&#259; "
         "&#238;n produc&#539;ie la clien&#539;ii no&#537;tri, de aceea &#539;in pasul cu fiecare "
@@ -198,7 +228,24 @@ I18N = {
         "cross_title": "Alte aplica&#539;ii Terrabit",
         "cross_body": "Alte module de la acela&#537;i editor, construite s&#259; lucreze &#238;mpreun&#259;.",
         "cross_all": "Toate aplica&#539;iile &rarr;",
+        "deps_title": "Ce include prețul",
+        "deps_intro_own": "Prețul acestui modul pe Odoo Apps, <strong>%(total)s</strong>, include deja modulele de "
+        "care are nevoie: Odoo Apps le adaugă în aceeași comandă, deci plătiți o singură dată. Modulul propriu-zis "
+        "costă %(own)s.",
+        "deps_intro_free": "Modulul e gratuit; prețul lui pe Odoo Apps, <strong>%(total)s</strong>, e prețul "
+        "modulelor de care are nevoie, adăugate în aceeași comandă.",
+        "deps_auto": "Se instalează singur când modulele de mai jos sunt prezente, deci nu se taxează separat.",
+        "deps_free_price": "gratuit",
+        "deps_own_row": "Acest modul",
+        "deps_total_row": "Preț pe Odoo Apps",
         "badge_hosting": "Odoo.sh &bull; Instalare local&#259; (on-premise)",
+        "quality_test": "1 test automat",
+        "quality_tests": "%(n)s teste automate",
+        "quality_coverage": "acoperire cod %(p)s%%",
+        "subscription_title": "Pentru proiectele implementate de Terrabit,",
+        "subscription_body": "abonamentul postimplementare include accesul la portofoliul nostru de module, f&#259;r&#259; "
+        "achizi&#539;ie separat&#259;, &#238;mpreun&#259; cu actualizarea lor la fiecare versiune nou&#259; de Odoo "
+        "&#537;i suportul dezvoltatorilor care le construiesc.",
         "rating_free_title": "V-a ajutat acest modul?",
         "rating_free_body": "E gratuit, construit &#537;i &#238;ntre&#539;inut de programatorii Terrabit. Dac&#259; v-a economisit timp, "
         "un rating pe aceast&#259; pagin&#259; e cel mai bun mod de a ne mul&#539;umi &mdash; &#537;i &#238;i ajut&#259; pe al&#539;i utilizatori Odoo s&#259; &#238;l g&#259;seasc&#259;. "
@@ -258,34 +305,60 @@ WRAP_OPEN = (
     f'color:{BODY};font-weight:400;{THEME_RESET}">'
 )
 
+# Antet pe un rând (varianta 5, aleasă 12.10.2026): iconița | nume, summary și insigne |
+# panoul de calitate (teste + bara de acoperire). Rândul e `flex-wrap`: pe ecran îngust
+# panoul coboară sub text. Fără media queries (sanitizer-ul taie <style>), deci panoul are
+# fundal propriu în loc de bordură laterală, care ar rămâne agățată după wrap.
 HERO = """%(marker)s
-<div class="text-center rounded-4 shadow px-4 pt-4 pb-3 mt-2 mb-4" style="background-color:%(primary)s;color:#ffffff;">
-  %(icon)s
-  <h1 class="fw-bold mb-3" style="color:#ffffff;font-size:42px;line-height:1.08;letter-spacing:-0.5px;border:none;">%(name)s</h1>
-  %(summary)s
-  <div>
-    %(badges)s
+<div class="rounded-4 shadow px-4 py-4 mt-2 mb-4" style="background-color:%(primary)s;color:#ffffff;">
+  <div class="d-flex flex-wrap align-items-center" style="gap:24px;">
+    %(icon)s
+    <div class="flex-grow-1" style="flex-basis:320px;min-width:0;">
+      <h1 class="fw-bold mb-2" style="color:#ffffff;font-size:36px;line-height:1.1;letter-spacing:-0.5px;border:none;">%(name)s</h1>
+      %(summary)s
+      <div>
+        %(badges)s
+      </div>
+    </div>
+    %(quality)s
   </div>
 </div>
 """
 
 HERO_ICON = (
-    '<div class="mb-3"><span class="d-inline-block rounded-3 p-2" style="background-color:#ffffff;">'
-    '<img src="icon.png" alt="%(name)s" style="width:72px;height:72px;border:none;"/></span></div>'
+    '<span class="d-inline-block rounded-4 p-2 flex-shrink-0" style="background-color:#ffffff;">'
+    '<img src="icon.png" alt="%(name)s" style="width:80px;height:80px;border:none;"/></span>'
 )
 
-SUMMARY = '<p class="mx-auto mb-4" style="font-size:19px;color:#cdeccf;max-width:620px;line-height:1.5;">%s</p>'
+SUMMARY = '<p class="mb-3" style="font-size:18px;color:#cdeccf;line-height:1.45;">%s</p>'
 
+# Insignele din antet, aliniate la stânga (me-2/mb-2, nu m-1). Conturul pe verdele
+# primary ține albul lizibil (~6.4:1); versiunea Odoo e singura plină, alb cu text verde.
 BADGE = (
-    '<span class="d-inline-block rounded-pill fw-semibold m-1"'
-    ' style="background-color:%(dark)s;color:#ffffff;padding:8px 16px;font-size:12px;">%(t)s</span>'
+    '<span class="d-inline-block rounded-pill fw-semibold me-2 mb-2"'
+    ' style="border:1px solid #8fd1ad;color:#ffffff;padding:6px 14px;font-size:12px;">%(t)s</span>'
 )
-# Versiunea Odoo: aceleași culori ca celelalte insigne (alb pe verde închis, 11.4:1);
-# verdele deschis cu text închis nu se distingea pe fundalul verde al cardului.
 BADGE_ACCENT = (
-    '<span class="d-inline-block rounded-pill fw-bold m-1"'
-    ' style="background-color:%(dark)s;color:#ffffff;padding:8px 16px;font-size:12px;">%(t)s</span>'
+    '<span class="d-inline-block rounded-pill fw-bold me-2 mb-2"'
+    ' style="background-color:#ffffff;border:1px solid #ffffff;color:%(primary)s;padding:6px 14px;font-size:12px;">%(t)s</span>'
 )
+# Licența e informație secundară pentru cumpărător: contur punctat, ultima în rând.
+BADGE_LICENSE = (
+    '<span class="d-inline-block rounded-pill fw-semibold me-2 mb-2"'
+    ' style="border:1px dashed #8fd1ad;color:#ffffff;padding:6px 14px;font-size:12px;">%(t)s</span>'
+)
+
+# Panoul de calitate din dreapta antetului: numărul de teste și, de la COVERAGE_MIN în sus,
+# bara de acoperire. Bara e din două <div> cu `background-color` (singurul fundal care trece
+# de sanitizer); lățimea plinului = procentul de acoperire.
+QUALITY = """<div class="flex-shrink-0 rounded-3 px-3 py-3" style="width:240px;background-color:%(dark)s;">
+      <div class="fw-semibold" style="font-size:15px;color:#ffffff;">&#10003; %(tests)s</div>
+      %(coverage)s
+    </div>"""
+QUALITY_COVERAGE = """<div class="rounded-pill mt-2" style="height:8px;background-color:#2a6b4d;overflow:hidden;">
+        <div class="rounded-pill" style="height:8px;width:%(p)s%%;background-color:%(accent)s;"></div>
+      </div>
+      <div class="mt-1" style="font-size:13px;color:#cdeccf;">%(label)s</div>"""
 
 # Nav-pills: fără JS propriu — data-bs-toggle e activat de bootstrap.bundle.js al store-ului.
 # pilula activă în verde Terrabit prin variabila CSS Bootstrap (inline, deci trece de
@@ -346,6 +419,18 @@ SCOPE_NOTE = """
 </section>
 """
 
+# Abonamentul Terrabit: proiectele implementate de Terrabit au acces la portofoliul de module prin abonamentul
+# postimplementare (cu upgrade-uri și suport), fără să le cumpere de pe Apps. Apare doar pe modulele cu preț, înaintea notei de acoperire și a
+# CTA-ului de suport; caseta are culorile cererii de rating.
+SUBSCRIPTION = """
+<div class="d-flex align-items-start rounded-4 px-4 py-3 mt-4 mb-3" style="background-color:#DEF1DD;color:%(body)s;">
+  <span class="flex-shrink-0 me-3" style="font-size:24px;line-height:1.2;color:%(primary)s;">&#10003;</span>
+  <div style="font-size:16px;line-height:1.55;">
+    <span class="fw-bold" style="color:%(primary)s;">%(subscription_title)s</span> %(subscription_body)s
+  </div>
+</div>
+"""
+
 # Butonul: verde pal #DEF1DD (ca la caseta de rating) cu text verde închis, 9.7:1 pe cardul
 # închis; verdele accent cu text închis se pierdea vizual.
 SUPPORT = """
@@ -386,8 +471,12 @@ CROSS_SELL_CARD = """    <div class="col-md-3 col-sm-6">
          class="card h-100 text-decoration-none border" style="color:%(body)s;">
         <div class="card-body p-3">
           <div class="d-flex align-items-center mb-2">
-            <span class="d-inline-block text-center fw-bold rounded me-2 flex-shrink-0"
-                  style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:%(primary)s;">%(initials)s</span>
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:%(primary)s;">%(initials)s</span>
+              <img src="https://apps.odoocdn.com/apps/assets/%(series)s/%(tech)s/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
             <span>
               <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">%(name)s</span>
               <span class="d-block" style="font-size:13px;color:%(muted)s;">%(category)s</span>
@@ -399,6 +488,36 @@ CROSS_SELL_CARD = """    <div class="col-md-3 col-sm-6">
     </div>
 """
 CROSS_SELL_CLOSE = "  </div>\n</section>\n"
+
+# Prețul real al unui modul care atrage după el alte module cu preț din aceeași suită: pe Apps Store
+# dependențele plătite intră automat în coș, deci cumpărătorul vede un total mai mare decât prețul
+# modulului. Lista are iconiță, nume (link spre Apps), descriere și preț; apare doar dacă există
+# cel puțin o dependență plătită, și pe module gratuite (punți auto_install).
+DEPS_OPEN = """
+<section class="rounded-4 p-4 mt-4 mb-3 border">
+  <h2 class="fw-bold mb-2" style="font-size:20px;border:none;color:%(body)s;">%(deps_title)s</h2>
+  <p class="mb-3" style="color:%(body)s;line-height:1.6;font-size:15px;">%(intro)s</p>
+"""
+DEPS_ROW = """  <a href="https://apps.odoo.com/apps/modules/%(series)s/%(tech)s" target="_blank" rel="noopener"
+     class="d-flex align-items-center text-decoration-none border rounded-3 p-3 mb-2" style="color:%(body)s;">
+    <span class="d-inline-block position-relative me-3 flex-shrink-0" style="width:40px;height:40px;">
+      <span class="d-inline-block text-center fw-bold rounded"
+            style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:%(primary)s;">%(initials)s</span>
+      <img src="https://apps.odoocdn.com/apps/assets/%(series)s/%(tech)s/icon.png" alt="" loading="lazy"
+           class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+    </span>
+    <span class="flex-grow-1 me-3">
+      <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;color:%(primary)s;">%(name)s</span>
+      <span class="d-block" style="font-size:14px;line-height:1.4;color:%(muted)s;">%(summary)s</span>
+    </span>
+    <span class="fw-bold flex-shrink-0 text-end" style="font-size:16px;white-space:nowrap;">%(price)s</span>
+  </a>
+"""
+DEPS_TOTAL = """  <div class="d-flex justify-content-between px-3 pt-2" style="color:%(body)s;font-size:16px;">
+    <span class="fw-semibold">%(deps_total_row)s</span><span class="fw-bold">%(total)s</span>
+  </div>
+"""
+DEPS_CLOSE = "</section>\n"
 
 # --- carduri de funcții (grilă Bootstrap responsivă), moștenite din tb_skin_index v5 --- #
 # Casete compacte (Cozmin, 06.10.2026): 8px sus/jos și 16px lateral în casetă, 8px între casete,
@@ -638,6 +757,39 @@ def render_markdown(md_text):
 # ----------------------------------------------------------------------------- #
 
 
+_TEST_STATS_CACHE = {}
+
+
+def read_test_stats(addon_dir):
+    """Intrarea modulului din test_stats.json al suitei (directorul părinte al modulului)."""
+    path = os.path.join(os.path.dirname(os.path.abspath(addon_dir)), TEST_STATS)
+    if path not in _TEST_STATS_CACHE:
+        try:
+            with open(path, encoding="utf8") as f:
+                _TEST_STATS_CACHE[path] = json.load(f).get("addons", {})
+        except (OSError, ValueError):
+            _TEST_STATS_CACHE[path] = {}
+    return _TEST_STATS_CACHE[path].get(os.path.basename(os.path.abspath(addon_dir)), {})
+
+
+def build_quality(stats, lang="en"):
+    """Panoul „✓ 26 automated tests” + bara „88% code coverage”; gol la modulele fără teste.
+
+    Acoperirea (din Codecov) apare doar de la COVERAGE_MIN în sus; sub prag, panoul arată
+    doar numărul de teste."""
+    tests = stats.get("tests") or 0
+    if not tests:
+        return ""
+    strings = I18N[lang]
+    text = strings["quality_test"] if tests == 1 else strings["quality_tests"] % {"n": tests}
+    coverage = stats.get("coverage")
+    bar = ""
+    if coverage is not None and coverage >= COVERAGE_MIN:
+        p = int(coverage)
+        bar = QUALITY_COVERAGE % dict(TB, p=p, label=strings["quality_coverage"] % {"p": p})
+    return QUALITY % dict(TB, tests=text, coverage=bar)
+
+
 def build_badges(manifest, lang="en"):
     items = []
     ver = str(manifest.get("version", ""))
@@ -647,17 +799,36 @@ def build_badges(manifest, lang="en"):
     category = manifest.get("category")
     if category:
         items.append((BADGE, html_mod.escape(str(category))))
+    # modulele terțe cu cod Python nu rulează pe Odoo Online (Apps FAQ): găzduirea e
+    # mereu doar Odoo.sh și on-premise, niciodată „Online”
+    items.append((BADGE, I18N[lang]["badge_hosting"]))
     license_ = manifest.get("license")
     if license_:
-        items.append((BADGE, html_mod.escape(str(license_))))
-    # modulele terțe cu cod Python nu rulează pe Odoo Online (Apps FAQ)
-    items.append((BADGE, I18N[lang]["badge_hosting"]))
-    return "\n    ".join(tmpl % dict(TB, t=t) for tmpl, t in items)
+        items.append((BADGE_LICENSE, html_mod.escape(str(license_))))
+    return "\n        ".join(tmpl % dict(TB, t=t) for tmpl, t in items)
+
+
+def read_banner(addon_dir, lang="en"):
+    """Titlul și summary-ul din static/description/banner.json (sursa miniaturii din lista
+    Apps), doar dacă banner-ul e în limba paginii; altfel {}."""
+    path = os.path.join(addon_dir, "static", "description", "banner.json")
+    try:
+        with open(path, encoding="utf8") as f:
+            banner = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    if banner.get("lang", "en") != lang:
+        return {}
+    return banner
 
 
 def build_hero(addon_dir, manifest, lang="en"):
-    name = html_mod.escape(manifest.get("name") or os.path.basename(os.path.abspath(addon_dir)))
-    summary = html_mod.escape((manifest.get("summary") or "").strip())
+    # Titlul și summary-ul vin întâi din banner.json, ca antetul paginii să spună același
+    # lucru ca miniatura pe care clientul tocmai a dat click (ex. „Alternative Product
+    # Codes”, nu `name` = „Products Alternative” din manifest). Fără banner, manifestul.
+    banner = read_banner(addon_dir, lang)
+    name = html_mod.escape(banner.get("title") or manifest.get("name") or os.path.basename(os.path.abspath(addon_dir)))
+    summary = html_mod.escape((banner.get("summary") or manifest.get("summary") or "").strip())
     icon = ""
     if os.path.exists(os.path.join(addon_dir, "static", "description", "icon.png")):
         icon = HERO_ICON % {"name": name}
@@ -668,6 +839,7 @@ def build_hero(addon_dir, manifest, lang="en"):
         name=name,
         summary=(SUMMARY % summary) if summary else "",
         badges=build_badges(manifest, lang),
+        quality=build_quality(read_test_stats(addon_dir), lang),
     )
 
 
@@ -710,6 +882,19 @@ def style_images(rendered):
     )
 
 
+def style_inline_images(rendered):
+    """Capturile din celelalte taburi (Utilizare etc.): responsive, fără să depășească textul.
+
+    Fără stil, Apps Store le afișează la dimensiunea intrinsecă, peste coloana de text.
+    `max-width:100%` le păstrează la dimensiunea lor cât încap și le micșorează odată cu fereastra.
+    """
+    return re.sub(
+        r"<img (?![^>]*\bstyle=)",
+        '<img class="img-fluid d-block" style="max-width:100%;height:auto;" ',
+        rendered,
+    )
+
+
 def fix_image_paths(rendered):
     """Căile imaginilor relative la index.html, nu la rădăcina modulului.
 
@@ -727,6 +912,8 @@ def build_panel_body(key, md_text):
     rendered = style_code(rendered)
     if key == "presentation":
         rendered = style_images(rendered)
+    else:
+        rendered = style_inline_images(rendered)
     if key in ("overview", "romana"):
         rendered = style_feature_lists(rendered)
         rendered = style_lead_paragraph(rendered)
@@ -744,6 +931,10 @@ def build_tabs(tabs):
     panes = []
     for i, (key, title, md_text) in enumerate(tabs):
         heading = f'<h2 class="fw-bold mb-3" style="{accent_bar}">{title}</h2>'
+        if key == "romana":
+            # tabul se numește deja „Română”: titlul ar repeta numele tabului, iar
+            # subtitlurile Prezentare / Configurare / Utilizare țin loc de titlu
+            heading = ""
         panes.append(
             PANEL
             % {
@@ -819,6 +1010,83 @@ def build_cross_sell(addon_dir, manifest, count=CROSS_SELL_COUNT, lang="en"):
     return (CROSS_SELL_OPEN % dict(TB, **I18N[lang])) + "".join(cards) + CROSS_SELL_CLOSE
 
 
+def _series(manifest):
+    m = re.match(r"(\d+\.\d+)", str(manifest.get("version", "")))
+    return m.group(1) if m else "19.0"
+
+
+def _money(amount, manifest):
+    currency = str(manifest.get("currency") or "EUR")
+    return f"{amount:g} &euro;" if currency == "EUR" else f"{amount:g} {html_mod.escape(currency)}"
+
+
+def _sibling_suites(root):
+    """Directoarele suitelor-frate ale suitei `root` (alte repo-uri Terrabit din același părinte)."""
+    parent = os.path.dirname(os.path.abspath(root))
+    return [
+        os.path.join(parent, d)
+        for d in sorted(os.listdir(parent))
+        if os.path.join(parent, d) != os.path.abspath(root) and os.path.isdir(os.path.join(parent, d))
+    ]
+
+
+def _paid_closure(manifest, roots, found=None):
+    """Dependențele din `manifest` (tranzitiv, DFS), căutate în `roots` (suita proprie prima, apoi frații).
+    Întoarce {nume tehnic: manifest}; ce nu e găsit (Odoo core, OCA) nu intră."""
+    found = found if found is not None else {}
+    for dep in manifest.get("depends") or []:
+        if dep in found:
+            continue
+        dep_man = next((m for m in (read_manifest(os.path.join(r, dep)) for r in roots) if m), None)
+        if dep_man:
+            found[dep] = dep_man
+            _paid_closure(dep_man, roots, found)
+    return found
+
+
+def paid_dependencies(addon_dir):
+    """Dependențele plătite (tranzitiv) din suita modulului și din celelalte suite Terrabit
+    (repo-uri-frate), ca (nume tehnic, manifest). Pe Apps Store intră în coș toate."""
+    addon_dir = os.path.abspath(addon_dir)
+    root = os.path.dirname(addon_dir)
+    roots = [root] + _sibling_suites(root)
+    found = _paid_closure(read_manifest(addon_dir), roots)
+    return [(tech, man) for tech, man in found.items() if man.get("price")]
+
+
+def build_dependencies(addon_dir, manifest, lang="en"):
+    deps = paid_dependencies(addon_dir)
+    if not deps:
+        return ""
+    strings = dict(TB, **I18N[lang])
+    own = manifest.get("price") or 0
+    total = own + sum(man["price"] for _tech, man in deps)
+    values = {"own": _money(own, manifest), "total": _money(total, manifest)}
+    intro = (strings["deps_intro_own"] if own else strings["deps_intro_free"]) % values
+    if manifest.get("auto_install") and not own:
+        intro += " " + strings["deps_auto"]
+    rows = []
+    for tech, man in deps:
+        rows.append(
+            DEPS_ROW
+            % dict(
+                strings,
+                series=_series(man),
+                tech=tech,
+                initials=_initials(man.get("name") or tech),
+                name=html_mod.escape(man.get("name") or tech),
+                summary=html_mod.escape(_truncate(man.get("summary") or man.get("name") or tech)),
+                price=_money(man["price"], man),
+            )
+        )
+    return (
+        (DEPS_OPEN % dict(strings, intro=intro))
+        + "".join(rows)
+        + (DEPS_TOTAL % dict(strings, total=_money(total, manifest)))
+        + DEPS_CLOSE
+    )
+
+
 def build_rating(manifest, lang="en"):
     strings = I18N[lang]
     kind = "paid" if manifest.get("price") else "free"
@@ -844,6 +1112,8 @@ def gen_index(addon_dir, cross_sell=True, allow_ro=False, lang="en", scope_note=
         build_rating(manifest, lang),
         build_tabs(tabs),
         build_stats(lang),
+        (SUBSCRIPTION % strings) if manifest.get("price") else "",
+        build_dependencies(addon_dir, manifest, lang),
         (SCOPE_NOTE % strings) if scope_note else "",
         SUPPORT % strings,
         build_cross_sell(addon_dir, manifest, lang=lang) if cross_sell else "",
