@@ -1,0 +1,23 @@
+{
+  "addons": {
+    "deltatech_obyc": {
+      "coverage": 77.1,
+      "lines": 210,
+      "tests": 22
+    },
+    "deltatech_stock_valuation": {
+      "coverage": 80.6,
+      "lines": 572,
+      "tests": 46
+    },
+    "deltatech_valuation_area": {
+      "coverage": 79.7,
+      "lines": 118,
+      "tests": 5
+    }
+  },
+  "branch": "18.0",
+  "commit": "afdad59f264a7c59aa49186279c455cc09e2e464",
+  "generated": "2026-10-12",
+  "source": "codecov:dhongu/deltatech_stock_valuation"
+}
