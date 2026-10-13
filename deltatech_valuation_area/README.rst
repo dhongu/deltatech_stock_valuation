@@ -17,7 +17,7 @@ Deltatech Stock Valuation Area
     :target: https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_valuation_area
     :alt: dhongu/deltatech_stock_valuation
 .. |badge_fisa| image:: https://img.shields.io/badge/-Fi%C8%99%C4%83%20consultant-2ea44f.png
-    :target: https://github.com/dhongu/deltatech_stock_valuation/blob/19.0/deltatech_valuation_area/readme/FISA_CONSULTANT.md
+    :target: https://github.com/dhongu/deltatech_stock_valuation/blob/20.0/deltatech_valuation_area/readme/FISA_CONSULTANT.md
     :alt: Fișă consultant
 
 |badge1| |badge2| |badge_fisa|
