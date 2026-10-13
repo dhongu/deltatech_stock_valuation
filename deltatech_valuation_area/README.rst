@@ -1,6 +1,6 @@
-==============================
-Deltatech Stock Valuation Area
-==============================
+====================
+Stock Valuation Area
+====================
 
 ..
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -14,7 +14,7 @@ Deltatech Stock Valuation Area
     :target: https://odoo-community.org/page/development-status
     :alt: Beta
 .. |badge2| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github
-    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_valuation_area
+    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_valuation_area
     :alt: dhongu/deltatech_stock_valuation
 .. |badge_fisa| image:: https://img.shields.io/badge/-Fi%C8%99%C4%83%20consultant-2ea44f.png
     :target: https://github.com/dhongu/deltatech_stock_valuation/blob/20.0/deltatech_valuation_area/readme/FISA_CONSULTANT.md
@@ -22,15 +22,12 @@ Deltatech Stock Valuation Area
 
 |badge1| |badge2| |badge_fisa|
 
-Deltatech Valuation Area
-------------------------
-
 Modul pentru definirea și gestionarea **ariilor de evaluare** a
 stocului, inspirat din conceptul SAP de **Valuation Area** (nivel de
 evaluare per depozit sau locație).
 
 Funcționalități principale
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
 - **Activare per companie** — funcționalitatea poate fi activată sau
   dezactivată individual pentru fiecare companie
@@ -46,7 +43,7 @@ Funcționalități principale
   excepționale)
 
 Modele extinse
-~~~~~~~~~~~~~~
+--------------
 
 - ``valuation.area`` — modelul principal: cod, nume, companie, jurnal
   stoc
@@ -60,24 +57,31 @@ Modele extinse
   ``_is_valuation_area_required``
 
 Logica de determinare a ariei (prioritate)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------------
 
 La generarea liniilor contabile dintr-o mișcare de stoc, aria se
 determină în ordinea:
 
-1. **Locația destinație** (dacă este internă) — prioritate maximă
-2. **Locația sursă** (dacă este internă)
-3. **Depozitul** asociat mișcării
+1. **Locația destinație** (dacă este internă): aria locației, altfel
+   aria depozitului căruia îi aparține locația — prioritate maximă
+2. **Locația sursă** (dacă este internă): aria locației, altfel aria
+   depozitului ei
+3. **Depozitul de aprovizionare** al mișcării
 4. **Compania** — fallback implicit
 
-..
+Depozitul se deduce din locație, deci ajustările de inventar și
+transferurile manuale (care nu au depozit de aprovizionare) iau aria
+depozitului chiar dacă locația de stoc nu are arie proprie.
 
    ⚠️ **Constrângere:** Transferurile interne între locații cu arii de
-   evaluare diferite nu sunt permise. Sursa și destinația trebuie să
-   aparțină aceleiași arii de evaluare.
+   evaluare diferite nu sunt permise. Verificarea se face la validarea
+   mișcării (inclusiv pe liniile ei, de exemplu la putaway pe o
+   sublocație), indiferent dacă se generează sau nu notă contabilă. Ruta
+   printr-o locație de tranzit nu este o trecere validată între arii
+   (vezi OBYC-009 în ``deltatech_obyc``).
 
 Propagarea ariei pe liniile contabile
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 ::
 
@@ -85,28 +89,34 @@ Propagarea ariei pe liniile contabile
    stock.warehouse.valuation_area_id   ← per depozit
    stock.location.valuation_area_id    ← per locație (prioritate maximă)
            ↓
-   stock.move._get_valuation_area()    ← determină aria din locații
+   stock.move._get_valuation_area()    ← determină aria din locații / depozitul locației
            ↓
    account.move.line.valuation_area_id ← stocat pe linia contabilă
 
-Metoda ``_prepare_account_move_line`` este extinsă pentru a injecta
-automat ``valuation_area_id`` pe fiecare linie contabilă generată din
-mișcările de stoc.
+Metoda ``_get_account_move_line_vals`` este extinsă pentru a injecta
+automat ``valuation_area_id``, cantitatea semnată și unitatea de măsură
+pe fiecare linie contabilă generată din mișcările de stoc.
+
+Pe notele contabile manuale (corecții, solduri inițiale), lista
+**Elemente jurnal** are coloanele opționale **Produs**, **Cantitate**,
+**UM** și **Arie de evaluare**; lista generală a elementelor de jurnal
+are coloanele opționale **Cantitate** și **Arie de evaluare**.
 
 Configurare
-~~~~~~~~~~~
+-----------
 
 Ariile de evaluare se configurează din meniul **Inventar > Configurare >
-Arii de Evaluare**. Pentru fiecare arie se specifică:
+Arii de evaluare**, vizibil doar managerului contabil (singurul cu drept
+de scriere pe arii). Pentru fiecare arie se specifică:
 
 - **Nume** — denumire descriptivă
-- **Cod** — cod scurt utilizat în determinarea conturilor contabile
+- **Cod** — cod scurt afișat în fața numelui (``[COD] Nume``)
 - **Companie** — compania căreia îi aparține aria
-- **Jurnal stoc** — jurnalul contabil pentru tranzacțiile de stoc din
-  această arie
+- **Jurnal stoc** — un jurnal de tip *Diverse* al companiei, pentru
+  tranzacțiile de stoc din această arie
 
 Metodă de evaluare suportată
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------
 
    ⚠️ **Important:** Acest modul este proiectat pentru metoda de
    evaluare **AVCO (cost mediu ponderat)**. Nu este compatibil cu
@@ -118,7 +128,7 @@ necesită urmărirea straturilor individuale de cost, informație care se
 pierde prin această agregare.
 
 Dependențe
-~~~~~~~~~~
+----------
 
 - ``stock_account`` — evaluare stoc standard Odoo
 
@@ -126,6 +136,85 @@ Dependențe
 
 .. contents::
    :local:
+
+Changelog
+=========
+
+20.0.1.0.6 (2026-10-10)
+-----------------------
+
+- The module license changes from LGPL-3 to OPL-1 (same as the rest of
+  the suite), so that OPL-1 modules can depend on it on Odoo Apps. No
+  code change.
+
+20.0.1.0.5 (2026-10-01)
+-----------------------
+
+- Fix: reversing a stock journal entry on a company without storno
+  doubled the quantity instead of cancelling it. The core moves the
+  amount to the opposite side but copies the quantity with the same
+  sign; the quantity of the entry lines is signed (positive on debit,
+  negative on credit), so it is now inverted together with the side.
+  With storno the line stays on the same side (negative amount) and the
+  quantity is unchanged.
+- Fix: with storno, reversing a zero-value stock entry line (a move at
+  cost 0) doubled the quantity: the line has no amount sign to cancel
+  it, so its quantity is now inverted too.
+- Docs: consultant sheet corrected after the accounting audit: legal
+  basis, receipt / delivery / invoice gaps (VAT of the goods delivered
+  not invoiced due in the month of the delivery, D300 computed from tax
+  tags, so the month-end entries need tags), inventory difference
+  accounts per stock class, shortages (imputation without VAT, VAT
+  adjustment, profit tax), monthly reconciliation of the stock account
+  per area, transfers between areas (the transit route is not a
+  validated workaround) and the sign convention on reversals;
+  ``readme/bugs.md``: impact on VA-001 and VA-003, new VA-005 and VA-006
+  (open) and VA-007 (reversals, fixed in this version).
+
+20.0.1.0.4 (2026-10-01)
+-----------------------
+
+- Fix (VA-001): the area of a stock move is taken from the warehouse of
+  its internal location when the location has no area of its own;
+  inventory adjustments and manual transfers no longer fall back to the
+  company default area.
+- Fix (VA-003): internal moves between locations of different areas are
+  now refused when the move is validated, for the move and for each of
+  its lines, with or without ``deltatech_obyc``.
+- Fix (VA-002): optional Product, Quantity and UoM columns on the
+  journal items of manual entries; optional Quantity and Valuation Area
+  columns on the journal items list.
+- Fix (VA-004): Romanian wording unified on "arie de evaluare"
+  (translations reloaded on upgrade); menu "Valuation Areas" visible
+  only to accounting managers; area form in a sheet; stock journal
+  limited to general journals of the area company; clearer help on the
+  code; settings layout.
+- Docs: description and consultant sheet updated; ``readme/bugs.md``
+  statuses.
+
+20.0.1.0.3 (2026-10-01)
+-----------------------
+
+- Docs: consultant sheet updated for Odoo 20 (11-section structure): the
+  *Keep move value on retroactive recompute* setting, the COGS lines of
+  the customer invoice, the Odoo 20 menus and labels; screenshots
+  regenerated (new 09 for the customer invoice).
+- Docs: known bugs listed in ``readme/bugs.md``, checked against the
+  Odoo 20 code.
+
+20.0.1.0.2 (2026-10-01)
+-----------------------
+
+- New company setting *Keep move value on retroactive recompute*
+  (Inventory → Settings → Valuation), enabled by default: validated
+  stock moves keep the value computed at validation, as in Odoo 19.
+  Disable it to use the standard Odoo 20 retroactive recompute (posted
+  journal entries are not corrected).
+
+20.0.1.0.1 (2026-09-30)
+-----------------------
+
+- Own module icon in the flat style of the other modules.
 
 Bug Tracker
 ===========
@@ -155,6 +244,6 @@ Current maintainer:
 
 |maintainer-dhongu| 
 
-This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_valuation_area>`_ project on GitHub.
+This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_valuation_area>`_ project on GitHub.
 
 You are welcome to contribute.

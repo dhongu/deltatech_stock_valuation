@@ -1,6 +1,6 @@
-======================================
-Deltatech OBYC - Account Determination
-======================================
+============================
+OBYC - Account Determination
+============================
 
 ..
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -14,7 +14,7 @@ Deltatech OBYC - Account Determination
     :target: https://odoo-community.org/page/development-status
     :alt: Beta
 .. |badge2| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github
-    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_obyc
+    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_obyc
     :alt: dhongu/deltatech_stock_valuation
 .. |badge_fisa| image:: https://img.shields.io/badge/-Fi%C8%99%C4%83%20consultant-2ea44f.png
     :target: https://github.com/dhongu/deltatech_stock_valuation/blob/20.0/deltatech_obyc/readme/FISA_CONSULTANT.md
@@ -25,8 +25,8 @@ Deltatech OBYC - Account Determination
 📦 Deltatech OBYC - Product Account Determination
 =================================================
 
-Description
------------
+📝 Description
+--------------
 
 This module implements an account determination mechanism inspired by
 SAP OBYC (OBject-based valuation and account determination for inventorY
@@ -53,6 +53,27 @@ on:
 - Automatically selects source, destination, and valuation accounts
   during stock moves
 - Transaction key determination logic for common inventory operations
+
+⚠️ Cost of Goods Sold Is Booked at Delivery
+-------------------------------------------
+
+For products with an OBYC valuation class, this module intentionally
+changes the standard Odoo 20 behavior:
+
+- **Standard Odoo 20 (real-time valuation):** the cost of goods sold is
+  booked when the customer invoice is posted (COGS lines on the
+  invoice).
+- **With OBYC:** the cost of goods sold is booked at delivery, on the
+  journal entry of the stock move (``stock_delivery`` key, e.g. Dr 607 /
+  Cr 371 for goods, Dr 711 / Cr 345 for finished products). The customer
+  invoice only records the revenue and the VAT (Dr 4111 / Cr 707 + 4427)
+  and has no COGS lines, so the cost is not booked twice.
+
+This follows the Romanian accounting rules (OMFP 1802/2014, items 95,
+283, 290 and 440–441): goods are removed from stock when control is
+transferred, which is usually the delivery, not the invoice. See
+``readme/bugs.md`` for the cases not covered yet (delivered but not
+invoiced at month end, consignment, invoices issued before delivery).
 
 🔄 Transaction Key Mapping (Default Logic)
 ------------------------------------------
@@ -161,6 +182,20 @@ The module implements the following transaction keys:
 |                            | Receipt         | Goods, Credit   |                |
 |                            |                 | WIP             |                |
 +----------------------------+-----------------+-----------------+----------------+
+| **Landed Costs**           |                 |                 |                |
++----------------------------+-----------------+-----------------+----------------+
+| landed_cost                | Landed Cost     | Debit           | -              |
+|                            |                 | Inventory,      |                |
+|                            |                 | Credit the cost |                |
+|                            |                 | line account    |                |
++----------------------------+-----------------+-----------------+----------------+
+
+A gain found at the count (inventory location → internal) uses
+``inventory_adjustment_plus``, a loss (internal → inventory location)
+``inventory_adjustment_minus``; before 20.0.1.0.5 the two keys were
+swapped (``readme/bugs.md`` OBYC-005). The Romanian examples below book
+production directly between the stock accounts and 601 / 711, without a
+WIP account.
 
 ⚙️ Models Introduced
 --------------------
@@ -197,15 +232,27 @@ When a stock move is processed:
 
       Search criteria: Transaction Key + Valuation Class + Valuation Area + Account Modifier + Company
 
-4. **Account Application**: If a rule is found, the three specified
-   accounts are used in the accounting entries:
+4. **Account Application**: If a rule is found, its accounts are used as
+   follows:
 
-- **Source Account** (acc_src_id): Typically used as the credit account
-  in transactions
-- **Destination Account** (acc_dest_id): Typically used as the debit
-  account in transactions
-- **Valuation Account** (acc_valuation_id): Used for stock valuation and
-  price differences
+- **Stock move entry, Source Account set:** Dr **Valuation Account** /
+  Cr **Source Account** (the Destination Account is ignored)
+- **Stock move entry, Source Account empty:** Dr **Destination Account**
+  / Cr **Valuation Account**
+- **All three accounts empty:** no journal entry
+- **No entry, no rule needed:** products that are not storable, in a
+  category without real-time valuation, zero quantities, stock owned by
+  a third party, and moves between locations the standard valuation
+  ignores (e.g. supplier → inventory location)
+- **Invoice product line:** sale documents (customer invoice, credit
+  note) use the **Destination Account** of the ``stock_income`` rule;
+  purchase documents (vendor bill, credit note) use the **Source
+  Account** of the ``stock_receipt`` rule; the Valuation Account only
+  when that account is empty. Credit notes use the same account as the
+  invoice (booked in red on the same side with storno accounting, on the
+  opposite side without it).
+- **Landed cost:** Dr **Valuation Account** of the ``landed_cost`` rule
+  / Cr the account of the cost line
 
 🧩 Account Determination Model
 ------------------------------
@@ -222,11 +269,15 @@ contains:
 4. **Valuation Area** (valuation_area_id): Allows different accounting
    per company/division
 5. **Company** (company_id): The company for which the rule applies
-6. **Source Account** (acc_src_id): The account used for the credit side
-7. **Destination Account** (acc_dest_id): The account used for the debit
-   side
-8. **Valuation Account** (acc_valuation_id): The account used for
-   valuation and price differences
+6. **Source Account** (acc_src_id): When set, the credit side of the
+   stock entry (the valuation account is debited); on vendor bills, the
+   account of the product line (``stock_receipt`` rule)
+7. **Destination Account** (acc_dest_id): Used only when the Source
+   Account is empty, as the debit side of the stock entry (the valuation
+   account is credited); on customer invoices, the account of the
+   product line (``stock_income`` rule)
+8. **Valuation Account** (acc_valuation_id): The stock account of the
+   valuation class (e.g. 371, 301, 345), on the other side of the entry
 
 This flexible structure allows defining complex accounting rules for
 various types of inventory operations.
@@ -238,15 +289,15 @@ various types of inventory operations.
   business scenario
 - Add additional dimensions (e.g., storage location, product category)
   if needed
-- Compatible with Odoo 17 Enterprise & Community
+- Compatible with Odoo 20 Enterprise & Community
 - Extensible for adaptation to industry specifics or special accounting
   requirements
 
 📌 Usage Examples
 -----------------
 
-Basic Configuration
-~~~~~~~~~~~~~~~~~~~
+🔧 Basic Configuration
+~~~~~~~~~~~~~~~~~~~~~~
 
 To configure the module:
 
@@ -257,66 +308,109 @@ To configure the module:
 4. Configure account determination rules in
    ``product.account.determination``
 
-Typical Account Mappings
-~~~~~~~~~~~~~~~~~~~~~~~~
+🗂️ Typical Account Mappings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| Key                        | Valuation | Source   | Destination | Valuation | Description |
-|                            | Class     | Account  | Account     | Account   |             |
-+============================+===========+==========+=============+===========+=============+
-| stock_receipt              | RM        | 408000   | 301000      | 378000    | Raw         |
-|                            |           |          |             |           | materials   |
-|                            |           |          |             |           | receipt     |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| stock_receipt              | FG        | 408000   | 371000      | 378000    | Finished    |
-|                            |           |          |             |           | goods       |
-|                            |           |          |             |           | receipt     |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| stock_delivery             | FG        | 371000   | 607000      | 378000    | Finished    |
-|                            |           |          |             |           | goods       |
-|                            |           |          |             |           | delivery    |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| inventory_adjustment_plus  | RM        | 601800   | 301000      | 378000    | Positive    |
-|                            |           |          |             |           | adjustment  |
-|                            |           |          |             |           | raw         |
-|                            |           |          |             |           | materials   |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| inventory_adjustment_minus | FG        | 371000   | 608000      | 378000    | Negative    |
-|                            |           |          |             |           | adjustment  |
-|                            |           |          |             |           | finished    |
-|                            |           |          |             |           | goods       |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| production_receipt         | FG        | 711000   | 371000      | 378000    | Production  |
-|                            |           |          |             |           | receipt     |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| production_issue           | RM        | 301000   | 601000      | 378000    | Production  |
-|                            |           |          |             |           | consumption |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| internal_transfer          | RM        | 301000   | 301000      | 378000    | Transfer    |
-|                            |           |          |             |           | between     |
-|                            |           |          |             |           | locations   |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| stock_income               | FG        | 707000   | 411000      | 378000    | Sales       |
-|                            |           |          |             |           | revenue     |
-|                            |           |          |             |           | posting     |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| dropship                   | FG        | 408000   | 607000      | 378000    | Direct      |
-|                            |           |          |             |           | delivery    |
-|                            |           |          |             |           | from        |
-|                            |           |          |             |           | supplier to |
-|                            |           |          |             |           | customer    |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| return_from_customer       | FG        | 607000   | 371000      | 378000    | Return of   |
-|                            |           |          |             |           | goods from  |
-|                            |           |          |             |           | customer    |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
-| return_to_supplier         | RM        | 301000   | 408000      | 378000    | Return of   |
-|                            |           |          |             |           | goods to    |
-|                            |           |          |             |           | supplier    |
-+----------------------------+-----------+----------+-------------+-----------+-------------+
+Romanian chart of accounts. Classes: MF = goods, RM = raw materials, FG
+= finished products.
+
++----------------------------+-----------+----------+-------------+-----------+------------+
+| Key                        | Valuation | Source   | Destination | Valuation | Resulting  |
+|                            | Class     | Account  | Account     | Account   | entry      |
++============================+===========+==========+=============+===========+============+
+| stock_receipt              | MF        | 408      | –           | 371       | Dr 371 /   |
+|                            |           |          |             |           | Cr 408;    |
+|                            |           |          |             |           | vendor     |
+|                            |           |          |             |           | bill line  |
+|                            |           |          |             |           | on 408     |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| stock_receipt              | RM        | 408      | –           | 301       | Dr 301 /   |
+|                            |           |          |             |           | Cr 408     |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| return_to_supplier         | MF        | –        | 408         | 371       | Dr 408 /   |
+|                            |           |          |             |           | Cr 371     |
+|                            |           |          |             |           | (storno:   |
+|                            |           |          |             |           | Dr 371 −V  |
+|                            |           |          |             |           | / Cr 408   |
+|                            |           |          |             |           | −V)        |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| stock_delivery             | MF        | –        | 607         | 371       | Dr 607 /   |
+|                            |           |          |             |           | Cr 371     |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| stock_delivery             | FG        | –        | 711         | 345       | Dr 711 /   |
+|                            |           |          |             |           | Cr 345     |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| return_from_customer       | MF        | 607      | –           | 371       | Dr 371 /   |
+|                            |           |          |             |           | Cr 607     |
+|                            |           |          |             |           | (storno:   |
+|                            |           |          |             |           | Dr 607 −V  |
+|                            |           |          |             |           | / Cr 371   |
+|                            |           |          |             |           | −V)        |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| stock_income               | MF        | –        | 707         | –         | customer   |
+|                            |           |          |             |           | invoice    |
+|                            |           |          |             |           | line on    |
+|                            |           |          |             |           | 707        |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| stock_income               | FG        | –        | 701         | –         | customer   |
+|                            |           |          |             |           | invoice    |
+|                            |           |          |             |           | line on    |
+|                            |           |          |             |           | 701        |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| dropship                   | MF        | 408      | –           | 607       | Dr 607 /   |
+|                            |           |          |             |           | Cr 408     |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| dropship_return            | MF        | 607      | –           | 408       | Dr 408 /   |
+|                            |           |          |             |           | Cr 607     |
+|                            |           |          |             |           | (storno:   |
+|                            |           |          |             |           | Dr 607 −V  |
+|                            |           |          |             |           | / Cr 408   |
+|                            |           |          |             |           | −V)        |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| production_issue           | RM        | –        | 601         | 301       | Dr 601 /   |
+|                            |           |          |             |           | Cr 301     |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| production_receipt         | FG        | 711      | –           | 345       | Dr 345 /   |
+|                            |           |          |             |           | Cr 711     |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| inventory_adjustment_plus  | MF        | 607      | –           | 371       | Dr 371 /   |
+| (gains)                    |           |          |             |           | Cr 607     |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| inventory_adjustment_minus | MF        | –        | 607         | 371       | Dr 607 /   |
+| (losses)                   |           |          |             |           | Cr 371     |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| internal_transfer (same    | MF        | –        | –           | –         | no entry   |
+| valuation area)            |           |          |             |           |            |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| internal_transfer +        | MF        | 3028     | –           | 371       | Dr 371 /   |
+| modifier                   |           |          |             |           | Cr 3028    |
+| "Reclassification"         |           |          |             |           | (valued at |
+|                            |           |          |             |           | the        |
+|                            |           |          |             |           | current    |
+|                            |           |          |             |           | cost,      |
+|                            |           |          |             |           | quantity   |
+|                            |           |          |             |           | unchanged) |
++----------------------------+-----------+----------+-------------+-----------+------------+
+| landed_cost                | MF        | –        | –           | 371       | Dr 371 /   |
+|                            |           |          |             |           | Cr the     |
+|                            |           |          |             |           | cost line  |
+|                            |           |          |             |           | account    |
++----------------------------+-----------+----------+-------------+-----------+------------+
+
+The ``dropship``, ``dropship_return`` and ``stock_receipt`` rules must
+use the same 408 account: the vendor bill of a drop shipment takes its
+account from the ``stock_receipt`` rule.
 
 Each of these mappings can vary by product class or warehouse (valuation
 area).
+
+An internal transfer creates an entry only when the debit and credit
+accounts of its rule are different. Use this for a **reclassification**
+(e.g. consumables 3028 sold as goods 371): create an account modifier
+"Reclassification", an operation type that uses it, and an
+``internal_transfer`` rule with the modifier, the old stock account as
+Source Account and the new one as Valuation Account. The transfer is
+valued at the current cost of the product.
 
 🔍 Comparison with SAP OBYC
 ---------------------------
@@ -336,9 +430,9 @@ ecosystem. The main differences include:
 -----------------------
 
 - `Odoo Accounting
-  Documentation <https://www.odoo.com/documentation/17.0/applications/finance/accounting.html>`__
+  Documentation <https://www.odoo.com/documentation/20.0/applications/finance/accounting.html>`__
 - `Odoo Inventory Management
-  Documentation <https://www.odoo.com/documentation/17.0/applications/inventory_and_mrp/inventory.html>`__
+  Documentation <https://www.odoo.com/documentation/20.0/applications/inventory_and_mrp/inventory.html>`__
 - `SAP OBYC
   Reference <https://community.sap.com/t5/enterprise-resource-planning-blog-posts-by-members/automatic-account-determination-overview/ba-p/13262637>`__
 
@@ -351,149 +445,405 @@ ecosystem. The main differences include:
   production
 - Consult with an accounting expert to ensure compliance with local
   accounting regulations
-- The module is compatible with Odoo 17, but can be adapted for other
-  versions
+- The module targets Odoo 20
+- Retail-price stock (371 with the markup on 378 and the VAT on 4428) is
+  not supported: stock is valued at cost
 
 🧮 Three-Account System
 -----------------------
 
-The key innovation of this module is the three-account system that
-provides enhanced flexibility for inventory accounting:
+Each rule has three accounts, but a stock entry always uses two of them:
 
-1. **Source Account** (acc_src_id): Typically represents the origin of
-   the value (credit side)
+1. **Valuation Account** (acc_valuation_id): the stock account of the
+   valuation class (371 goods, 301 raw materials, 345 finished
+   products). It is always one side of the stock entry.
+2. **Source Account** (acc_src_id): when set, the entry is Dr Valuation
+   / Cr Source (stock in: receipt, return from customer, production
+   receipt, inventory gain).
+3. **Destination Account** (acc_dest_id): used only when the Source
+   Account is empty; the entry is Dr Destination / Cr Valuation (stock
+   out: delivery, return to supplier, production issue, inventory loss).
 
-- For purchases: Accounts payable or GR/IR clearing
-- For sales: Inventory account
-- For internal operations: Source location's inventory account
-
-2. **Destination Account** (acc_dest_id): Represents where the value
-   goes (debit side)
-
-- For purchases: Inventory account
-- For sales: Cost of goods sold
-- For internal operations: Destination location's inventory account
-
-3. **Valuation Account** (acc_valuation_id): Handles value differences
-   and revaluations
-
-- Price differences between standard and actual costs
-- Exchange rate differences
-- Revaluation adjustments
-- Inventory valuation changes
-
-This three-account approach enables more sophisticated accounting
-treatments than Odoo's standard two-account inventory valuation system,
-allowing businesses to:
-
-- Track price differences separately from inventory movements
-- Handle complex valuation scenarios (FIFO, LIFO, standard cost with
-  variances)
-- Support compliance with international accounting standards
-- Maintain detailed audit trails for inventory value changes
+On invoices the account of the product line depends on the document
+type: Destination Account of ``stock_income`` for sale documents, Source
+Account of ``stock_receipt`` for purchase documents. Price and exchange
+rate differences between the receipt and the vendor bill are not handled
+by the module; they stay on the GR/IR account (408) and are regularized
+manually.
 
 📊 Transaction Key Use Cases
 ----------------------------
 
-Purchase Flow
+🛒 Purchase Flow
+~~~~~~~~~~~~~~~~
+
+- **stock_receipt**: goods received from a supplier
+
+  - Source Account: GR/IR clearing (408), Valuation Account: inventory
+    (371)
+  - Entry: Dr 371 / Cr 408; the vendor bill line is booked on the Source
+    Account (Dr 408)
+
+- **return_to_supplier**: goods returned to a supplier
+
+  - Destination Account: GR/IR clearing (408), Valuation Account:
+    inventory (371)
+  - Entry: Dr 408 / Cr 371; with storno accounting: Dr 371 −V / Cr 408
+    −V
+
+💰 Sales Flow
 ~~~~~~~~~~~~~
 
-- **stock_receipt**: When goods are received from a supplier
+- **stock_delivery**: goods delivered to a customer (cost of goods sold
+  at delivery)
 
-  - Debit: Inventory (Destination Account)
-  - Credit: GR/IR Clearing (Source Account)
-  - Valuation Account: Used for price differences
+  - Destination Account: COGS (607, or 711 for finished products),
+    Valuation Account: inventory
+  - Entry: Dr 607 / Cr 371
 
-- **return_to_supplier**: When goods are returned to a supplier
+- **return_from_customer**: goods returned by a customer
 
-  - Debit: GR/IR Clearing (Destination Account)
-  - Credit: Inventory (Source Account)
-  - Valuation Account: Used for price differences
+  - Source Account: COGS (607), Valuation Account: inventory (371)
+  - Entry: Dr 371 / Cr 607; with storno accounting: Dr 607 −V / Cr 371
+    −V
 
-Sales Flow
-~~~~~~~~~~
+- **stock_income**: revenue on the customer invoice
 
-- **stock_delivery**: When goods are delivered to a customer
+  - Destination Account: revenue (707, or 701 for finished products)
+  - The customer invoice and credit note product lines use this account;
+    no stock entry
 
-  - Debit: COGS (Destination Account)
-  - Credit: Inventory (Source Account)
-  - Valuation Account: Used for price differences
+📦 Inventory Management
+~~~~~~~~~~~~~~~~~~~~~~~
 
-- **return_from_customer**: When goods are returned from a customer
+- **inventory_adjustment_plus**: gain found at the count (inventory
+  location → internal)
 
-  - Debit: Inventory (Destination Account)
-  - Credit: COGS (Source Account)
-  - Valuation Account: Used for price differences
+  - Source Account: 607, Valuation Account: inventory (371)
+  - Entry: Dr 371 / Cr 607
 
-- **stock_income**: When revenue is recognized
+- **inventory_adjustment_minus**: loss found at the count (internal →
+  inventory location)
 
-  - Debit: Receivables (Destination Account)
-  - Credit: Revenue (Source Account)
-  - Valuation Account: Usually not used in this context
+  - Destination Account: expense (607), Valuation Account: inventory
+    (371)
+  - Entry: Dr 607 / Cr 371
 
-Inventory Management
-~~~~~~~~~~~~~~~~~~~~
+🏭 Manufacturing
+~~~~~~~~~~~~~~~~
 
-- **inventory_adjustment_plus**: For positive inventory adjustments
+- **production_issue**: materials consumed in production
 
-  - Debit: Inventory (Destination Account)
-  - Credit: Inventory Adjustment (Source Account)
-  - Valuation Account: Used for valuation effects
+  - Destination Account: 601, Valuation Account: raw materials (301)
+  - Entry: Dr 601 / Cr 301
 
-- **inventory_adjustment_minus**: For negative inventory adjustments
+- **production_receipt**: finished goods received from production
 
-  - Debit: Inventory Adjustment (Destination Account)
-  - Credit: Inventory (Source Account)
-  - Valuation Account: Used for valuation effects
+  - Source Account: 711, Valuation Account: finished products (345)
+  - Entry: Dr 345 / Cr 711
 
-Manufacturing
-~~~~~~~~~~~~~
+⭐ Special Cases
+~~~~~~~~~~~~~~~~
 
-- **production_issue**: When materials are consumed in production
+- **dropship**: direct delivery from supplier to customer
 
-  - Debit: WIP (Destination Account)
-  - Credit: Raw Materials (Source Account)
-  - Valuation Account: Used for price differences
+  - Source Account: GR/IR clearing (408), Valuation Account: COGS (607)
+  - Entry: Dr 607 / Cr 408
 
-- **production_receipt**: When finished goods are received from
-  production
+- **internal_transfer**: transfer between locations of the same
+  valuation area
 
-  - Debit: Finished Goods (Destination Account)
-  - Credit: WIP (Source Account)
-  - Valuation Account: Used for price differences
+  - No accounts: no entry (the stock value does not change)
 
-Special Cases
-~~~~~~~~~~~~~
+- **internal_transfer_out / internal_transfer_in**: transfer between
+  valuation areas through a transit location
 
-- **dropship**: For direct delivery from supplier to customer
-
-  - Debit: COGS (Destination Account)
-  - Credit: Payables (Source Account)
-  - Valuation Account: Used for price differences
-
-- **internal_transfer**: For transfers between locations
-
-  - Debit: Destination Location Inventory (Destination Account)
-  - Credit: Source Location Inventory (Source Account)
-  - Valuation Account: Used for price differences
+  - Out (area of the sending location): Destination Account 371.09
+    (goods in transit), Valuation Account 371.01; entry Dr 371.09 / Cr
+    371.01
+  - In (area of the receiving location): Source Account 371.09,
+    Valuation Account 371.02; entry Dr 371.02 / Cr 371.09
+  - Not a validated route: in Odoo 20 the stock → transit move gets no
+    value, so these entries are expected to be posted at 0
+    (``readme/bugs.md``, OBYC-009). Do not use it for transfers between
+    valuation areas until OBYC-009 is fixed.
 
 **Table of contents**
 
 .. contents::
    :local:
 
+Known issues / Roadmap
+======================
+
+Mai multe chei de tranzacție pe aceeași mișcare — planificat, fără client care să o ceară încă
+----------------------------------------------------------------------------------------------
+
+Azi o mișcare de stoc are **o singură cheie** (din perechea de locații)
+și **o singură regulă**, deci ``_get_account_move_line_vals()`` produce
+o notă cu **două linii** (debit și credit) pe o singură sumă,
+``move.value``. Din acest motiv nu se pot obține din configurare:
+
+- livrarea directă prin stoc pe o singură mișcare furnizor → client: Dr
+  371 / Cr 408 și, în același moment, Dr 607 / Cr 371 (cheile
+  ``stock_receipt`` și ``stock_delivery``, deja existente). Azi: ruta în
+  2 pași (furnizor → gestiune → client);
+- consignația (OBYC-003, etapa 1: Dr 357 / Cr 371) fără o locație
+  intermediară;
+- gestiunea la preț de vânzare, cu adaos (378) și TVA neexigibil (4428)
+  pe aceeași mișcare (la clienții cu retail se folosește familia OCA
+  ``l10n_ro_stock_account_retail``, care nu se instalează împreună cu
+  OBYC).
+
+**Schiță** (în SAP, o mișcare de mărfuri poate activa mai multe chei,
+iar documentul contabil are câte o linie pe cheie):
+
+1. ``stock.move._get_obyc_postings()`` întoarce o listă
+   ``[(transaction_key, amount)]``; implicit un singur element,
+   ``(cheia mișcării, move.value)`` — comportamentul actual.
+2. Schema aleasă prin configurare, pe ``account.modifier`` (câmp nou
+   ``posting_scheme``: ``single`` implicit, ``dropship_via_stock``, mai
+   târziu ``retail``). Modificatorul e deja legat de tipul de
+   operațiune, deci alegerea rămâne o configurare.
+3. ``_get_account_move_line_vals()`` devine o buclă pe posting-uri:
+   ``_get_rule_account(key=...)`` (parametru opțional) și o pereche
+   debit/credit pe fiecare.
+
+Impact de verificat: ``_should_create_account_move`` (regulile tuturor
+posting-urilor), ``account_move_line.py`` și ``product_template.py``
+(căutări de reguli pe chei fixe), hook-ul din
+``deltatech_valuation_area`` (aria pe liniile din ``super()``),
+cantitatea semnată pe liniile de sumă pură (0), retururile (schema
+inversă), portul pe 20.0 (hook-ul COGS diferă).
+
+**Pe 20.0:** hook-ul COGS este pe ``account.move._get_cogs_lines_vals``,
+iar mecanismul notelor de stoc trebuie reverificat pe 20.0 înainte de
+implementare.
+
+Etape, în ordine:
+
+1. **Refactor fără schimbare de comportament** — lista cu un singur
+   posting; testele existente rămân verzi.
+2. **Schema ``dropship_via_stock``** — teste pe livrare, retur și
+   factura furnizorului care stinge 408; verificare Pacioli.
+3. **Retail** — doar ca modul-punte separat, dacă apare un client care
+   cere OBYC și gestiune la preț de vânzare; cere un strat de valori
+   separat (cost, adaos, TVA), nu doar ``value``.
+
+Se reia la primul client care cere livrare directă prin stoc fără ruta
+în 2 pași, sau odată cu OBYC-003, care folosește același mecanism.
+
 Changelog
 =========
+
+20.0.1.0.13 (2026-10-11)
+------------------------
+
+- Docs: emoji symbols added to the bold headings of the module
+  description, for a uniform look on the Odoo Apps page. No code change.
+
+20.0.1.0.12 (2026-10-10)
+------------------------
+
+- The module license changes from LGPL-3 to OPL-1 (same as the rest of
+  the suite), so that OPL-1 modules can depend on it on Odoo Apps. No
+  code change.
+
+20.0.1.0.11 (2026-10-09)
+------------------------
+
+- Docs: the consultant sheet now marks account 357 as not recommended
+  for drop shipments (Dr 357 / Cr 401 or 408 is outside the function of
+  the account in OMFP 1802/2014; 357 is only for goods really held by a
+  third party, through 371 -> 357 -> 607), and words the VAT point
+  precisely: the supplier invoice does not set the delivery date (art.
+  281 (6) Fiscal Code) but can bring forward the VAT chargeability (art.
+  282 (2) a)). It also states that a carrier is not a third party for
+  account 357 (goods in transit stay in 371, or 327 if bought and on the
+  way to us) and how a cash-on-delivery amount collected by a courier is
+  recorded (461). No code change.
+
+20.0.1.0.10 (2026-10-09)
+------------------------
+
+- Docs: the consultant sheet now explains the two ways to record a drop
+  shipment (direct, Dr 607 / Cr 408, or through the warehouse in two
+  steps, Dr 371 / Cr 408 then Dr 607 / Cr 371), and that account 357 is
+  not used for it. New ``readme/ROADMAP.md`` with the sketch for several
+  transaction keys on the same stock move. No code change.
+
+20.0.1.0.9 (2026-10-06)
+-----------------------
+
+- New: reclassification by internal transfer. An internal transfer whose
+  ``internal_transfer`` rule has different accounts on the two sides
+  (e.g. Dr 371 / Cr 3028, selected through the account modifier of the
+  operation type) now creates a stock entry, valued at the current cost
+  of the product; the quantity in stock does not change. A transfer
+  whose rule has no accounts, or the same account on both sides, still
+  creates no entry.
+- A stock entry is no longer created when the debit and credit accounts
+  of the rule are the same.
+- New: the valuation class of a category is inherited. If a product has
+  no class of its own and its category has none either, the class of the
+  nearest parent category that has one is used.
+
+20.0.1.0.8 (2026-10-06)
+-----------------------
+
+- In the valuation class and account modifier dropdowns the code is
+  shown in a second, dimmed column; both can also be searched by code.
+  The plain name, ``[CODE] Name``, is unchanged.
+
+20.0.1.0.7 (2026-10-01)
+-----------------------
+
+- New: valuation class on the product category. A product without its
+  own valuation class uses the class of its category; the class set on
+  the product still takes priority.
+
+20.0.1.0.6 (2026-10-01)
+-----------------------
+
+Port of the 19.0 documentation fixes after the accounting audit and the
+OBYC-001 fix, adapted to Odoo 20.
+
+- Docs: consultant sheet (``readme/FISA_CONSULTANT.md``): legal basis
+  completed (OMFP items 53, 69, 283 (2), 310; Fiscal Code art. 281, 282,
+  319 (16), 304, 25); invoice accounts per document type, credit notes
+  with storno and the valuation area of the invoice line; configuration
+  for finished products, raw materials and production; the same 408 on
+  receipt, dropship and dropship return; vendor bill on 408 (new step 6b
+  and screenshot 11); landed cost account = the account of the transport
+  bill; inventory differences (shortages imputed without VAT, VAT
+  adjustment Dr 635 / Cr 4426, profit tax); price and exchange
+  differences left on 408; month-end procedure for deliveries not
+  invoiced (OBYC-002): Dr 418 / Cr 707 + 4428 and Dr 4428 / Cr 4427 in
+  the month of the delivery, with the D300 tax tags on the 707 and 4427
+  lines (the D300 is computed from tax tags) and a reversal on day 1 of
+  the next month; monthly reconciliation of the stock account per
+  valuation area; the transit route between areas is no longer suggested
+  (OBYC-009); error messages updated to the OBYC-007 fix; Odoo 20 menus.
+- Docs: ``readme/bugs.md``: OBYC-002 procedure and core wizard analysis,
+  OBYC-008 (down payment wizard) and OBYC-009 (transit route at 0)
+  checked in the Odoo 20 code; ``DESCRIPTION.md``: the transit route is
+  marked as not validated.
+- Tests: the screenshot test seeds the income rule with 707 only in the
+  destination account, uses the Romanian payable account (401) for the
+  supplier, posts a vendor bill, checks the product line accounts of the
+  customer invoice and of the vendor bill, and captures the vendor bill
+  (``11_vendor_bill_408.png``).
+- Code comment on credit notes corrected.
+
+20.0.1.0.5 (2026-10-01)
+-----------------------
+
+Port of the 19.0 fixes (19.0.1.0.4 to 19.0.1.0.6).
+
+- Fix (OBYC-001): the product line of a customer invoice, a vendor bill
+  or a credit note got the valuation account of the rule, because the
+  account was chosen from the line debit/credit, still 0 when the line
+  is created. A vendor bill debited the stock account a second time
+  (after the receipt entry) and left the GR/IR account (408) open;
+  customer invoices booked the revenue on the stock account. The account
+  is now chosen from the document type: customer invoice and credit note
+  → destination account of the ``stock_income`` rule; vendor bill and
+  credit note → source account of the ``stock_receipt`` rule; the
+  valuation account only when that account is empty. Credit notes use
+  the same account as the invoice.
+- Fix (OBYC-005): the inventory adjustment keys were swapped — a gain
+  used the ``inventory_adjustment_minus`` rule and a loss the
+  ``inventory_adjustment_plus`` rule. A gain now uses
+  ``inventory_adjustment_plus`` and a loss
+  ``inventory_adjustment_minus``. **Rules configured around the old
+  behavior must swap their keys**; the update logs a warning for each
+  rule that looks configured that way and does not change it.
+- Fix (OBYC-006): stock entries were created for products with a
+  valuation class even without real-time valuation, for consumables and
+  for stock owned by a third party, and a missing rule blocked the
+  validation of these moves. The core checks (storable product,
+  real-time valuation, non-zero quantity, no third-party owner) now come
+  before the rule lookup; a move the core does not value and whose
+  locations have no transaction key gets no entry instead of an error.
+- Fix (OBYC-007): the "Transaction key could not be determined" error
+  showed the literal placeholders ``{source_usage}`` / ``{dest_usage}``
+  (``env._()`` interpolates ``%(name)s``); the "No account determination
+  rule found" message shows the transaction key in the user's language;
+  the rule title shows the key label and no "None" for an empty account
+  modifier.
+- Docs: ``readme/bugs.md`` aligned with 19.0 (OBYC-001/005/006/007
+  fixed, OBYC-002/003 analysis, OBYC-004 lowered to P3, OBYC-008/009
+  added), ``DESCRIPTION.md`` aligned with 19.0 (account mapping examples
+  follow the code convention), consultant sheet.
+
+20.0.1.0.4 (2026-10-01)
+-----------------------
+
+- Docs: consultant sheet (``readme/FISA_CONSULTANT.md``) brought to Odoo
+  20, with the 11-section structure from 19.0: cost of goods sold at
+  delivery, sale invoice without COGS lines, landed cost, return without
+  the selection wizard, negative move value on outgoing moves and the
+  *Keep move value on retroactive recompute* setting.
+- Docs: screenshots regenerated from ``tests/test_screenshots.py``
+  (delivery entry, sale invoice and landed cost entry added); the test
+  checks the Dr/Cr of the entries before capturing.
+- Docs: known limitations OBYC-005 to OBYC-007 added to
+  ``readme/bugs.md``.
+
+20.0.1.0.3 (2026-10-01)
+-----------------------
+
+- Fix: validating a landed cost on a product with an OBYC valuation
+  class crashed with
+  ``AttributeError: 'int' object has no attribute 'id'``.
+  ``_get_product_accounts`` returned account ids instead of
+  ``account.account`` records, which the core (fiscal position
+  ``map_account``, landed cost entries) expects.
+- Fix: a customer invoice for a product with an OBYC valuation class in
+  real-time valuation could not be posted ("Transaction key is not
+  defined"). The core builds the COGS lines of the invoice without a
+  transaction key. With OBYC the cost of goods sold is already booked at
+  delivery (``stock_delivery`` key), so the invoice now gets no COGS
+  lines for these products; other products keep the standard behavior.
+- Fix: an invoice with two or more products with an OBYC valuation class
+  failed with "Expected singleton".
+  ``account.move.line._compute_account_id`` read the product, account
+  modifier and company from all the lines (``self``) instead of the
+  current line.
+- Docs: the description states that, with OBYC, the cost of goods sold
+  is booked at delivery, not at invoicing; known limitations are listed
+  in ``readme/bugs.md``.
+
+20.0.1.0.2 (2026-10-01)
+-----------------------
+
+- Migration to Odoo 20: in 20 ``stock.move.value`` is negative on
+  outgoing moves; the OBYC journal entry keeps posting the absolute
+  value, so the Dr/Cr amounts are the same as in 19.
+- Odoo 20 replays the valuation and rewrites the value of outgoing moves
+  already done when an incoming move is backdated, a done quantity is
+  edited or a vendor bill revalues a receipt. For products with an OBYC
+  valuation class the move value stays the one posted at validation (as
+  in 19), consistent with the OBYC journal entry; other products keep
+  the Odoo 20 behaviour. This applies only while the company setting
+  *Keep move value on retroactive recompute*
+  (``deltatech_valuation_area``) is enabled (the default); when
+  disabled, OBYC products also follow the standard Odoo 20 recompute.
+
+19.0.1.0.2 (2026-09-30)
+-----------------------
+
+- Own module icon in the flat style of the other modules.
 
 19.0.1.0.1 (2026-08-19)
 -----------------------
 
-- Fix: mișcările dropship (supplier -> customer) pentru produsele cu
-  clasă de evaluare OBYC nu erau valorizate — ``stock.move.value``
-  rămânea 0, deoarece core-ul ``stock_account`` completează acest câmp
-  doar pentru mișcările ``is_in``, nu și pentru ``is_dropship``. Nota
-  contabilă generată imediat după era postată cu debit=0/credit=0 —
-  aparent înregistrată, dar fără valoare.
+- Fix: dropship moves (supplier -> customer) for products with an OBYC
+  valuation class were not valued — ``stock.move.value`` stayed 0,
+  because the ``stock_account`` core fills this field only for ``is_in``
+  moves, not for ``is_dropship`` ones. The journal entry generated right
+  after was posted with debit=0/credit=0 — apparently recorded, but with
+  no value.
 
 Bug Tracker
 ===========
@@ -523,6 +873,6 @@ Current maintainer:
 
 |maintainer-dhongu| 
 
-This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_obyc>`_ project on GitHub.
+This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_obyc>`_ project on GitHub.
 
 You are welcome to contribute.

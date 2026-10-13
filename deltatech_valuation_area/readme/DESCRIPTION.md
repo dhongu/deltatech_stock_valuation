@@ -1,9 +1,7 @@
-## Deltatech Valuation Area
-
 Modul pentru definirea și gestionarea **ariilor de evaluare** a stocului, inspirat din conceptul SAP
 de **Valuation Area** (nivel de evaluare per depozit sau locație).
 
-### Funcționalități principale
+## Funcționalități principale
 
 - **Activare per companie** — funcționalitatea poate fi activată sau dezactivată individual pentru fiecare companie
 - **Definire arii de evaluare** cu cod scurt, nume și jurnal contabil dedicat
@@ -12,7 +10,7 @@ de **Valuation Area** (nivel de evaluare per depozit sau locație).
 - **Arie obligatorie** pentru produse stocabile (dacă este activată pe companie) — validare prin metodă extensibilă
 - **Editare manuală** permisă pe linia contabilă (pentru corecții excepționale)
 
-### Modele extinse
+## Modele extinse
 
 - `valuation.area` — modelul principal: cod, nume, companie, jurnal stoc
 - `res.company` — câmpuri `use_valuation_area` (activare) și `valuation_area_id` (arie implicită)
@@ -20,7 +18,7 @@ de **Valuation Area** (nivel de evaluare per depozit sau locație).
 - `stock.location` — câmp `valuation_area_id` (arie per locație, prioritate maximă)
 - `account.move.line` — câmp `valuation_area_id` (stocat, calculat automat din mișcările de stoc) și metodă de validare `_is_valuation_area_required`
 
-### Logica de determinare a ariei (prioritate)
+## Logica de determinare a ariei (prioritate)
 
 La generarea liniilor contabile dintr-o mișcare de stoc, aria se determină în ordinea:
 
@@ -38,7 +36,7 @@ depozit de aprovizionare) iau aria depozitului chiar dacă locația de stoc nu a
 > sublocație), indiferent dacă se generează sau nu notă contabilă. Ruta printr-o locație de tranzit
 > nu este o trecere validată între arii (vezi OBYC-009 în `deltatech_obyc`).
 
-### Propagarea ariei pe liniile contabile
+## Propagarea ariei pe liniile contabile
 
 ```
 res.company.valuation_area_id       ← fallback implicit
@@ -57,7 +55,7 @@ Pe notele contabile manuale (corecții, solduri inițiale), lista **Elemente jur
 opționale **Produs**, **Cantitate**, **UM** și **Arie de evaluare**; lista generală a elementelor de
 jurnal are coloanele opționale **Cantitate** și **Arie de evaluare**.
 
-### Configurare
+## Configurare
 
 Ariile de evaluare se configurează din meniul **Inventar > Configurare > Arii de evaluare**, vizibil
 doar managerului contabil (singurul cu drept de scriere pe arii). Pentru fiecare arie se specifică:
@@ -67,7 +65,7 @@ doar managerului contabil (singurul cu drept de scriere pe arii). Pentru fiecare
 - **Companie** — compania căreia îi aparține aria
 - **Jurnal stoc** — un jurnal de tip *Diverse* al companiei, pentru tranzacțiile de stoc din această arie
 
-### Metodă de evaluare suportată
+## Metodă de evaluare suportată
 
 > ⚠️ **Important:** Acest modul este proiectat pentru metoda de evaluare **AVCO (cost mediu ponderat)**.
 > Nu este compatibil cu produsele configurate cu metoda **FIFO**.
@@ -75,6 +73,6 @@ doar managerului contabil (singurul cu drept de scriere pe arii). Pentru fiecare
 Ariile de evaluare agregează liniile contabile (`account.move.line`) per produs și arie, calculând un cost mediu ponderat.
 Metoda FIFO necesită urmărirea straturilor individuale de cost, informație care se pierde prin această agregare.
 
-### Dependențe
+## Dependențe
 
 - `stock_account` — evaluare stoc standard Odoo
