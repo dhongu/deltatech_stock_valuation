@@ -25,12 +25,13 @@ default_language_version:
   python: python3
   node: "22.9.0"
 repos:
-  # Hook-urile comune Terrabit (licență, pyproject, iconiță)
+  # Hook-urile comune Terrabit (licență, pyproject, iconiță, traduceri)
   - repo: https://github.com/dhongu/terrabit-pre-commit-hooks
     rev: v1.2.0
     hooks:
       - id: update-pyproject-name
       - id: check-module-icon
+      - id: check-po-vs-pot
   - repo: local
     hooks:
       # These files are most likely copier diff rejection junks; if found,
@@ -167,11 +168,3 @@ repos:
         args: [--branch=20.0]
       - id: tb-test-badge
         args: [--branch=20.0]
-  - repo: local
-    hooks:
-      - id: check-po-vs-pot
-        name: Traducerile din .po trebuie sa existe in .pot (altfel Odoo le ignora)
-        entry: scripts/check_po_vs_pot.py
-        language: python
-        files: '[a-zA-Z0-9_]*/i18n/[a-zA-Z_]*\.po$'
-        additional_dependencies: ["polib"]
