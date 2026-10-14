@@ -1,3 +1,7 @@
+## 19.0.0.0.13 (2026-10-14)
+
+- Fix: the account on which the area price is looked up comes from the new extension point `_get_valuation_area_price_account()`, which `deltatech_obyc` overrides. The delivery of OBYC products from a category with *Use valuation area price* no longer fails.
+
 ## 19.0.0.0.12 (2026-10-02)
 
 - The Usage screenshots on the Apps page are narrower (1245 px at most), so they no longer fill the whole page.
