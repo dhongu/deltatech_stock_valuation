@@ -212,6 +212,14 @@ class StockMove(models.Model):
 
         return rule
 
+    def _get_valuation_area_price_account(self):
+        """Produsele OBYC nu au conturi pe categorie: evaluarea pe arie se ține pe contul de
+        evaluare din regula OBYC a mișcării."""
+        if not self.product_id._get_valuation_class():
+            return super()._get_valuation_area_price_account()
+        self.ensure_one()
+        return self._get_rule_account().acc_valuation_id
+
     def _get_obyc_debit_credit_accounts(self, rule):
         """Conturile de debit și de credit ale notei, din regula OBYC."""
         if rule.acc_src_id:

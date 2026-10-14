@@ -10,3 +10,4 @@ from . import test_obyc_entries
 from . import test_obyc_retroactive
 from . import test_screenshots
 from . import test_formatted_display_name
+from . import test_area_price

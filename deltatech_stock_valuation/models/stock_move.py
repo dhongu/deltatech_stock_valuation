@@ -45,6 +45,13 @@ class StockMove(models.Model):
             return False
         return bool(self.is_out or self._is_out())
 
+    def _get_valuation_area_price_account(self):
+        """Contul de evaluare pe care se ține `product.valuation` pentru această mișcare.
+        Punct de extensie: modulele care determină conturile altfel (ex. OBYC) îl suprascriu."""
+        self.ensure_one()
+        accounts = self.product_id.product_tmpl_id.get_product_accounts()
+        return accounts.get("stock_valuation")
+
     def _get_valuation_area_price(self):
         """Returnează prețul de descărcare din product.valuation pentru aria de evaluare
         corespunzătoare locației sursă, sau None dacă nu există evaluare utilizabilă."""
@@ -54,8 +61,7 @@ class StockMove(models.Model):
         if not valuation_area:
             return None
 
-        accounts = self.product_id.product_tmpl_id.get_product_accounts()
-        account = accounts.get("stock_valuation")
+        account = self._get_valuation_area_price_account()
         if not account:
             return None
 
