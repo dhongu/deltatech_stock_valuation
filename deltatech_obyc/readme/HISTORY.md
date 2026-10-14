@@ -1,3 +1,7 @@
+## 20.0.1.0.14 (2026-10-14)
+
+- Fix: with `deltatech_stock_valuation`, the delivery of an OBYC product from a category with *Use valuation area price* failed with "Transaction key is not defined". The area valuation is now looked up on the valuation account of the OBYC rule of the move, and the delivery is valued at that price.
+
 ## 20.0.1.0.13 (2026-10-11)
 
 - Docs: emoji symbols added to the bold headings of the module description, for a uniform look on the Odoo Apps page. No code change.

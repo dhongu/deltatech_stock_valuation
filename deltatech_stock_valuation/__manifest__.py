@@ -6,7 +6,7 @@
 {
     "name": "Product Valuation",
     "summary": "Weighted average cost per product, valuation area and account, from journal entries",
-    "version": "20.0.0.0.12",
+    "version": "20.0.0.0.13",
     "author": "Terrabit, Dorin Hongu",
     "website": "https://www.terrabit.ro",
     "category": "Valuation/Valuation",
