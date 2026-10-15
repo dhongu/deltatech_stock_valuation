@@ -1,3 +1,8 @@
+## 20.0.1.0.7 (2026-10-15)
+
+- In the valuation area dropdown the code is shown in a second, dimmed column; the areas can
+  also be searched by code. The plain name, `[CODE] Name`, is unchanged.
+
 ## 20.0.1.0.6 (2026-10-10)
 
 - The module license changes from LGPL-3 to OPL-1 (same as the rest of the suite), so that OPL-1 modules can depend on it on Odoo Apps. No code change.

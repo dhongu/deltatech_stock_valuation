@@ -16,14 +16,8 @@ Stock Valuation Area
 .. |badge2| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github
     :target: https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_valuation_area
     :alt: dhongu/deltatech_stock_valuation
-.. |badge_fisa| image:: https://img.shields.io/badge/-Fi%C8%99%C4%83%20consultant-2ea44f.png
-    :target: https://github.com/dhongu/deltatech_stock_valuation/blob/20.0/deltatech_valuation_area/readme/FISA_CONSULTANT.md
-    :alt: Fișă consultant
-.. |badge_tests| image:: https://img.shields.io/badge/-23%20automated%20tests%20%C2%B7%2089%25%20code%20coverage-2ea44f.png
-    :target: https://app.codecov.io/gh/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_valuation_area
-    :alt: 23 automated tests · 89% code coverage
 
-|badge1| |badge2| |badge_fisa| |badge_tests|
+|badge1| |badge2|
 
 Modul pentru definirea și gestionarea **ariilor de evaluare** a
 stocului, inspirat din conceptul SAP de **Valuation Area** (nivel de
@@ -142,6 +136,13 @@ Dependențe
 
 Changelog
 =========
+
+20.0.1.0.7 (2026-10-15)
+-----------------------
+
+- In the valuation area dropdown the code is shown in a second, dimmed
+  column; the areas can also be searched by code. The plain name,
+  ``[CODE] Name``, is unchanged.
 
 20.0.1.0.6 (2026-10-10)
 -----------------------
