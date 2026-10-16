@@ -1,3 +1,7 @@
+## 19.0.0.0.14 (2026-10-16)
+
+- Valuation and valuation history rows are filtered by the user's allowed companies.
+
 ## 19.0.0.0.13 (2026-10-14)
 
 - Fix: the account on which the area price is looked up comes from the new extension point `_get_valuation_area_price_account()`, which `deltatech_obyc` overrides. The delivery of OBYC products from a category with *Use valuation area price* no longer fails.
