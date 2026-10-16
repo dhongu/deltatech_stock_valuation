@@ -34,7 +34,11 @@ class TestConfigAccess(TransactionCase):
     @classmethod
     def _rule(cls, company):
         return cls.env["product.account.determination"].create(
-            {"transaction_key": "stock_valuation", "valuation_class_id": cls.valuation_class.id, "company_id": company.id}
+            {
+                "transaction_key": "stock_valuation",
+                "valuation_class_id": cls.valuation_class.id,
+                "company_id": company.id,
+            }
         )
 
     def test_internal_user_cannot_change_configuration(self):
@@ -57,8 +61,10 @@ class TestConfigAccess(TransactionCase):
 
     def test_account_manager_configures(self):
         self.rule.with_user(self.manager).write({"transaction_key": "price_difference"})
-        new = self.env["product.account.determination"].with_user(self.manager).create(
-            {"transaction_key": "stock_valuation", "company_id": self.company.id}
+        new = (
+            self.env["product.account.determination"]
+            .with_user(self.manager)
+            .create({"transaction_key": "stock_valuation", "company_id": self.company.id})
         )
         new.unlink()
         self.modifier.with_user(self.manager).write({"name": "renamed"})

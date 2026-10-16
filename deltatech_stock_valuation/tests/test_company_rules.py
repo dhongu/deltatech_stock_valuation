@@ -15,8 +15,10 @@ class TestValuationCompanyRules(TransactionCase):
         product = cls.env["product.product"].create({"name": "Valuation rules product", "type": "consu"})
         cls.rows = {}
         for key, company in (("a", cls.company_a), ("b", cls.company_b)):
-            account = cls.env["account.account"].with_company(company).create(
-                {"name": f"Stock {key}", "code": f"371{key}9", "account_type": "asset_current"}
+            account = (
+                cls.env["account.account"]
+                .with_company(company)
+                .create({"name": f"Stock {key}", "code": f"371{key}9", "account_type": "asset_current"})
             )
             values = {"product_id": product.id, "account_id": account.id, "company_id": company.id}
             cls.rows[key] = (
