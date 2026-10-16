@@ -16,6 +16,8 @@ class ProductTemplate(models.Model):
 
     def _get_valuation_class(self):
         """Clasa de evaluare a produsului; dacă produsul nu are, cea a categoriei sau a părinților ei."""
+        if not self:
+            return self.env["product.valuation.class"]
         self.ensure_one()
         return self.valuation_class_id or self.categ_id._get_valuation_class()
 
