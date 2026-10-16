@@ -1,4 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_product_account_determination,Access Product Account Determination,model_product_account_determination,base.group_user,1,1,1,1
-access_account_modifier,Access Account Modifier,model_account_modifier,base.group_user,1,1,1,1
-access_product_valuation_class,Access Valuation Class,model_product_valuation_class,base.group_user,1,1,1,1
+access_product_account_determination,Access Product Account Determination,model_product_account_determination,base.group_user,1,0,0,0
+access_account_modifier,Access Account Modifier,model_account_modifier,base.group_user,1,0,0,0
+access_product_valuation_class,Access Valuation Class,model_product_valuation_class,base.group_user,1,0,0,0
+access_product_account_determination_manager,Manage Product Account Determination,model_product_account_determination,account.group_account_manager,1,1,1,1
+access_account_modifier_manager,Manage Account Modifier,model_account_modifier,account.group_account_manager,1,1,1,1
+access_product_valuation_class_manager,Manage Valuation Class,model_product_valuation_class,account.group_account_manager,1,1,1,1

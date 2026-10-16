@@ -1,3 +1,8 @@
+## 19.0.1.0.16 (2026-10-16)
+
+- Account determination rules, valuation classes and account modifiers are maintained by
+  accounting administrators; other users keep read access. Rules are filtered by company.
+
 ## 19.0.1.0.15 (2026-10-14)
 
 - Fix: with `deltatech_stock_valuation`, the delivery of an OBYC product from a category with *Use valuation area price* failed with "Transaction key is not defined". The area valuation is now looked up on the valuation account of the OBYC rule of the move, and the delivery is valued at that price.

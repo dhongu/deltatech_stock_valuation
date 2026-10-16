@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="product_account_determination_company_rule" model="ir.rule">
+        <field name="name">Product account determination: multi-company</field>
+        <field name="model_id" ref="model_product_account_determination" />
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>
