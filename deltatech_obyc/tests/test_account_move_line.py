@@ -123,3 +123,31 @@ class TestAccountMoveLine(TestCommon):
 
         with self.assertRaises(UserError):
             self.account_move_line._get_valuation_area()
+
+    def test_compute_account_id_line_without_product(self):
+        """O linie de factură fără produs păstrează contul și nu cade la calculul clasei de evaluare."""
+        invoice = self.env["account.move"].create(
+            {
+                "move_type": "out_invoice",
+                "invoice_date": "2017-01-01",
+                "partner_id": self.partner_a.id,
+                "journal_id": self.sale_journal.id,
+                "invoice_line_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "name": "Service without product",
+                            "account_id": self.account_src.id,
+                            "price_unit": 10.0,
+                            "quantity": 1.0,
+                            "tax_ids": [],
+                        },
+                    )
+                ],
+            }
+        )
+        line = invoice.invoice_line_ids
+        self.assertFalse(line.product_id)
+        line._compute_account_id()
+        self.assertEqual(line.account_id, self.account_src)
