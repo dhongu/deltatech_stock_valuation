@@ -86,6 +86,9 @@ class ProductValuation(models.Model):
         """
         if not company_id:
             company_id = self.env.company.id
+        # rândul aparține companiei cerute: căutarea și crearea se fac în contextul ei
+        # (regula de companie), refuzat dacă utilizatorul nu are acces la ea
+        self = self.with_company(company_id)
         domain = [
             ("product_id", "=", product_id),
             ("valuation_area_id", "=", valuation_area_id),
@@ -491,6 +494,7 @@ class ProductValuationHistory(models.Model):
         """
         if not company_id:
             company_id = self.env.company.id
+        self = self.with_company(company_id)
 
         month = date.strftime("%Y%m")
 

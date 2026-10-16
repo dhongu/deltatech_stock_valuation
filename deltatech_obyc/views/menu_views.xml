@@ -6,6 +6,7 @@
         name="Account Determination Config"
         parent="stock.menu_stock_config_settings"
         sequence="90"
+        groups="account.group_account_manager"
     />
 
     <!-- Submeniuri pentru fiecare model -->

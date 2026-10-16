@@ -1,3 +1,8 @@
+## 19.0.1.0.18 (2026-10-16)
+
+- Account determination rules, valuation classes and account modifiers are maintained by
+  accounting administrators; other users keep read access. Rules are filtered by company.
+
 ## 19.0.1.0.17 (2026-10-16)
 
 - Fix: an invoice or journal entry line without a product failed with "Expected singleton: product.template()" when its account was computed (for example while loading the demo data of the chart of accounts). A line without a product now has no valuation class and keeps the standard account.

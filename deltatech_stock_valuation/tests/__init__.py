@@ -13,3 +13,4 @@ from . import test_config_settings
 from . import test_screenshots
 from . import test_reversal_no_storno
 from . import test_known_bugs
+from . import test_company_rules

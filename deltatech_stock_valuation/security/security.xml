@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-
+    <record id="product_valuation_company_rule" model="ir.rule">
+        <field name="name">Product valuation: multi-company</field>
+        <field name="model_id" ref="model_product_valuation" />
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="product_valuation_history_company_rule" model="ir.rule">
+        <field name="name">Product valuation history: multi-company</field>
+        <field name="model_id" ref="model_product_valuation_history" />
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
 </odoo>
