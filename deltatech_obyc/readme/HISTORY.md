@@ -1,3 +1,7 @@
+## 19.0.1.0.17 (2026-10-16)
+
+- Fix: an invoice or journal entry line without a product failed with "Expected singleton: product.template()" when its account was computed (for example while loading the demo data of the chart of accounts). A line without a product now has no valuation class and keeps the standard account.
+
 ## 19.0.1.0.15 (2026-10-14)
 
 - Fix: with `deltatech_stock_valuation`, the delivery of an OBYC product from a category with *Use valuation area price* failed with "Transaction key is not defined". The area valuation is now looked up on the valuation account of the OBYC rule of the move, and the delivery is valued at that price.
