@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="action_misaligned_categories" model="ir.actions.server">
+        <field name="name">Categories with Another Cost Method</field>
+        <field name="model_id" ref="model_stock_valuation_guard" />
+        <field name="state">code</field>
+        <field name="code">action = model.action_misaligned_categories()</field>
+    </record>
+    <record id="action_products_without_cost" model="ir.actions.server">
+        <field name="name">Storable Products without Cost</field>
+        <field name="model_id" ref="model_stock_valuation_guard" />
+        <field name="state">code</field>
+        <field name="code">action = model.action_products_without_cost()</field>
+    </record>
+    <record id="action_zero_valued_stock" model="ir.actions.server">
+        <field name="name">Stock Valued at Zero</field>
+        <field name="model_id" ref="model_stock_valuation_guard" />
+        <field name="state">code</field>
+        <field name="code">action = model.action_zero_valued_stock()</field>
+    </record>
+    <record id="action_zero_valued_moves" model="ir.actions.server">
+        <field name="name">Moves Valued at Zero</field>
+        <field name="model_id" ref="model_stock_valuation_guard" />
+        <field name="state">code</field>
+        <field name="code">action = model.action_zero_valued_moves()</field>
+    </record>
+</odoo>
