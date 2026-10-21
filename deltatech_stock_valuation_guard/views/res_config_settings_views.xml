@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.deltatech_stock_valuation_guard</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="stock_account.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='valuation_setting_container']" position="inside">
+                <setting
+                    id="valuation_guard_unique_method"
+                    string="One Cost Method"
+                    help="Every product category uses the cost method and the valuation of the company"
+                >
+                    <field name="valuation_guard_unique_method" />
+                    <div class="content-group" invisible="not valuation_guard_unique_method">
+                        <div class="row mt-2">
+                            <label for="valuation_guard_cost_method" class="col-lg-4 o_light_label" />
+                            <field name="valuation_guard_cost_method" />
+                        </div>
+                        <div class="row">
+                            <label for="valuation_guard_inventory_valuation" class="col-lg-4 o_light_label" />
+                            <field name="valuation_guard_inventory_valuation" />
+                        </div>
+                        <button
+                            name="action_valuation_guard_align"
+                            type="object"
+                            string="Align the categories"
+                            class="btn-link"
+                            icon="oi-arrow-right"
+                            confirm="Every product category will take the cost method and the valuation of the company. Odoo recomputes the cost of the products of the changed categories; the current costs are saved in an attachment on the company first. Try it on a test database first. Continue?"
+                        />
+                    </div>
+                </setting>
+                <setting
+                    id="valuation_guard_zero_cost"
+                    string="Block Unvalued Moves"
+                    help="A storable product cannot enter the stock at zero value, nor leave it without a cost"
+                >
+                    <field name="valuation_guard_zero_cost" />
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>
