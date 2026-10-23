@@ -1,0 +1,8 @@
+{
+  "title": "Stock Valuation Guard",
+  "summary": "One cost method, no move without value",
+  "icon": "box",
+  "edition": "community",
+  "lang": "en",
+  "features": ["One cost method for all categories", "Blocks stock moves at zero value", "Valuation control lists"]
+}
