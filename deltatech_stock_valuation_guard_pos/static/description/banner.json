@@ -1,0 +1,12 @@
+{
+  "title": "Valuation Guard - POS",
+  "summary": "Stops products without cost at the POS cart",
+  "icon": "cart",
+  "edition": "community",
+  "lang": "en",
+  "features": [
+    "Blocks storable products without cost",
+    "Message asks for the product cost",
+    "Refunds are never blocked"
+  ]
+}
