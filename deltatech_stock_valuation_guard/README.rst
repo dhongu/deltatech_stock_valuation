@@ -16,8 +16,11 @@ Stock Valuation Guard
 .. |badge2| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github
     :target: https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_stock_valuation_guard
     :alt: dhongu/deltatech_stock_valuation
+.. |badge_tests| image:: https://img.shields.io/badge/-12%20automated%20tests%20%C2%B7%2095%25%20code%20coverage-2ea44f.png
+    :target: https://app.codecov.io/gh/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_stock_valuation_guard
+    :alt: 12 automated tests · 95% code coverage
 
-|badge1| |badge2|
+|badge1| |badge2| |badge_tests|
 
 Two checks that keep the stock valuation trustworthy, each switched on
 per company.
