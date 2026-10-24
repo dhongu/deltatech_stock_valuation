@@ -19,9 +19,9 @@ Product Valuation
 .. |badge_fisa| image:: https://img.shields.io/badge/-Fi%C8%99%C4%83%20consultant-2ea44f.png
     :target: https://github.com/dhongu/deltatech_stock_valuation/blob/19.0/deltatech_stock_valuation/readme/FISA_CONSULTANT.md
     :alt: Fișă consultant
-.. |badge_tests| image:: https://img.shields.io/badge/-54%20automated%20tests%20%C2%B7%2083%25%20code%20coverage-2ea44f.png
+.. |badge_tests| image:: https://img.shields.io/badge/-56%20automated%20tests%20%C2%B7%2084%25%20code%20coverage-2ea44f.png
     :target: https://app.codecov.io/gh/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_stock_valuation
-    :alt: 54 automated tests · 83% code coverage
+    :alt: 56 automated tests · 84% code coverage
 
 |badge1| |badge2| |badge_fisa| |badge_tests|
 

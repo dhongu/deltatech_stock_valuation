@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="flex-shrink-0 rounded-3 px-3 py-3 my-2" style="width:240px;background-color:#00432a;">
-      <div class="fw-semibold" style="font-size:15px;color:#ffffff;">&#10003; 52 automated tests</div>
+      <div class="fw-semibold" style="font-size:15px;color:#ffffff;">&#10003; 58 automated tests</div>
       <div class="rounded-pill mt-2" style="height:8px;background-color:#2a6b4d;overflow:hidden;">
         <div class="rounded-pill" style="height:8px;width:90%;background-color:#57B952;"></div>
       </div>
@@ -613,6 +613,19 @@ entry Dr 371.02 / Cr 371.09</li>
 </div>
 <div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Versions</h2>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.18 (2026-10-16)</h2>
+<ul>
+<li>Account determination rules, valuation classes and account modifiers are maintained by
+  accounting administrators; other users keep read access. Rules are filtered by company.</li>
+</ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.17 (2026-10-16)</h2>
+<ul>
+<li>Fix: an invoice or journal entry line without a product failed with "Expected singleton: product.template()" when its account was computed (for example while loading the demo data of the chart of accounts). A line without a product now has no valuation class and keeps the standard account.</li>
+</ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.15 (2026-10-14)</h2>
+<ul>
+<li>Fix: with <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_stock_valuation</code>, the delivery of an OBYC product from a category with <em>Use valuation area price</em> failed with "Transaction key is not defined". The area valuation is now looked up on the valuation account of the OBYC rule of the move, and the delivery is valued at that price.</li>
+</ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.14 (2026-10-10)</h2>
 <ul>
 <li>Docs: emoji symbols added to the remaining headings of the module description, for a uniform look on the Odoo Apps page. No code change.</li>
@@ -659,36 +672,6 @@ entry Dr 371.02 / Cr 371.09</li>
 <ul>
 <li>New: valuation class on the product category. A product without its own valuation class
   uses the class of its category; the class set on the product still takes priority.</li>
-</ul>
-<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.7 (2026-10-06)</h2>
-<ul>
-<li>In the valuation class and account modifier dropdowns the code is shown in a second, dimmed
-  column; both can also be searched by code. The plain name, <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">[CODE] Name</code>, is unchanged.</li>
-</ul>
-<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.6 (2026-10-01)</h2>
-<ul>
-<li>Fix: the inventory adjustment keys were swapped &#8212; a gain used the
-  <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">inventory_adjustment_minus</code> rule and a loss the <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">inventory_adjustment_plus</code> rule. A gain
-  now uses <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">inventory_adjustment_plus</code> and a loss <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">inventory_adjustment_minus</code>. <strong>Rules
-  configured around the old behavior must swap their keys</strong>; the update logs a warning for
-  each rule that looks configured that way and does not change it.</li>
-<li>Fix: stock entries were created for products with a valuation class even
-  without real-time valuation, for consumables and for stock owned by a third party, and a
-  missing rule blocked the validation of these moves. The core checks (storable product,
-  real-time valuation, non-zero quantity, no third-party owner) now come before the rule
-  lookup; a move the core does not value and whose locations have no transaction key gets no
-  entry instead of an error.</li>
-<li>Fix: the "No account
-  determination rule found" message shows the transaction key in the user's language; the rule
-  title shows the key label and no "None" for an empty account modifier.</li>
-<li>Docs: <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">DESCRIPTION.md</code> and the consultant sheet.</li>
-</ul>
-<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.5 (2026-10-01)</h2>
-<ul>
-<li>Fix: the "Transaction key could not be determined" error showed the literal placeholders
-  <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">{source_usage}</code> / <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">{dest_usage}</code> instead of the location usages &#8212; <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">env._()</code> interpolates
-  <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">%(name)s</code> placeholders, not <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">{name}</code>. The message now names the actual source and destination
-  usages (e.g. <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">internal</code> to <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">consume</code>), in the English text and in the Romanian translation.</li>
 </ul>
 <p><em>Older releases are listed in the module's HISTORY file.</em></p>
 </div>
@@ -748,6 +731,46 @@ entry Dr 371.02 / Cr 371.09</li>
             </span>
           </div>
           <p class="mb-0" style="font-size:15px;line-height:1.45;color:#3d4752;">Weighted average cost per product, valuation area and account, from journal entries</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/19.0/deltatech_stock_valuation_guard" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">SV</span>
+              <img src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation_guard/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">Stock Valuation Guard</span>
+              <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:15px;line-height:1.45;color:#3d4752;">One cost method for every product category and no stock move without a value</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/19.0/deltatech_stock_valuation_guard_pos" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">SV</span>
+              <img src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation_guard_pos/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">Stock Valuation Guard - Point of Sale</span>
+              <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:15px;line-height:1.45;color:#3d4752;">Stop products without cost at the POS cart, before the receipt is printed</p>
         </div>
       </a>
     </div>
