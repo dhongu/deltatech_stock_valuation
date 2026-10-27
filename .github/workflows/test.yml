@@ -15,9 +15,6 @@ on:
       - "**/i18n/**"
       - "**/index.html"
       - "scripts/**"
-  push:
-    branches:
-      - "20.0"
   # Weekly full run (Sunday): the ONLY run that measures coverage and uploads it
   # to Codecov, once.
   schedule:
