@@ -140,3 +140,23 @@ class TestValuationGuard(TransactionCase):
         self.categ.property_cost_method = "standard"
         misaligned = guard.action_misaligned_categories()
         self.assertIn(self.categ, self.env["product.category"].search(misaligned["domain"]))
+
+    def test_control_lists_run_for_stock_manager(self):
+        # the menus run server actions on an abstract model: without a group on the action,
+        # every user who is not the superuser was refused
+        manager = self.env["res.users"].create(
+            {
+                "name": "Guard Manager",
+                "login": "guard_manager",
+                "group_ids": [(6, 0, [self.env.ref("stock.group_stock_manager").id])],
+            }
+        )
+        for xmlid in (
+            "action_misaligned_categories",
+            "action_products_without_cost",
+            "action_zero_valued_stock",
+            "action_zero_valued_moves",
+        ):
+            action = self.env.ref(f"deltatech_stock_valuation_guard.{xmlid}").with_user(manager)
+            result = action.run()
+            self.assertEqual(result["type"], "ir.actions.act_window", xmlid)
