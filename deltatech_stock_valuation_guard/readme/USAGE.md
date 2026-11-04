@@ -1,5 +1,7 @@
-1. Go to *Inventory > Configuration > Settings*, section *Valuation*. Tick *One Cost Method*
-   and *Block Unvalued Moves*, check the *Cost Method* and *Valuation* of the company and save.
+1. Go to *Inventory > Configuration > Settings*, section *Valuation*. Tick *One Cost Method*,
+   check the *Cost Method* and *Valuation* of the company and save. Tick *Block Unvalued
+   Moves* only after step 3, once the products you sell have a cost (the screenshot shows
+   both ticked).
 
    ![Inventory settings, Valuation section: One Cost Method with the Cost Method, the Valuation and the Align the categories button, and Block Unvalued Moves, both ticked](static/description/en/01_setari_valuation_guard.png)
 
@@ -9,7 +11,7 @@
 
    ![Confirmation of Align the categories, warning that the costs are recomputed and saved first](static/description/en/02_confirmare_aliniere.png)
 
-3. Before switching the blocking on, open *Inventory > Reporting > Valuation Control*:
+3. Before ticking *Block Unvalued Moves*, open *Inventory > Reporting > Valuation Control*:
    *Categories with Another Cost Method* must be empty after the alignment, and in
    *Storable Products without Cost* set the cost of the products you still sell.
 
