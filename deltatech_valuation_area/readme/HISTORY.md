@@ -1,3 +1,9 @@
+## 19.0.1.0.7 (2026-11-04)
+
+- Fix: the valuation area is computed on invoice lines only for storable products. Lines with
+  services or consumables no longer get an area and no longer raise "Valuation area is not
+  defined" when the company has no default area (VA-006).
+
 ## 19.0.1.0.6 (2026-10-10)
 
 - The module license changes from LGPL-3 to OPL-1 (same as the rest of the suite), so that OPL-1 modules can depend on it on Odoo Apps. No code change.
