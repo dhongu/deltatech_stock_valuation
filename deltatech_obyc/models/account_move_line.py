@@ -15,14 +15,22 @@ class AccountMoveLine(models.Model):
         """Contul de venit/cheltuială din produs sau din categorie, mapat prin poziția fiscală.
 
         Cu clasă de evaluare, `_get_product_accounts` golește conturile standard (OBYC le
-        înlocuiește), așa că, atunci când nu există nicio regulă, contul se citește direct.
+        înlocuiește), așa că, atunci când nu există nicio regulă, contul se citește direct,
+        în ordinea din Odoo 20: produs, ierarhia categoriilor, apoi contul companiei.
         """
         self.ensure_one()
-        product = self.product_id.with_company(self.company_id)
+        company = self.company_id
+        template = self.product_id.product_tmpl_id.with_company(company)
         if self.move_id.is_sale_document(include_receipts=True):
-            account = product.property_account_income_id or product.categ_id.property_account_income_categ_id
+            account = template.property_account_income_id or template._get_category_account(
+                "property_account_income_categ_id", "income_account_id"
+            )
         else:
-            account = product.property_account_expense_id or product.categ_id.property_account_expense_categ_id
+            account = (
+                template.property_account_expense_id
+                or template._get_category_account("property_account_expense_categ_id")
+                or (template.company_id or company).expense_account_id
+            )
         if account and self.move_id.fiscal_position_id:
             account = self.move_id.fiscal_position_id.map_account(account)
         return account
