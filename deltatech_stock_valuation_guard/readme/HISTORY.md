@@ -1,3 +1,9 @@
+## 19.0.1.0.2 (2026-11-04)
+
+- The *Valuation Control* menus open for the stock managers: the server actions behind them
+  had no group and were refused to every user except the superuser.
+- Consultant sheet (`readme/FISA_CONSULTANT.md`) with its screenshots.
+
 ## 19.0.1.0.1 (2026-10-23)
 
 - Main image for the Odoo Apps Store (banner); the manifest points to it in `images`.
