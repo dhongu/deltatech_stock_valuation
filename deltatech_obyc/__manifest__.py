@@ -4,7 +4,7 @@
 
 {
     "name": "OBYC - Account Determination",
-    "version": "20.0.1.0.15",
+    "version": "20.0.1.0.16",
     "summary": "Implementare OBYC-style account mapping pentru tranzacții de stoc",
     "category": "Valuation/Valuation",
     "author": "Terrabit, Dorin Hongu",

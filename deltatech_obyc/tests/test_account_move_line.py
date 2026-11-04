@@ -160,3 +160,72 @@ class TestAccountMoveLine(TestCommon):
         self.assertFalse(line.product_id)
         line._compute_account_id()
         self.assertEqual(line.account_id, self.account_src)
+
+    def _create_service_in_class_category(self):
+        """Serviciu fără clasă proprie, într-o categorie cu clasă de evaluare."""
+        self.account_service_income = self.env["account.account"].create(
+            {"name": "Test Service Income", "code": "TSI704", "account_type": "income"}
+        )
+        category = self.env["product.category"].create(
+            {
+                "name": "Test Service Category",
+                "valuation_class_id": self.valuation_class.id,
+                "property_account_income_categ_id": self.account_service_income.id,
+            }
+        )
+        return self.env["product.product"].create({"name": "Test Service", "type": "service", "categ_id": category.id})
+
+    def _create_invoice(self, product):
+        return self.env["account.move"].create(
+            {
+                "move_type": "out_invoice",
+                "invoice_date": "2017-01-01",
+                "partner_id": self.partner_a.id,
+                "journal_id": self.sale_journal.id,
+                "invoice_line_ids": [
+                    (0, 0, {"product_id": product.id, "price_unit": 10.0, "quantity": 1.0, "tax_ids": []})
+                ],
+            }
+        )
+
+    def test_service_without_area_keeps_standard_account(self):
+        """Firmă cu arii fără arie implicită: serviciul cu clasă din categorie nu oprește factura.
+
+        Nu există regulă fără arie, deci linia primește contul de venit al categoriei.
+        """
+        self.env.company.write({"use_valuation_area": True, "valuation_area_id": False})
+        service = self._create_service_in_class_category()
+        self.assertEqual(service._get_valuation_class(), self.valuation_class)
+
+        invoice = self._create_invoice(service)
+        line = invoice.invoice_line_ids
+        self.assertFalse(line.valuation_area_id)
+        self.assertEqual(line.account_id, self.account_service_income)
+        invoice.action_post()
+        self.assertEqual(invoice.state, "posted")
+
+    def test_service_without_area_uses_rule_without_area(self):
+        """Dacă există o regulă fără arie pentru clasa serviciului, factura o folosește."""
+        self.env.company.write({"use_valuation_area": True, "valuation_area_id": False})
+        service = self._create_service_in_class_category()
+        account_704 = self.env["account.account"].create(
+            {"name": "Test Rule Income 704", "code": "TRI704", "account_type": "income"}
+        )
+        self.env["product.account.determination"].create(
+            {
+                "transaction_key": "stock_income",
+                "valuation_class_id": self.valuation_class.id,
+                "valuation_area_id": False,
+                "company_id": self.env.company.id,
+                "acc_dest_id": account_704.id,
+            }
+        )
+
+        invoice = self._create_invoice(service)
+        self.assertEqual(invoice.invoice_line_ids.account_id, account_704)
+
+    def test_storable_without_area_still_raises(self):
+        """Produsul stocabil fără arie rămâne blocat: comportamentul lui nu se schimbă."""
+        self.env.company.write({"use_valuation_area": True, "valuation_area_id": False})
+        with self.assertRaises(UserError):
+            self._create_invoice(self.product_a)
