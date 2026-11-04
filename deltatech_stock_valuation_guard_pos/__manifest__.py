@@ -3,7 +3,7 @@
 
 {
     "name": "Stock Valuation Guard - Point of Sale",
-    "version": "19.0.1.0.1",
+    "version": "19.0.1.0.2",
     "images": ["static/description/main_screenshot.png"],
     "summary": "Stop products without cost at the POS cart, before the receipt is printed",
     "category": "Valuation/Valuation",
