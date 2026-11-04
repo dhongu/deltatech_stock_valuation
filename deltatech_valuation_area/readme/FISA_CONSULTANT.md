@@ -371,12 +371,12 @@ Aria de pe linia facturii se ia din **prima** mișcare de stoc legată. Dacă o 
 acoperă mișcări din două arii (de exemplu o comandă recepționată parțial în două depozite), toată
 linia primește aria primei mișcări (VA-005, deschis; vezi secțiunea 11).
 
-Cât timp compania folosește ariile, linia cu produs **stocabil** **nu poate rămâne fără arie**:
-golirea ei blochează salvarea cu mesajul de la secțiunea 9. Aria se completează însă pe **orice**
-linie cu produs (inclusiv servicii și consumabile): dacă compania nu are arie implicită și linia
-nu are o mișcare legată, chiar alegerea produsului pe linie e refuzată („Aria de evaluare nu este
-definită") — pe facturi și pe orice linie contabilă cu produs, creată de alte documente (VA-006,
-deschis). Setați deci mereu aria implicită a companiei.
+Cât timp compania folosește ariile, linia cu produs stocabil **nu poate rămâne fără arie**:
+golirea ei blochează salvarea cu mesajul de la secțiunea 9. Dacă compania nu are arie implicită
+și linia nu are o mișcare legată, alegerea unui **produs stocabil** pe linie e refuzată („Aria de
+evaluare nu este definită") — pe facturi și pe orice linie contabilă cu produs, creată de alte
+documente. Aria se completează automat doar pe liniile cu produs stocabil; liniile cu servicii sau
+consumabile rămân fără arie și se salvează fără eroare.
 
 ![Factură de furnizor — aria pe linia produsului, în Elemente jurnal](screenshots/08_factura_furnizor_valuation_area.png)
 
@@ -505,8 +505,8 @@ taxă, deci notele manuale de închidere a lunii (livrări nefacturate, ajustare
 structura cerută (corespondența arie ↔ depozit SAF-T) este **de verificat** la implementare.
 
 **Ce e automat:** aria, cantitatea semnată și unitatea de măsură pe notele de stoc; aria pe
-orice linie de factură/notă cu produs (inclusiv liniile de descărcare de pe factura de client);
-blocarea liniilor cu produs stocabil fără arie.
+liniile de factură/notă cu produs stocabil (inclusiv liniile de descărcare de pe factura de
+client); blocarea liniilor cu produs stocabil fără arie.
 
 **Ce rămâne manual:** definirea ariilor și a jurnalelor; decizia asupra setării **Păstrează
 valoarea mișcării la recalcularea retroactivă**; completarea ariei pe fiecare depozit și
@@ -525,6 +525,7 @@ jurnal** (vezi pasul 9).
 - [ ] pe o factură de furnizor cu produs stocabil, tab-ul **Elemente jurnal** arată aria pe linia produsului (aria recepției legate sau, fără comandă, aria implicită)
 - [ ] la o factură de furnizor creată înaintea recepției, aria de pe linie a fost verificată/corectată înainte de postare
 - [ ] pe o factură de client cu produs perpetuu, liniile de descărcare 607/371 au aria completată (cantitatea lor este pozitivă pe ambele linii — comportament cunoscut)
+- [ ] o factură doar cu servicii sau consumabile se salvează fără eroare și fără arie pe linii, chiar dacă compania nu are arie implicită (VA-006)
 - [ ] utilizatorul care definește ariile are **Contabilitate / Administrator**
 - [ ] produsele evaluate pe arii sunt pe **cost mediu (AVCO)**, nu pe FIFO
 - [ ] fără `deltatech_obyc`: notele de stoc sunt pe jurnalul de stoc al companiei, indiferent de jurnalul ariei (comportament așteptat)
@@ -567,7 +568,7 @@ cont de stoc folosit: 371, 301, 345 etc.):
 | Mesaj | Cauză | Remediere |
 |---|---|---|
 | „Aria de evaluare este obligatorie pentru produsele stocabile. Dacă produsul nu este stocabil, o puteți lăsa necompletată." | pe o linie de notă/factură cu produs stocabil s-a golit **Arie de evaluare**, iar compania folosește ariile | completați aria pe linie |
-| „Aria de evaluare nu este definită" | compania folosește ariile, dar nu are arie implicită, iar linia (sau mișcarea) nu găsește arie pe locație/depozit; apare chiar la alegerea oricărui produs (inclusiv serviciu) pe linia unei facturi | alegeți aria implicită în Setări (pasul 1) sau completați aria pe locație/depozit |
+| „Aria de evaluare nu este definită" | compania folosește ariile, dar nu are arie implicită, iar linia (sau mișcarea) nu găsește arie pe locație/depozit; apare la alegerea unui produs stocabil pe linia unei facturi | alegeți aria implicită în Setări (pasul 1) sau completați aria pe locație/depozit |
 | „Locațiile sursă și destinație trebuie să aibă aceeași arie de evaluare pentru mișcările interne." | la validarea unei mișcări (sau a unei linii a ei, de exemplu la putaway pe o sublocație) între două locații interne ale căror arii efective (proprie → depozit → companie) diferă; cu sau fără `deltatech_obyc` (de la versiunea 20.0.1.0.4) | păstrați sursa și destinația în aceeași arie. **Nu ocoliți blocarea printr-o locație de tranzit:** mișcările spre/din tranzit nu sunt verificate, dar produc note doar cu `deltatech_obyc` și reguli pentru `internal_transfer_out` / `internal_transfer_in`, iar valoarea lor poate fi 0 (OBYC-009, deschis); fără ele valoarea rămâne pe aria sursă. Ruta prin tranzit **nu este o soluție validată** (secțiunea 11) |
 
 ## 10. Capturi de ecran
@@ -621,9 +622,10 @@ Regenerare:
   gestionarul, greșit.
 - **Aria pe factură** se ia doar din prima mișcare de stoc legată de linie (VA-005, deschis): o
   linie acoperită de mișcări din două arii pune toată valoarea pe aria primei mișcări.
-- **Aria pe liniile fără stoc** (VA-006, deschis): aria se pune pe orice linie cu produs, inclusiv
-  servicii; fără arie implicită pe companie, facturile cu servicii sunt blocate. Setați mereu aria
-  implicită.
+- **Aria pe liniile fără stoc** (VA-006, remediat în 20.0.1.0.8): liniile cu servicii sau
+  consumabile nu primesc arie și nu mai blochează factura când compania nu are arie implicită.
+  Facturile anterioare pot avea arie pe astfel de linii; filtrați-le după tipul produsului în
+  rapoartele pe arie.
 - **Inversarea notelor de stoc** anulează, de la versiunea 20.0.1.0.5, și cantitatea, cu sau fără
   storno (pasul 7, VA-007); notele inversate înainte se verifică în reconcilierea pe arie.
 - **Jurnalul de stoc al ariei** are efect doar cu `deltatech_obyc` și doar pentru produsele cu
