@@ -162,7 +162,10 @@ Date minime pentru demo:
 5. **Completați clasa pe produse:** pe produs, tabul **Contabilitate**, grupul **Clasă de evaluare**.
 6. **Creați matricea de reguli:** *Inventar → Configurare → Configurare determinare cont →
    Determinare cont produs*. Pentru fiecare combinație folosită (cheie, clasă, arie, modificator)
-   completați conturile după convenția din secțiunea 4. Exemplu pentru **mărfuri**:
+   completați conturile după convenția din secțiunea 4. Pentru serviciile și consumabilele dintr-o
+   categorie cu clasă, pe o factură fără arie, puteți crea regulile **Venituri** și **Recepție stoc
+   de la furnizor** cu **Arie de evaluare** goală (de exemplu 704 în Cont destinație, 628 în Cont
+   sursă); fără ele, factura folosește contul de venit/cheltuială al produsului sau al categoriei. Exemplu pentru **mărfuri**:
 
    | Cheie de tranzacție | Cont sursă | Cont destinație | Cont de evaluare | Nota rezultată |
    |---|---|---|---|---|
@@ -283,7 +286,8 @@ mișcărilor din această arie se postează pe acest jurnal, nu pe jurnalul de s
 *Inventar → Produse → Produse* → deschideți produsul → tabul **Contabilitate**.
 Câmpul **Clasă de evaluare** (marcat) este „[MF] Marfă". Fără clasă, produsul urmează fluxul
 standard Odoo (conturile din categorie). Conturile de venituri/cheltuieli de pe produs nu sunt
-folosite pentru produsele cu clasă de evaluare: contează doar matricea.
+folosite pentru produsele stocabile cu clasă de evaluare: contează doar matricea. Excepție:
+serviciile și consumabilele fără arie și fără regulă fără arie (Pasul 9b).
 
 ![Produs cu clasă de evaluare](screenshots/05_product_valuation_class.png)
 
@@ -356,6 +360,22 @@ nota din *Note contabile*, după referința livrării.
    **Venituri**. Emiteți factura în luna livrării; altfel aplicați procedura OBYC-002 (secțiunea 9).
 
 ![Factură de vânzare fără linii de cost](screenshots/09_sale_invoice_no_cogs.png)
+
+### Pasul 9b — Factura unui serviciu fără arie de evaluare
+
+Cazul: compania are **Folosește zonă de evaluare** bifat, dar fără **Arie de evaluare** implicită,
+iar serviciul (sau consumabilul) moștenește clasa de evaluare din categorie.
+*Facturare → Clienți → Facturi* → **Nou(ă)** → clientul, serviciul, 1 buc. × 100 lei, TVA 21% →
+**Confirmă** → tabul **Elemente jurnal**.
+
+1. **Găsiți pe ecran:** factura se confirmă fără mesajul „Zona de evaluare nu este definită";
+   linia serviciului nu are arie de evaluare.
+2. **Verificați:** contul liniei este **Cont destinație** al regulii **Venituri** fără arie a
+   clasei (de exemplu 704 Venituri din servicii prestate, credit 100,00 lei); dacă regula lipsește,
+   este contul de venit al produsului sau al categoriei. Pe factura de furnizor, contul este
+   **Cont sursă** al regulii **Recepție stoc de la furnizor** fără arie, altfel contul de
+   cheltuială al produsului sau al categoriei (de exemplu 628). Poziția fiscală a facturii
+   mapează contul standard. Produsele stocabile fără arie se opresc în continuare (secțiunea 9).
 
 ### Pasul 10 — Costul de achiziție (landed cost) pe o recepție
 
@@ -561,6 +581,7 @@ Observații:
 - [ ] **lunar:** livrările nefacturate la sfârșitul lunii au factura cu data contabilă în luna livrării sau nota pe 418 cu inversare pe 1 a lunii următoare (OBYC-002), nu pe amândouă
 - [ ] regulile **Venituri** și **Recepție stoc de la furnizor** există pentru fiecare arie din care se livrează sau se recepționează și pentru aria companiei (facturile fără comandă)
 - [ ] nota de credit (client sau furnizor) este pe același cont ca factura, în roșu cu storno activ
+- [ ] la compania cu arii, serviciile și consumabilele cu clasă din categorie, pe factura fără arie, iau contul regulii fără arie sau, în lipsa ei, contul de venit/cheltuială de pe produs ori categorie (de exemplu 704 / 628), nu contul implicit al jurnalului
 
 ## 9. Mesaje de eroare frecvente
 
@@ -568,7 +589,7 @@ Observații:
 |---|---|---|
 | „Nu s-a găsit nicio regulă de determinare a contului pentru cheia de tranzacție '…', modificatorul de cont '…', clasa de evaluare '…', zona de evaluare '…' și compania '…'." | nu există regulă pentru combinația exactă (adesea: tipul de operațiune are modificator, iar regula nu); numele cheii apare în engleză | butonul **Mergi la configurare** deschide lista de reguli; la **Nou(ă)** condițiile vin precompletate — adăugați conturile și salvați |
 | „Cheia de tranzacție nu a putut fi determinată pentru mișcarea de la {source_usage} la {dest_usage}." | mișcare între tipuri de locații pe care modulul nu le cunoaște (de exemplu tranzit → client); acoladele rămân în text, fără tipurile de locații (defect de afișare) | refaceți fluxul prin locații interne sau cereți extinderea cheilor |
-| „Zona de evaluare nu este definită" | compania folosește arii de evaluare, dar nici compania, nici depozitul, nici locația nu au arie | completați aria pe companie, depozit sau locație |
+| „Zona de evaluare nu este definită" | compania folosește arii de evaluare, dar nici compania, nici depozitul, nici locația nu au arie; pe facturi, mesajul apare doar la produsele stocabile (serviciile și consumabilele se confirmă fără arie, Pasul 9b) | completați aria pe companie, depozit sau locație |
 | „Locațiile sursă și destinație trebuie să aibă aceeași zonă de evaluare pentru mișcările interne." | transfer intern între locații din arii diferite | folosiți un transfer prin tranzit (chei **Ieșire / Intrare transfer intern**, exemplul din secțiunea 5) |
 | „Cheia de tranzacție nu este definită. Setați-o în context." | un flux standard cere conturile unui produs cu clasă de evaluare fără să treacă prin OBYC | semnalați fluxul echipei de dezvoltare; temporar, procesați produsul fără clasă |
 
