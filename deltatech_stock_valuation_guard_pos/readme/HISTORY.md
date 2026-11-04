@@ -1,3 +1,7 @@
+## 20.0.1.0.3 (2026-11-04)
+
+- Consultant sheet reviewed (from 19.0.1.0.3): bookkeeping mechanics, steps order, screenshots.
+
 ## 20.0.1.0.2 (2026-11-04)
 
 - Migration to Odoo 20: depends on `pos_stock`, where the link between the POS and the
