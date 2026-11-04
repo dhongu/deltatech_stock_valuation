@@ -165,7 +165,9 @@ Date minime pentru demo:
    completați conturile după convenția din secțiunea 4. Pentru serviciile și consumabilele dintr-o
    categorie cu clasă, pe o factură fără arie, puteți crea regulile **Venituri** și **Recepție stoc
    de la furnizor** cu **Arie de evaluare** goală (de exemplu 704 în Cont destinație, 628 în Cont
-   sursă); fără ele, factura folosește contul de venit/cheltuială al produsului sau al categoriei. Exemplu pentru **mărfuri**:
+   sursă), cu același **Modificator de cont** ca regulile cu arie (de regulă gol, pe facturi nu se
+   folosește modificator); o regulă fără arie cu alt modificator nu se aplică. Fără ele, factura
+   folosește contul de venit/cheltuială al produsului sau al categoriei. Exemplu pentru **mărfuri**:
 
    | Cheie de tranzacție | Cont sursă | Cont destinație | Cont de evaluare | Nota rezultată |
    |---|---|---|---|---|
@@ -375,7 +377,11 @@ iar serviciul (sau consumabilul) moștenește clasa de evaluare din categorie.
    este contul de venit al produsului sau al categoriei. Pe factura de furnizor, contul este
    **Cont sursă** al regulii **Recepție stoc de la furnizor** fără arie, altfel contul de
    cheltuială al produsului sau al categoriei (de exemplu 628). Poziția fiscală a facturii
-   mapează contul standard. Produsele stocabile fără arie se opresc în continuare (secțiunea 9).
+   mapează contul standard. Regula fără arie se caută cu același **Modificator de cont** (gol pe
+   facturi); o regulă cu alt modificator nu se aplică. Produsele stocabile fără arie se opresc în
+   continuare (secțiunea 9).
+
+![Factura unui serviciu fără arie de evaluare, pe 704](screenshots/09b_service_invoice_no_area.png)
 
 ### Pasul 10 — Costul de achiziție (landed cost) pe o recepție
 
@@ -700,6 +706,7 @@ produs de pe factura de vânzare și de pe cea de furnizor, apoi capturează ecr
 | `07_storno_return.png` | returul la furnizor cu storno: Dr 371 −500 / Cr 408 −500 |
 | `08_delivery_cogs_entry.png` | nota livrării: Dr 607 / Cr 371 (costul la livrare) |
 | `09_sale_invoice_no_cogs.png` | factura de vânzare: Dr 4111 / Cr 707 + 4427, fără linii de cost |
+| `09b_service_invoice_no_area.png` | factura unui serviciu fără arie de evaluare: linia pe 704, contul de venit al categoriei |
 | `10_landed_cost_entry.png` | nota costului de achiziție: Dr 371 / Cr contul liniei de cost |
 
 ## 11. Observații pentru manual
