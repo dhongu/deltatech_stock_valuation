@@ -205,9 +205,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
                 "property_account_income_categ_id": cls.account_service_income.id,
             }
         )
-        cls.service = env["product.product"].create(
-            {"name": "Montaj", "type": "service", "categ_id": service_categ.id}
-        )
+        cls.service = env["product.product"].create({"name": "Montaj", "type": "service", "categ_id": service_categ.id})
         company.valuation_area_id = False
         cls.service_invoice = cls._make_sale_invoice(qty=1.0, price=100.0, product=cls.service)
         company.valuation_area_id = cls.valuation_area
