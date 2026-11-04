@@ -3,7 +3,7 @@
 
 {
     "name": "Stock Valuation Guard",
-    "version": "19.0.1.0.2",
+    "version": "19.0.1.0.3",
     "images": ["static/description/main_screenshot.png"],
     "summary": "One cost method for every product category and no stock move without a value",
     "category": "Valuation/Valuation",
