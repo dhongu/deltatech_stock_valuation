@@ -42,16 +42,17 @@ Referințe din **OMFP 1802/2014**:
   situații excepționale administratorii pot decide schimbarea ei, iar în notele explicative se
   prezintă motivul și efectele asupra rezultatului;
 - **pct. 96 alin. (1)**: metodele de determinare a costului la ieșire (CMP, FIFO, LIFO);
-- **pct. 286 alin. (1)**: costul standard (în producție) și prețul cu amănuntul (în comerțul cu
+- **pct. 286 alin. (1) și (3)**: costul standard (în producție) și prețul cu amănuntul (în comerțul cu
   amănuntul) sunt permise, cu diferențele de preț în conturile 308 / 348 / 378;
 - **pct. 60 alin. (2)**: alegerea metodei de evaluare a stocurilor este o politică contabilă;
   **pct. 63**: efectul schimbării ei asupra exercițiilor precedente se înregistrează pe 1173
   „Rezultatul reportat provenit din modificările politicilor contabile” (alin. 1), iar cel asupra
   exercițiului curent pe cheltuieli sau venituri (alin. 2); **pct. 64 alin. (2)**: schimbarea se
   prezintă în notele explicative;
-- **pct. 76 alin. (1^1)**: bunurile primite fără plată pe factură (reduceri comerciale care acoperă
-  integral contravaloarea) se înregistrează la **valoarea justă**, pe seama contului 758 — nu la
-  zero.
+- **pct. 75 alin. (1) lit. d)**: bunurile obținute cu titlu gratuit și plusurile la inventar se
+  evaluează la **valoarea justă**;
+- **pct. 76 alin. (1^1)**: bunurile cu reduceri comerciale înscrise pe factură care acoperă integral
+  contravaloarea se înregistrează la **valoarea justă**, pe seama contului 758 — nu la zero.
 
 Ce face modulul față de aceste reguli:
 
@@ -63,7 +64,8 @@ Ce face modulul față de aceste reguli:
   explicative (alin. 1). Modulul nu generează nota contabilă a efectului — vezi pasul 2;
 - blocarea **Block Unvalued Moves** este o regulă internă de control, nu o cerință expresă a
   legii: o intrare fără valoare indică de regulă un cost lipsă (o eroare), dar există și intrări
-  legitime fără plată, care se înregistrează la valoarea justă (pct. 76 alin. 1^1) — vezi
+  legitime fără plată, care se înregistrează la valoarea justă (pct. 75 alin. 1 lit. d, pct. 76
+  alin. 1^1) — vezi
   „Note de monografie” pentru cum se tratează în Odoo.
 
 ## 3. Utilizatori și roluri
@@ -87,9 +89,10 @@ care Odoo o dă mișcărilor de stoc și, prin ea, în notele de stoc create de 
 |---|---|
 | 371 Mărfuri | contul de stoc al categoriei: o intrare la zero nu îl debitează, o ieșire la cost zero nu îl creditează |
 | 607 Cheltuieli privind mărfurile | costul mărfurilor vândute: iese subevaluat la vânzarea stocului intrat la zero |
-| 401 Furnizori / 408 Furnizori - facturi nesosite | contrapartida facturii de achiziție |
+| 401 Furnizori | contrapartida facturii de achiziție (în Odoo 19, cu evaluare perpetuă, recepția nu postează nota Dr 371 / Cr 408 a recepției fără factură) |
 | 758 Alte venituri din exploatare | bunurile primite cu reducere comercială integrală, la valoarea justă (pct. 76 alin. 1^1); donațiile de stocuri pe 7582 |
 | 1173 Rezultatul reportat provenit din modificările politicilor contabile | efectul alinierii asupra exercițiilor precedente (pct. 63 alin. 1) |
+| 607 (rezervă la închiderea stocului) | contul pe care închiderea stocului din Odoo trece diferența dintre valoarea stocului și soldul 371: 371 nu are cont de variație în `l10n_ro`, deci se folosește contul de cheltuieli 607 |
 
 Datele minime pentru demo (sunt și cele din capturi):
 
@@ -105,15 +108,15 @@ Datele minime pentru demo (sunt și cele din capturi):
 
 1. Pe fiecare categorie de mărfuri (**Inventar → Configurare → Categorii de produse**), contul de
    evaluare a stocului = **371 Mărfuri**: planul `l10n_ro` pune implicit **301**.
-2. **Inventar → Raportare → Valuation Control → Storable Products without Cost**: completați costul
-   produselor stocabile pe care încă le vindeți (pasul 3). Altfel, după pornirea blocării, livrările
-   lor nu mai pot fi validate.
-3. **Inventar → Configurare → Setări**, secțiunea **Evaluare**: bifați **One Cost Method**,
+2. **Inventar → Configurare → Setări**, secțiunea **Evaluare**: bifați **One Cost Method**,
    verificați **Cost Method** și **Valuation** ale companiei și **Salvați** (pasul 1).
-4. Pe o **bază de test**, apăsați **Align the categories** și verificați costurile și valoarea
-   stocului; abia apoi repetați pe baza de producție (pasul 2).
-5. După ce lista *Storable Products without Cost* nu mai conține produse vândute (pasul 3), bifați
-   **Block Unvalued Moves** și **Salvați**.
+3. Pe o **bază de test**, apăsați **Align the categories** și verificați costurile și valoarea
+   stocului; abia apoi repetați pe baza de producție (pasul 2). Alinierea **recalculează costul**
+   produselor din categoriile schimbate, deci completarea costurilor vine după ea.
+4. **Inventar → Raportare → Valuation Control → Storable Products without Cost**: completați costul
+   produselor stocabile pe care încă le vindeți (pasul 3).
+5. Abia apoi bifați **Block Unvalued Moves** și **Salvați**; altfel livrările produselor fără cost
+   nu mai pot fi validate.
 
 ## 6. Flux de utilizare
 
@@ -122,7 +125,7 @@ Datele minime pentru demo (sunt și cele din capturi):
 **Inventar → Configurare → Setări**, secțiunea **Evaluare**. Modulul adaugă două bife:
 
 - **One Cost Method** — sub ea apar **Cost Method** și **Valuation**, metoda de cost și evaluarea
-  companiei din Odoo standard, aduse aici și butonul **Align the categories**. Cu bifa pornită,
+  companiei, aduse aici din Odoo standard, plus butonul **Align the categories**. Cu bifa pornită,
   crearea sau modificarea unei categorii de produse pe altă metodă sau altă evaluare decât ale
   companiei este refuzată;
 - **Block Unvalued Moves** — refuză validarea mișcărilor de stoc care ar rămâne fără valoare.
@@ -156,7 +159,7 @@ Alinierea **nu creează notă contabilă**. După aliniere, contabilul compară 
 Stoc** (coloana **Valoare totală**; în Enterprise și raportul de evaluare a stocului din
 Contabilitate) cu soldul contului 371 din balanță și decide înregistrarea diferenței
 (vezi „Note de monografie"). Nota manuală se face **înaintea primei închideri de stoc** din Odoo:
-altfel închiderea trece diferența pe contul de variație al contului de stoc.
+altfel închiderea trece diferența pe contul de variație al contului de stoc (607 la 371 în `l10n_ro`).
 
 Dacă toate categoriile sunt deja aliniate, butonul răspunde cu mesajul *Every product category
 already uses the cost method of the company* și nu schimbă nimic.
@@ -218,16 +221,19 @@ vânzările următoare îl vor scoate la cost zero.
 
 1. **Găsiți pe ecran**: fiecare rând e o mișcare de intrare, cu **Document sursă**, **Produs**,
    cantitatea intrată (**Necesar** — cantitatea mișcării, nu cea rămasă în stoc) și **Stare**
-   *Efectuat*. Cantitatea rămasă se vede pe produs (**În stoc**, lista din pasul 3).
+   *Efectuat*. Cantitatea rămasă se vede pe fișa produsului (**În stoc**).
 2. **Verificați**: fiecare rând este o intrare de dinainte de pornirea blocării (sau validată de un
    proces exceptat). Pentru fiecare, contabilul decide costul corect și nota de reevaluare.
 3. **Treceți mai departe**: reevaluarea este o **decizie contabilă** (ce cost, ce notă); modulul doar
    arată ce privește. Completați întâi **Cost** pe produs, ca ieșirile următoare să nu mai fie la
    zero, apoi ajustați valoarea stocului existent din **Inventar → Raportare → Stoc**, coloana
-   **Valoare totală**. Rândul rămâne în listă până când cantitatea intrată la zero iese integral
-   din stoc: lista urmărește mișcarea de intrare, nu ajustarea.
+   **Valoare totală**. Ajustarea **nu postează notă**: la închiderea stocului, diferența trece pe
+   607 (Dr 371 / Cr 607). Dacă tratamentul corect e altul — 1174 pentru o eroare din exercițiul
+   precedent, 758 / 7582 pentru un bun primit gratuit — faceți nota manuală **înaintea închiderii**.
+   Rândul iese din listă când mișcarea de intrare are valoare sau când cantitatea ei a ieșit
+   integral din stoc.
 
-![Lista Stock Valued at Zero: un rând, intrarea cu documentul sursă Stoc inițial fără cost, produsul Marfă intrată la zero, 10,00 buc., starea Efectuat; 8 buc. din ea sunt încă în stoc](../static/description/06_stoc_valorizat_zero.png)
+![Lista Stock Valued at Zero: un rând, intrarea cu documentul sursă Stoc inițial fără cost, produsul Marfă intrată la zero, Necesar 10,00 (cantitatea intrată), starea Efectuat](../static/description/06_stoc_valorizat_zero.png)
 
 ### Pasul 6 — Mișcările valorizate la zero în ultimele 30 de zile
 
@@ -259,7 +265,7 @@ mișcării de ieșire. Ce previne blocarea:
 |---|---|---|
 | intrare fără factură și fără cost (plus la inventar, bun primit fără document, recepție încă nefacturată) | nicio notă: valoarea mișcării e 0 | stocul fizic există, 371 nu crește |
 | vânzarea ulterioară a acestui stoc | factura clientului nu are linia Dr 607 / Cr 371 (Odoo o omite la valoare zero) | costul mărfurilor vândute e subevaluat, profitul supraevaluat |
-| recepție vândută înainte de sosirea facturii de achiziție, pe un produs fără cost | livrarea iese la cost 0; factura furnizorului debitează apoi 371 cu valoarea întreagă | 371 rămâne cu sold pentru un stoc care a ieșit deja |
+| recepție vândută înainte de sosirea facturii de achiziție, pe un produs fără cost | livrarea iese la cost 0; factura furnizorului debitează apoi 371 cu valoarea întreagă | 371 rămâne cu sold pentru un stoc care a ieșit deja, până la închiderea stocului, care trece diferența pe 607 |
 
 Cu blocare, intrarea fără preț nu se mai validează până nu are cost, iar ieșirile au costul
 produsului; notele 371 / 607 de mai sus primesc valori.
@@ -267,20 +273,24 @@ produsului; notele 371 / 607 de mai sus primesc valori.
 **Bunuri cu reducere comercială integrală** (pct. 76 alin. 1^1): nota **Dr 371 / Cr 758** la valoarea
 justă e **manuală**, făcută de contabil; Odoo nu o generează din factura cu valoare zero. O recepție
 pe o comandă de achiziție cu preț 0 rămâne **blocată** chiar dacă produsul are cost, pentru că Odoo ia
-valoarea din comandă. Căi posibile: valoarea justă pe linia comenzii (cu efectul ei pe factură),
-sau oprirea temporară a bifei **Block Unvalued Moves** de către administrator, pe durata validării.
-Donațiile de stocuri se înregistrează pe 7582.
+valoarea din comandă. Calea: administratorul oprește temporar bifa **Block Unvalued Moves** pe durata validării, iar
+contabilul face nota manuală Dr 371 / Cr 758 **și** pune valoarea justă pe mișcarea de intrare
+(**Inventar → Raportare → Stoc**, **Valoare totală**) **înaintea închiderii stocului**; fără valoarea
+pe mișcare, închiderea anulează nota prin Dr 607 / Cr 371. Valoarea justă pusă doar pe linia comenzii
+nu ajunge: factura cu reducere integrală readuce valoarea mișcării la zero. Donațiile de stocuri se
+înregistrează pe 7582 (pct. 75 alin. 1 lit. d).
 
 **Alinierea categoriilor** (pasul 2) schimbă costul produselor recalculat de Odoo, deci și valoarea
 stocului; modulul nu înregistrează diferența. Contabilul o înregistrează manual:
 
 - efectul asupra exercițiilor precedente: **Dr/Cr 371 = 1173** (pct. 63 alin. 1);
 - efectul asupra exercițiului curent: pe seama contului de profit și pierdere (pct. 63 alin. 2);
+- efectele fiscale ale ajustării pe 1173 se iau în calcul (pct. 63 alin. 4);
 - prezentarea în notele explicative (pct. 64 alin. 2, pct. 287 alin. 1).
 
 Nota se face **înaintea primei închideri de stoc** din Odoo după aliniere: închiderea postează
-automat diferența dintre valoarea stocului și soldul contului de stoc pe contul de variație, nu
-pe 1173.
+automat diferența dintre valoarea stocului și soldul contului de stoc pe contul de variație — la 371
+în `l10n_ro`, contul de cheltuieli 607 — nu pe 1173.
 
 ## 7. Legături cu alte module / declarații
 
@@ -312,7 +322,7 @@ notele explicative.
       primei închideri de stoc.
 - [ ] Categoriile de mărfuri au contul de evaluare a stocului 371 (nu 301, implicitul `l10n_ro`).
 - [ ] Cu **Block Unvalued Moves** pornit: recepția fără preț a unui produs fără cost e refuzată;
-      aceeași recepție cu preț pe comanda de achiziție trece.
+      aceeași recepție cu preț pe comanda de achiziție trece (cu Achiziții instalat).
 - [ ] Livrarea unui produs stocabil fără cost e refuzată; după completarea costului, trece.
 - [ ] Un plus la inventar pe un produs fără cost e refuzat.
 - [ ] Produsele consumabile și serviciile nu sunt blocate.
