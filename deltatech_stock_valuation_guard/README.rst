@@ -147,6 +147,15 @@ Usage
 Changelog
 =========
 
+20.0.1.0.2 (2026-11-04)
+-----------------------
+
+- Migration to Odoo 20: the tests use ``uom_id`` on stock moves and read
+  the attachment through ``raw.content``; the settings button uses the
+  new ``east`` icon; Apps banner and page regenerated for Odoo 20. Since
+  Odoo 20, a category without its own cost method follows the company's
+  method.
+
 19.0.1.0.2 (2026-11-04)
 -----------------------
 
