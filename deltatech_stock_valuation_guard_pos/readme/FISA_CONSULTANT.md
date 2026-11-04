@@ -54,7 +54,8 @@ Datele minime pentru demo (sunt și cele din captură):
 ## 5. Configurare inițială
 
 1. Modulul se instalează **automat** când în bază sunt instalate atât *Stock Valuation Guard*, cât
-   și *Punct de vânzare*; nu are setări proprii.
+   și *PoS - Stock* (`pos_stock`, legătura dintre *Punct de vânzare* și *Inventar*, instalată
+   automat când sunt prezente amândouă); nu are setări proprii.
 2. Pornirea se face din modulul de bază: **Inventar → Configurare → Setări**, secțiunea **Evaluare**,
    bifa **Block Unvalued Moves** (vezi fișa *Stock Valuation Guard*, pasul 1).
 3. Înainte de pornire, completați costul produselor vândute în magazin: **Inventar → Raportare →
@@ -101,7 +102,7 @@ Astfel de ieșiri apar în lista **Moves Valued at Zero** a modulului de bază.
 | Modul | Rol |
 |---|---|
 | `deltatech_stock_valuation_guard` | setarea **Block Unvalued Moves**, listele de control, blocarea mișcărilor validate de utilizatori |
-| `point_of_sale` (Odoo standard) | casa de marcat, comenzile și mișcările lor de stoc |
+| `pos_stock` (Odoo standard, *PoS - Stock*) | legătura casei de marcat (`point_of_sale`) cu stocul: livrările comenzilor POS și mișcările lor de stoc |
 
 **Ce e automat:** instalarea, oprirea produsului fără cost în coș, excluderea comenzilor POS din
 verificarea de pe server.
