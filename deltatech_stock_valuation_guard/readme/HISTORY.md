@@ -1,3 +1,7 @@
+## 19.0.1.0.3 (2026-11-04)
+
+- Consultant sheet reviewed: Odoo 19 bookkeeping mechanics, steps order, screenshots.
+
 ## 19.0.1.0.2 (2026-11-04)
 
 - The *Valuation Control* menus open for the stock managers: the server actions behind them
