@@ -1,3 +1,9 @@
+## 20.0.1.0.8 (2026-11-04)
+
+- Fix: the valuation area is computed on invoice lines only for storable products. Lines with
+  services or consumables no longer get an area and no longer raise "Valuation area is not
+  defined" when the company has no default area (VA-006).
+
 ## 20.0.1.0.7 (2026-10-15)
 
 - In the valuation area dropdown the code is shown in a second, dimmed column; the areas can

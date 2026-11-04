@@ -1,7 +1,7 @@
 # © 2026 Deltatech
 # See README.rst file on addons root folder for license details
 #
-# Teste pentru constatările din readme/bugs.md (VA-001 … VA-004).
+# Teste pentru constatările din readme/bugs.md (VA-001 … VA-006).
 
 import polib
 
@@ -216,3 +216,16 @@ class TestValuationAreaBugs(AccountTestInvoicingCommon):
         po = polib.pofile(file_path("deltatech_valuation_area/i18n/ro.po"))
         mixed = [entry.msgid for entry in po if "zon" in entry.msgstr.lower()]
         self.assertFalse(mixed, "ro.po must use 'arie de evaluare' only")
+
+    # VA-006 ------------------------------------------------------------------------------
+
+    def test_va006_service_line_without_default_area(self):
+        self.env.company.valuation_area_id = False
+        service = self.env["product.product"].create({"name": "Service VA", "type": "service"})
+        consumable = self.env["product.product"].create({"name": "Consumable VA", "type": "consu"})
+        invoice = self.init_invoice("out_invoice", products=service + consumable)
+        self.assertFalse(invoice.invoice_line_ids.valuation_area_id)
+
+    def test_va006_storable_line_still_gets_area(self):
+        invoice = self.init_invoice("out_invoice", products=self.product)
+        self.assertEqual(invoice.invoice_line_ids.valuation_area_id, self.area_default)

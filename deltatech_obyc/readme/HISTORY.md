@@ -1,3 +1,7 @@
+## 20.0.1.0.16 (2026-11-04)
+
+- Fix: on a company with valuation areas enabled and no default area, an invoice for a service or consumable from a category with a valuation class failed with "Valuation area is not defined". Only storable products require a valuation area now. For a non-storable product without an area, the OBYC rule without an area is used when one exists; otherwise the line gets the standard income or expense account of the product or its category. Storable products are not affected.
+
 ## 20.0.1.0.15 (2026-10-16)
 
 - Fix: an invoice or journal entry line without a product failed with "Expected singleton: product.template()" when its account was computed (for example while loading the demo data of the chart of accounts). A line without a product now has no valuation class and keeps the standard account.

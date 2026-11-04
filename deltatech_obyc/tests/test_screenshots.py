@@ -193,6 +193,23 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         cls.landed_cost = cls._make_landed_cost(cls.receipt_lc, amount=50.0)
         cls.move_landed_cost = cls.landed_cost.account_move_id
 
+        # 6) Factura unui serviciu fără arie de evaluare (Pasul 9b): compania folosește arii,
+        #    dar fără arie implicită; serviciul moștenește clasa din categorie și, fără regulă
+        #    fără arie, ia contul de venit al categoriei (704)
+        cls.account_service_income = cls._ro_account("704%", "Venituri din servicii prestate", "704000", "income")
+        service_class = env["product.valuation.class"].create({"name": "Servicii", "code": "SV"})
+        service_categ = env["product.category"].create(
+            {
+                "name": "Servicii",
+                "valuation_class_id": service_class.id,
+                "property_account_income_categ_id": cls.account_service_income.id,
+            }
+        )
+        cls.service = env["product.product"].create({"name": "Montaj", "type": "service", "categ_id": service_categ.id})
+        company.valuation_area_id = False
+        cls.service_invoice = cls._make_sale_invoice(qty=1.0, price=100.0, product=cls.service)
+        company.valuation_area_id = cls.valuation_area
+
         # --- Acțiuni -----------------------------------------------------------------
         cls.act_determination = env.ref("deltatech_obyc.action_product_account_determination").id
         cls.act_valuation_class = env.ref("deltatech_obyc.action_product_valuation_class").id
@@ -250,7 +267,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         return cls._make_picking(cls.picking_type_in, cls.supplier_location, cls.stock_location, qty, cls.supplier)
 
     @classmethod
-    def _make_sale_invoice(cls, qty, price):
+    def _make_sale_invoice(cls, qty, price, product=None):
         company = cls.env.company
         tax = company.account_sale_tax_id
         invoice = cls.env["account.move"].create(
@@ -261,7 +278,7 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
                 "invoice_line_ids": [
                     Command.create(
                         {
-                            "product_id": cls.product.id,
+                            "product_id": (product or cls.product).id,
                             "quantity": qty,
                             "price_unit": price,
                             "tax_ids": [Command.set(tax.ids)],
@@ -358,6 +375,10 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         )
         self.assertEqual(self._dr_cr(self.move_landed_cost), [("371", 50.0, 0.0), ("408", 0.0, 50.0)])
         self.assertEqual(self.move_delivery.journal_id, self.stock_journal)
+        # serviciul fără arie: factura postată, linia fără arie, pe contul de venit al categoriei
+        self.assertEqual(self.service_invoice.state, "posted")
+        self.assertFalse(self.service_invoice.invoice_line_ids.valuation_area_id)
+        self.assertEqual(self.service_invoice.invoice_line_ids.account_id, self.account_service_income)
 
         # ascunde butonul „Nou(ă)" din control panel (consultăm înregistrări existente)
         hide_new_btn_js = """
@@ -434,6 +455,13 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
                 **self.account_move_shot(self.invoice, "09_sale_invoice_no_cogs.png"),
                 # deschisă din Facturare → Clienți → Facturi (breadcrumb „Facturi")
                 "url": f"action={self.act_out_invoice}&id={self.invoice.id}&model=account.move&view_type=form",
+            },
+            # 9b. Factura serviciului fără arie de evaluare: linia pe 704 (contul categoriei)
+            {
+                **self.account_move_shot(self.service_invoice, "09b_service_invoice_no_area.png"),
+                "url": (
+                    f"action={self.act_out_invoice}&id={self.service_invoice.id}&model=account.move&view_type=form"
+                ),
             },
             # 10. Nota costului de achiziție (landed cost): Dr 371 / Cr contul liniei de cost
             self.account_move_shot(self.move_landed_cost, "10_landed_cost_entry.png"),
