@@ -166,22 +166,27 @@ class TestAccountMoveLine(TestCommon):
         self.account_service_income = self.env["account.account"].create(
             {"name": "Test Service Income", "code": "TSI704", "account_type": "income"}
         )
+        self.account_service_expense = self.env["account.account"].create(
+            {"name": "Test Service Expense", "code": "TSE628", "account_type": "expense"}
+        )
         category = self.env["product.category"].create(
             {
                 "name": "Test Service Category",
                 "valuation_class_id": self.valuation_class.id,
                 "property_account_income_categ_id": self.account_service_income.id,
+                "property_account_expense_categ_id": self.account_service_expense.id,
             }
         )
         return self.env["product.product"].create({"name": "Test Service", "type": "service", "categ_id": category.id})
 
-    def _create_invoice(self, product):
+    def _create_invoice(self, product, move_type="out_invoice", journal=None, fiscal_position=None):
         return self.env["account.move"].create(
             {
-                "move_type": "out_invoice",
+                "move_type": move_type,
                 "invoice_date": "2017-01-01",
                 "partner_id": self.partner_a.id,
-                "journal_id": self.sale_journal.id,
+                "journal_id": (journal or self.sale_journal).id,
+                "fiscal_position_id": fiscal_position.id if fiscal_position else False,
                 "invoice_line_ids": [
                     (0, 0, {"product_id": product.id, "price_unit": 10.0, "quantity": 1.0, "tax_ids": []})
                 ],
@@ -229,3 +234,40 @@ class TestAccountMoveLine(TestCommon):
         self.env.company.write({"use_valuation_area": True, "valuation_area_id": False})
         with self.assertRaises(UserError):
             self._create_invoice(self.product_a)
+
+    def test_service_bill_without_area_keeps_standard_expense_account(self):
+        """Pe factura de furnizor, serviciul fără arie și fără regulă primește contul de cheltuială."""
+        self.env.company.write({"use_valuation_area": True, "valuation_area_id": False})
+        service = self._create_service_in_class_category()
+        self.partner_a.property_account_payable_id = self.env["account.account"].create(
+            {"name": "Test Payable", "code": "TPAY01", "account_type": "liability_payable", "reconcile": True}
+        )
+        purchase_journal = self.env["account.journal"].create(
+            {"name": "Test Purchase Journal", "code": "TPJ1", "type": "purchase", "company_id": self.env.company.id}
+        )
+
+        bill = self._create_invoice(service, move_type="in_invoice", journal=purchase_journal)
+        self.assertEqual(bill.invoice_line_ids.account_id, self.account_service_expense)
+
+    def test_service_without_area_standard_account_mapped_by_fiscal_position(self):
+        """Contul standard al serviciului trece prin maparea de conturi a poziției fiscale."""
+        self.env.company.write({"use_valuation_area": True, "valuation_area_id": False})
+        service = self._create_service_in_class_category()
+        account_mapped = self.env["account.account"].create(
+            {"name": "Test Mapped Income", "code": "TMI704", "account_type": "income"}
+        )
+        fiscal_position = self.env["account.fiscal.position"].create(
+            {
+                "name": "Test Fiscal Position",
+                "account_ids": [
+                    (
+                        0,
+                        0,
+                        {"account_src_id": self.account_service_income.id, "account_dest_id": account_mapped.id},
+                    )
+                ],
+            }
+        )
+
+        invoice = self._create_invoice(service, fiscal_position=fiscal_position)
+        self.assertEqual(invoice.invoice_line_ids.account_id, account_mapped)
