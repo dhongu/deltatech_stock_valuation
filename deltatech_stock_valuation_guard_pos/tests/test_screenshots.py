@@ -46,6 +46,8 @@ class TestValuationGuardPosScreenshots(AccountTestInvoicingCommon, ScreenshotCas
         )
         company.write({"cost_method": "average", "inventory_valuation": "real_time", "valuation_guard_zero_cost": True})
 
+        # utilizatorul testului (din AccountTestInvoicingCommon) configurează casa de marcat
+        env.user.group_ids = [(4, env.ref("point_of_sale.group_pos_manager").id)]
         product_vals = {"is_storable": True, "available_in_pos": True, "list_price": 50.0}
         cls.product_no_cost = env["product.product"].create(dict(product_vals, name="Marfă fără cost"))
         env["product.product"].create(dict(product_vals, name="Marfă cu cost", standard_price=25.0))
@@ -63,14 +65,33 @@ class TestValuationGuardPosScreenshots(AccountTestInvoicingCommon, ScreenshotCas
         cls.config.current_session_id.set_opening_control(0, "")
 
     def _shots(self):
+        # ecranul de pornire al casei: „Deschide casa", apoi clic pe produsul fără cost;
+        # casa refuză adăugarea în coș și afișează mesajul (totul în pagină, cu reîncercări,
+        # pentru că butonul răspunde abia după încărcarea completă a datelor POS)
+        open_and_add_js = """
+            async () => {
+                const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+                for (let i = 0; i < 80 && !document.querySelector('.product-list article'); i++) {
+                    document.querySelector('button.open-register-btn')?.click();
+                    await sleep(500);
+                }
+                const card = [...document.querySelectorAll('.product-list article')].find(
+                    (e) => e.textContent.includes('Marfă fără cost')
+                );
+                card?.click();
+                for (let i = 0; i < 40 && !document.querySelector('.modal-dialog'); i++) {
+                    await sleep(250);
+                }
+            }
+        """
         return [
             {
                 "path": f"/pos/ui?config_id={self.config.id}",
                 "name": "01_pos_produs_fara_cost.png",
-                "wait": ".product-list",
+                "wait": "button.open-register-btn",
                 "timeout": 60000,
-                "click_btn": ".product-list article:has-text('Marfă fără cost')",
-                "wait_after": ".modal-dialog",
+                "eval": open_and_add_js,
+                "eval_wait": 1000,
                 "hide_chatter": False,
                 "settle": 1500,
             },

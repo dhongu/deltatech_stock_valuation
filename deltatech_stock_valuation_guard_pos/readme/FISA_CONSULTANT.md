@@ -68,7 +68,7 @@ comandă; casa afișează mesajul **Product without cost**: produsul nu are cost
 lăsa stocul fără valoare, și trebuie cerut managerului să completeze costul. Casierul închide mesajul
 și continuă comanda cu celelalte produse.
 
-![Casa de marcat Magazin cu lista de produse și dialogul Product without cost peste ea: Marfă fără cost has no cost, so its sale would leave the stock with no value; Ask the manager to set the cost of the product; coșul comenzii a rămas gol](../static/description/01_pos_produs_fara_cost.png)
+![Ecranul de vânzare al casei, comanda 1001: produsele Marfă fără cost și Marfă cu cost, coșul gol în stânga și dialogul Product without cost: Marfă fără cost has no cost, so its sale would leave the stock with no value. Ask the manager to set the cost of the product, cu butonul Ok](../static/description/01_pos_produs_fara_cost.png)
 
 Responsabilul completează **Cost** pe produs (**Inventar → Produse → Produse**, sau din lista
 *Storable Products without Cost*); după reîncărcarea casei, produsul se vinde normal.

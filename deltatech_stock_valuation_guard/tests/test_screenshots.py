@@ -62,6 +62,35 @@ class TestValuationGuardScreenshots(AccountTestInvoicingCommon, ScreenshotCase o
         # stoc intrat la valoare zero, înainte de activarea blocării
         receipt = cls._receipt(cls.product_zero, 10.0, origin="Stoc inițial fără cost")
         receipt.button_validate()
+        # o livrare din acest stoc, tot înainte de blocare: iese la cost zero
+        out_type = cls.warehouse.out_type_id
+        delivery = cls.env["stock.picking"].create(
+            {
+                "picking_type_id": out_type.id,
+                "partner_id": cls.partner_b.id,
+                "origin": "Vânzare la cost zero",
+                "location_id": out_type.default_location_src_id.id,
+                "location_dest_id": out_type.default_location_dest_id.id,
+                "move_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "product_id": cls.product_zero.id,
+                            "product_uom_qty": 2.0,
+                            "product_uom": cls.product_zero.uom_id.id,
+                            "origin": "Vânzare la cost zero",
+                            "location_id": out_type.default_location_src_id.id,
+                            "location_dest_id": out_type.default_location_dest_id.id,
+                        },
+                    )
+                ],
+            }
+        )
+        delivery.action_confirm()
+        delivery.action_assign()
+        delivery.move_ids.write({"quantity": 2.0, "picked": True})
+        delivery.button_validate()
 
         company.write({"valuation_guard_unique_method": True, "valuation_guard_zero_cost": True})
         # recepția produsului fără cost, gata de validare: validarea e refuzată
