@@ -94,11 +94,13 @@ class AccountMoveLine(models.Model):
     def _compute_valuation_area(self):
         """
         Compute the valuation area for the account move lines.
+        Only storable products are valued per area (see `_is_valuation_area_required`);
+        service and consumable lines keep no area.
         """
         if not self.env.registry.ready:
             return False
         for line in self:
-            if line.product_id and line.company_id.use_valuation_area:
+            if line.product_id.is_storable and line.company_id.use_valuation_area:
                 valuation_area = line._get_valuation_area(raise_if_not_found=True)
             else:
                 valuation_area = False

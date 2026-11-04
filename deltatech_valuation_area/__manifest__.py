@@ -4,7 +4,7 @@
 
 {
     "name": "Stock Valuation Area",
-    "version": "20.0.1.0.7",
+    "version": "20.0.1.0.8",
     "summary": "Stock Valuation Area Management",
     "category": "Valuation/Valuation",
     "author": "Terrabit, Dorin Hongu",
