@@ -16,7 +16,8 @@
 
 Cu **Block Unvalued Moves** pornit, modulul de bază refuză validarea mișcărilor de stoc fără valoare.
 Mișcările unei comenzi din **Punct de vânzare** se validează însă pe server după ce bonul fiscal a fost
-emis: un refuz în acel moment ar lăsa comanda blocată în casă, cu bonul deja tipărit. Modulul mută
+emis: la sincronizarea comenzii sau, implicit, la închiderea sesiunii. Un refuz în acel moment ar
+bloca comanda sau închiderea sesiunii, cu bonurile deja tipărite. Modulul mută
 verificarea în **coș**: casierul nu poate adăuga în comandă un produs stocabil fără cost și primește
 un mesaj care cere costul produsului. Astfel marfa fără cost nu iese din stoc la valoare zero prin POS.
 
@@ -32,21 +33,23 @@ zero. Blocarea în coș este o regulă internă de control, nu o cerință expre
 | Rol | Ce face | Drepturi necesare |
 |---|---|---|
 | Casier | vinde în POS; primește mesajul când scanează sau alege un produs fără cost | Punct de vânzare / Utilizator |
-| Responsabil magazin / contabil stocuri | completează costul produsului semnalat | Inventar / Administrator sau drept de modificare pe produse |
+| Responsabil magazin / contabil stocuri | vede lista *Storable Products without Cost*; completează costul produsului semnalat | lista: Inventar / Administrator; completarea costului: drept de modificare pe produse (**Inventar → Produse → Produse**) |
 | Administrator Odoo | pornește **Block Unvalued Moves** pe companie | Administrare / Setări |
 
 ## 4. Conturi și date implicate
 
 Modulul nu creează note contabile. Notele vânzării din POS (venit, TVA, încasare) și nota de stoc a
 ieșirii (Dr 607 Cheltuieli privind mărfurile / Cr 371 Mărfuri) le face Odoo standard la închiderea
-sesiunii; modulul garantează doar că produsul vândut are cost, deci că ieșirea nu e la zero.
+sesiunii, cu evaluarea perpetuă; la comenzile facturate costul apare pe factură. Contul de stoc e
+cel al categoriei: 371 la mărfuri (implicitul `l10n_ro` e 301, vezi fișa *Stock Valuation Guard*,
+secțiunea 5); modulul garantează doar că produsul vândut are cost, deci că ieșirea nu e la zero.
 
 Datele minime pentru demo (sunt și cele din captură):
 
 - compania **RO Company**, plan de conturi RO, RON, cu **Block Unvalued Moves** pornit;
 - casa de marcat **Magazin**, cu metoda de plată **Numerar**, sesiunea deschisă;
 - produsele stocabile vândute în POS **Marfă fără cost** (cost 0) și **Marfă cu cost** (cost 25),
-  ambele cu prețul de vânzare 50.
+  ambele cu prețul de vânzare 50 (costurile și prețurile nu se văd în captură).
 
 ## 5. Configurare inițială
 
@@ -65,8 +68,8 @@ Datele minime pentru demo (sunt și cele din captură):
 
 În casa de marcat, casierul scanează sau alege din listă **Marfă fără cost**. Produsul nu intră în
 comandă; casa afișează mesajul **Product without cost**: produsul nu are cost, deci vânzarea lui ar
-lăsa stocul fără valoare, și trebuie cerut managerului să completeze costul. Casierul închide mesajul
-și continuă comanda cu celelalte produse.
+scoate marfa din stoc la valoare zero, și trebuie cerut managerului să completeze costul. Casierul închide mesajul
+cu **Ok** și continuă comanda cu celelalte produse.
 
 ![Ecranul de vânzare al casei, comanda 1001: produsele Marfă fără cost și Marfă cu cost, coșul gol în stânga și dialogul Product without cost: Marfă fără cost has no cost, so its sale would leave the stock with no value. Ask the manager to set the cost of the product, cu butonul Ok](../static/description/01_pos_produs_fara_cost.png)
 
@@ -75,7 +78,9 @@ Responsabilul completează **Cost** pe produs (**Inventar → Produse → Produs
 
 Ce nu se blochează:
 
-- **retururile** (rambursările) și liniile cu cantitate negativă;
+- **retururile** (rambursările) și liniile cu cantitate negativă: un retur al unui produs fără cost
+  reintră în stoc la valoare zero și apare în listele *Stock Valued at Zero* / *Moves Valued at Zero*
+  ale modulului de bază;
 - produsele **consumabile** și **serviciile**;
 - un produs cu mai multe variante ales din configuratorul de variante: varianta se alege după
   verificare, deci nu e oprită; dacă nu are cost, apare în listele de control ale modulului de bază.
@@ -111,6 +116,8 @@ urmărirea variantelor alese din configurator în listele de control.
 - [ ] Un produs stocabil cu cost se adaugă normal.
 - [ ] Cu bifa oprită (și casa reîncărcată), produsul fără cost se adaugă normal.
 - [ ] O rambursare a unui produs fără cost nu e blocată.
+- [ ] O variantă fără cost scanată după cod de bare e oprită; aceeași variantă aleasă din
+      configurator intră în coș și apare în *Storable Products without Cost*.
 - [ ] Un produs consumabil sau un serviciu fără cost nu e blocat.
 - [ ] O comandă POS deja plătită se sincronizează și se închide sesiunea fără eroarea modulului de
       bază.
