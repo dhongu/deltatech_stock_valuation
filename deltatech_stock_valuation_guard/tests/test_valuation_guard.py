@@ -27,7 +27,7 @@ class TestValuationGuard(TransactionCase):
             {
                 "product_id": self.product.id,
                 "product_uom_qty": qty,
-                "product_uom": self.product.uom_id.id,
+                "uom_id": self.product.uom_id.id,
                 "location_id": src.id,
                 "location_dest_id": dest.id,
             }
@@ -63,7 +63,7 @@ class TestValuationGuard(TransactionCase):
         attachment = self.env["ir.attachment"].search(
             [("res_model", "=", "res.company"), ("res_id", "=", self.company.id), ("name", "like", "valuation_guard")]
         )
-        snapshot = json.loads(attachment.raw)
+        snapshot = json.loads(attachment.raw.content)
         self.assertEqual(snapshot["standard_price"][str(product.id)], 7.0)
         self.assertEqual(snapshot["categories"][str(categ.id)][1], "standard")
 

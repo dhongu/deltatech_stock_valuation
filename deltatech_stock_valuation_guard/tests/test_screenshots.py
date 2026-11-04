@@ -11,7 +11,7 @@
 # și o recepție pregătită (nevalidată) a produsului fără cost, refuzată la validare.
 #
 # Rulare:
-#   ./odoo/odoo-bin -c odoo.conf -d test19 -i l10n_ro,deltatech_stock_valuation_guard,deltatech_doc_screenshots \
+#   ./odoo/odoo-bin -c odoo.conf -d test20 -i l10n_ro,deltatech_stock_valuation_guard,deltatech_doc_screenshots \
 #       --test-tags=fise_screenshots --stop-after-init --http-port=8170
 import unittest
 
@@ -90,7 +90,7 @@ class TestValuationGuardScreenshots(AccountTestInvoicingCommon, ScreenshotCase o
                         {
                             "product_id": product.id,
                             "product_uom_qty": qty,
-                            "product_uom": product.uom_id.id,
+                            "uom_id": product.uom_id.id,
                             "origin": origin,
                             "location_id": picking_type.default_location_src_id.id,
                             "location_dest_id": picking_type.default_location_dest_id.id,

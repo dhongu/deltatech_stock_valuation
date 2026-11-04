@@ -312,7 +312,7 @@ Capturile sunt **generate automat** din `tests/test_screenshots.py` (mixinul `Sc
 Regenerare:
 
 ```bash
-./odoo/odoo-bin -c odoo.conf -d test19 -i l10n_ro,deltatech_stock_valuation_guard,deltatech_doc_screenshots \
+./odoo/odoo-bin -c odoo.conf -d test20 -i l10n_ro,deltatech_stock_valuation_guard,deltatech_doc_screenshots \
     --test-tags=fise_screenshots --stop-after-init --http-port=8170
 ```
 

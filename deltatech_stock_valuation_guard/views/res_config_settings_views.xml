@@ -26,7 +26,7 @@
                             type="object"
                             string="Align the categories"
                             class="btn-link"
-                            icon="oi-arrow-right"
+                            icon="east"
                             confirm="Every product category will take the cost method and the valuation of the company. Odoo recomputes the cost of the products of the changed categories; the current costs are saved in an attachment on the company first. Try it on a test database first. Continue?"
                         />
                     </div>
