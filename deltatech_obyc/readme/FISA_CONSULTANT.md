@@ -122,6 +122,11 @@ achiziție); la o factură fără comandă se folosește aria companiei. Creați
 **Recepție stoc de la furnizor** pentru fiecare arie din care se livrează sau se recepționează,
 plus pentru aria companiei; altfel factura se oprește cu mesajul „Nu s-a găsit nicio regulă…".
 
+**Serviciile și consumabilele** (produse fără stoc) nu cer arie de evaluare. Dacă moștenesc o
+clasă de evaluare din categorie și factura nu are arie, se folosește regula clasei **fără arie**.
+Dacă nu există o asemenea regulă, linia primește contul de venit sau de cheltuială al produsului
+ori al categoriei (de exemplu 704 / 628), iar factura nu se mai oprește.
+
 *Costul de achiziție (landed cost)*: Dr **Cont de evaluare** al regulii **Costuri Adiționale
 Stoc** / Cr contul completat pe linia de cost (**Contul liniei de cost**); Contul sursă și Contul
 destinație nu se folosesc. Contul liniei de cost trebuie să fie contul pe care s-a înregistrat
