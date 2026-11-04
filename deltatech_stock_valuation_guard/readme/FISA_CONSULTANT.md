@@ -88,11 +88,10 @@ care Odoo o dă mișcărilor de stoc și, prin ea, în notele de stoc create de 
 | Cont | Rol |
 |---|---|
 | 371 Mărfuri | contul de stoc al categoriei: o intrare la zero nu îl debitează, o ieșire la cost zero nu îl creditează |
-| 607 Cheltuieli privind mărfurile | costul mărfurilor vândute: iese subevaluat la vânzarea stocului intrat la zero |
+| 607 Cheltuieli privind mărfurile | costul mărfurilor vândute: iese subevaluat la vânzarea stocului intrat la zero; și contrapartida diferenței postate de închiderea stocului (371 nu are cont de variație în `l10n_ro`) |
 | 401 Furnizori | contrapartida facturii de achiziție (în Odoo 19, cu evaluare perpetuă, recepția nu postează nota Dr 371 / Cr 408 a recepției fără factură) |
 | 758 Alte venituri din exploatare | bunurile primite cu reducere comercială integrală, la valoarea justă (pct. 76 alin. 1^1); donațiile de stocuri pe 7582 |
 | 1173 Rezultatul reportat provenit din modificările politicilor contabile | efectul alinierii asupra exercițiilor precedente (pct. 63 alin. 1) |
-| 607 (rezervă la închiderea stocului) | contul pe care închiderea stocului din Odoo trece diferența dintre valoarea stocului și soldul 371: 371 nu are cont de variație în `l10n_ro`, deci se folosește contul de cheltuieli 607 |
 
 Datele minime pentru demo (sunt și cele din capturi):
 
@@ -159,7 +158,7 @@ Alinierea **nu creează notă contabilă**. După aliniere, contabilul compară 
 Stoc** (coloana **Valoare totală**; în Enterprise și raportul de evaluare a stocului din
 Contabilitate) cu soldul contului 371 din balanță și decide înregistrarea diferenței
 (vezi „Note de monografie"). Nota manuală se face **înaintea primei închideri de stoc** din Odoo:
-altfel închiderea trece diferența pe contul de variație al contului de stoc (607 la 371 în `l10n_ro`).
+altfel închiderea trece diferența pe contul de cheltuieli implicit al companiei (607 în `l10n_ro`), pentru că 371 nu are cont de variație.
 
 Dacă toate categoriile sunt deja aliniate, butonul răspunde cu mesajul *Every product category
 already uses the cost method of the company* și nu schimbă nimic.
@@ -230,6 +229,8 @@ vânzările următoare îl vor scoate la cost zero.
    **Valoare totală**. Ajustarea **nu postează notă**: la închiderea stocului, diferența trece pe
    607 (Dr 371 / Cr 607). Dacă tratamentul corect e altul — 1174 pentru o eroare din exercițiul
    precedent, 758 / 7582 pentru un bun primit gratuit — faceți nota manuală **înaintea închiderii**.
+   Dacă intrarea e o recepție care încă așteaptă factura furnizorului, nu ajustați valoarea:
+   factura dă valoarea mișcării, iar rândul iese singur din listă.
    Rândul iese din listă când mișcarea de intrare are valoare sau când cantitatea ei a ieșit
    integral din stoc.
 
@@ -289,8 +290,8 @@ stocului; modulul nu înregistrează diferența. Contabilul o înregistrează ma
 - prezentarea în notele explicative (pct. 64 alin. 2, pct. 287 alin. 1).
 
 Nota se face **înaintea primei închideri de stoc** din Odoo după aliniere: închiderea postează
-automat diferența dintre valoarea stocului și soldul contului de stoc pe contul de variație — la 371
-în `l10n_ro`, contul de cheltuieli 607 — nu pe 1173.
+automat diferența dintre valoarea stocului și soldul contului de stoc pe contul de cheltuieli
+implicit al companiei (607 în `l10n_ro`, pentru că 371 nu are cont de variație), nu pe 1173.
 
 ## 7. Legături cu alte module / declarații
 
