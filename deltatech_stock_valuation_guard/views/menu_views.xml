@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <menuitem
+        id="menu_valuation_guard"
+        name="Valuation Control"
+        parent="stock.menu_warehouse_report"
+        sequence="200"
+        groups="stock.group_stock_manager"
+    />
+    <menuitem
+        id="menu_misaligned_categories"
+        action="action_misaligned_categories"
+        parent="menu_valuation_guard"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_products_without_cost"
+        action="action_products_without_cost"
+        parent="menu_valuation_guard"
+        sequence="20"
+    />
+    <menuitem id="menu_zero_valued_stock" action="action_zero_valued_stock" parent="menu_valuation_guard" sequence="30" />
+    <menuitem id="menu_zero_valued_moves" action="action_zero_valued_moves" parent="menu_valuation_guard" sequence="40" />
+</odoo>
