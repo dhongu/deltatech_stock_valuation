@@ -98,8 +98,10 @@ Point of Sale</em>, which stops the product at the cart instead.</p>
 <div class="tab-pane fade py-2" id="tb-panel-usage" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Usage</h2>
 <ol>
-<li>Go to <em>Inventory &gt; Configuration &gt; Settings</em>, section <em>Valuation</em>. Tick <em>One Cost Method</em>
-   and <em>Block Unvalued Moves</em>, check the <em>Cost Method</em> and <em>Valuation</em> of the company and save.</li>
+<li>Go to <em>Inventory &gt; Configuration &gt; Settings</em>, section <em>Valuation</em>. Tick <em>One Cost Method</em>,
+   check the <em>Cost Method</em> and <em>Valuation</em> of the company and save. Tick <em>Block Unvalued
+   Moves</em> only after step 3, once the products you sell have a cost (the screenshot shows
+   both ticked).</li>
 </ol>
 <p><img class="img-fluid d-block" style="max-width:100%;height:auto;" alt="Inventory settings, Valuation section: One Cost Method with the Cost Method, the Valuation and the Align the categories button, and Block Unvalued Moves, both ticked" src="en/01_setari_valuation_guard.png" /></p>
 <ol start="2">
@@ -109,7 +111,7 @@ Point of Sale</em>, which stops the product at the cart instead.</p>
 </ol>
 <p><img class="img-fluid d-block" style="max-width:100%;height:auto;" alt="Confirmation of Align the categories, warning that the costs are recomputed and saved first" src="en/02_confirmare_aliniere.png" /></p>
 <ol start="3">
-<li>Before switching the blocking on, open <em>Inventory &gt; Reporting &gt; Valuation Control</em>:
+<li>Before ticking <em>Block Unvalued Moves</em>, open <em>Inventory &gt; Reporting &gt; Valuation Control</em>:
    <em>Categories with Another Cost Method</em> must be empty after the alignment, and in
    <em>Storable Products without Cost</em> set the cost of the products you still sell.</li>
 </ol>
@@ -135,6 +137,10 @@ Point of Sale</em>, which stops the product at the cart instead.</p>
 </div>
 <div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Versions</h2>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">20.0.1.0.3 (2026-11-04)</h2>
+<ul>
+<li>Consultant sheet reviewed (from 19.0.1.0.3): bookkeeping mechanics, steps order, screenshots.</li>
+</ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">20.0.1.0.2 (2026-11-04)</h2>
 <ul>
 <li>Migration to Odoo 20: the tests use <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">uom_id</code> on stock moves and read the attachment

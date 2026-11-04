@@ -78,7 +78,7 @@ class TestValuationGuardScreenshots(AccountTestInvoicingCommon, ScreenshotCase o
                         {
                             "product_id": cls.product_zero.id,
                             "product_uom_qty": 2.0,
-                            "product_uom": cls.product_zero.uom_id.id,
+                            "uom_id": cls.product_zero.uom_id.id,
                             "origin": "Vânzare la cost zero",
                             "location_id": out_type.default_location_src_id.id,
                             "location_dest_id": out_type.default_location_dest_id.id,
