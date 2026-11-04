@@ -3,13 +3,13 @@
 
 {
     "name": "Stock Valuation Guard - Point of Sale",
-    "version": "19.0.1.0.2",
+    "version": "20.0.1.0.2",
     "images": ["static/description/main_screenshot.png"],
     "summary": "Stop products without cost at the POS cart, before the receipt is printed",
     "category": "Valuation/Valuation",
     "author": "Terrabit, Dorin Hongu",
     "website": "https://www.terrabit.ro",
-    "depends": ["deltatech_stock_valuation_guard", "point_of_sale"],
+    "depends": ["deltatech_stock_valuation_guard", "pos_stock"],
     "assets": {
         "point_of_sale._assets_pos": [
             "deltatech_stock_valuation_guard_pos/static/src/js/pos_store.esm.js",

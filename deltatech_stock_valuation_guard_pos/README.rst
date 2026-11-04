@@ -14,13 +14,13 @@ Stock Valuation Guard - Point of Sale
     :target: https://odoo-community.org/page/development-status
     :alt: Beta
 .. |badge2| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github
-    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_stock_valuation_guard_pos
+    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_stock_valuation_guard_pos
     :alt: dhongu/deltatech_stock_valuation
-.. |badge_tests| image:: https://img.shields.io/badge/-3%20automated%20tests%20%C2%B7%20100%25%20code%20coverage-2ea44f.png
-    :target: https://app.codecov.io/gh/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_stock_valuation_guard_pos
-    :alt: 3 automated tests · 100% code coverage
+.. |badge_fisa| image:: https://img.shields.io/badge/-Fi%C8%99%C4%83%20consultant-2ea44f.png
+    :target: https://github.com/dhongu/deltatech_stock_valuation/blob/20.0/deltatech_stock_valuation_guard_pos/readme/FISA_CONSULTANT.md
+    :alt: Fișă consultant
 
-|badge1| |badge2| |badge_tests|
+|badge1| |badge2| |badge_fisa|
 
 Point of Sale side of *Stock Valuation Guard*.
 
@@ -48,8 +48,41 @@ The module is installed automatically with *Stock Valuation Guard* and
 .. contents::
    :local:
 
+Usage
+=====
+
+1. Tick *Block Unvalued Moves* in *Inventory > Configuration >
+   Settings*, section *Valuation* (module *Stock Valuation Guard*).
+   Registers opened before need a reload.
+
+2. In the register, a storable product without cost cannot be added to
+   the order: the register shows *Product without cost* and the cart
+   stays as it was. Ask the manager to set the cost of the product, then
+   reload the register.
+
+   |The register with the Product without cost message over the product
+   list|
+
+Refunds, consumables and services are not blocked. A variant chosen in
+the variant configurator is not checked; it shows up in the control
+lists of *Stock Valuation Guard*.
+
+.. |The register with the Product without cost message over the product list| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_stock_valuation_guard_pos/static/description/en/01_pos_produs_fara_cost.png
+
 Changelog
 =========
+
+19.0.1.0.2 (2026-11-04)
+-----------------------
+
+- Consultant sheet (``readme/FISA_CONSULTANT.md``), usage notes and
+  screenshot.
+
+19.0.1.0.1 (2026-10-23)
+-----------------------
+
+- Main image for the Odoo Apps Store (banner); the manifest points to it
+  in ``images``.
 
 19.0.1.0.0 (2026-10-21)
 -----------------------
@@ -85,6 +118,6 @@ Current maintainer:
 
 |maintainer-dhongu| 
 
-This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_stock_valuation_guard_pos>`_ project on GitHub.
+This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_stock_valuation_guard_pos>`_ project on GitHub.
 
 You are welcome to contribute.

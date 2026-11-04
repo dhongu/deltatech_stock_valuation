@@ -10,7 +10,7 @@
 # casier când adaugă în coș produsul fără cost.
 #
 # Rulare:
-#   ./odoo/odoo-bin -c odoo.conf -d test19 -i l10n_ro,deltatech_stock_valuation_guard_pos,deltatech_doc_screenshots \
+#   ./odoo/odoo-bin -c odoo.conf -d test20 -i l10n_ro,deltatech_stock_valuation_guard_pos,deltatech_doc_screenshots \
 #       --test-tags=fise_screenshots --stop-after-init --http-port=8170
 import unittest
 

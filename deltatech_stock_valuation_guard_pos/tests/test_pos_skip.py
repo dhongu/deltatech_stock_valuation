@@ -14,7 +14,7 @@ class TestValuationGuardPosSkip(TransactionCase):
             {
                 "product_id": product.id,
                 "product_uom_qty": 1.0,
-                "product_uom": product.uom_id.id,
+                "uom_id": product.uom_id.id,
                 "location_id": stock.id,
                 "location_dest_id": self.env.ref("stock.stock_location_customers").id,
             }
