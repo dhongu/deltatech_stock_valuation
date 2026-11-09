@@ -1,9 +1,9 @@
 {
   "addons": {
     "deltatech_obyc": {
-      "coverage": 90.9,
-      "lines": 372,
-      "tests": 58
+      "coverage": 91.0,
+      "lines": 389,
+      "tests": 63
     },
     "deltatech_stock_valuation": {
       "coverage": 84.0,
@@ -13,21 +13,21 @@
     "deltatech_stock_valuation_guard": {
       "coverage": 95.8,
       "lines": 120,
-      "tests": 12
+      "tests": 15
     },
     "deltatech_stock_valuation_guard_pos": {
       "coverage": 100.0,
       "lines": 14,
-      "tests": 3
+      "tests": 5
     },
     "deltatech_valuation_area": {
       "coverage": 88.2,
       "lines": 153,
-      "tests": 23
+      "tests": 25
     }
   },
   "branch": "19.0",
-  "commit": "a3a2fc9dc933f1317f71ff76bb5d0a0ba4eaff39",
-  "generated": "2026-10-24",
+  "commit": "1aae95db9e2d33252ed45ced19a8dd5a127f5523",
+  "generated": "2026-11-09",
   "source": "codecov:dhongu/deltatech_stock_valuation"
 }

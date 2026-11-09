@@ -14,11 +14,11 @@
       </div>
     </div>
     <div class="flex-shrink-0 rounded-3 px-3 py-3 my-2" style="width:240px;background-color:#00432a;">
-      <div class="fw-semibold" style="font-size:15px;color:#ffffff;">&#10003; 58 automated tests</div>
+      <div class="fw-semibold" style="font-size:15px;color:#ffffff;">&#10003; 63 automated tests</div>
       <div class="rounded-pill mt-2" style="height:8px;background-color:#2a6b4d;overflow:hidden;">
-        <div class="rounded-pill" style="height:8px;width:90%;background-color:#57B952;"></div>
+        <div class="rounded-pill" style="height:8px;width:91%;background-color:#57B952;"></div>
       </div>
-      <div class="mt-1" style="font-size:13px;color:#cdeccf;">90% code coverage</div>
+      <div class="mt-1" style="font-size:13px;color:#cdeccf;">91% code coverage</div>
     </div>
   </div>
 </div>
@@ -613,6 +613,10 @@ entry Dr 371.02 / Cr 371.09</li>
 </div>
 <div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Versions</h2>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.19 (2026-11-04)</h2>
+<ul>
+<li>Fix: on a company with valuation areas enabled and no default area, an invoice for a service or consumable from a category with a valuation class failed with "Valuation area is not defined". Only storable products require a valuation area now. For a non-storable product without an area, the OBYC rule without an area is used when one exists; otherwise the line gets the standard income or expense account of the product or its category. Storable products are not affected.</li>
+</ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.18 (2026-10-16)</h2>
 <ul>
 <li>Account determination rules, valuation classes and account modifiers are maintained by
@@ -667,11 +671,6 @@ entry Dr 371.02 / Cr 371.09</li>
 <li>New: the valuation class of a category is inherited. If a product has no class of its own
   and its category has none either, the class of the nearest parent category that has one
   is used.</li>
-</ul>
-<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.8 (2026-10-02)</h2>
-<ul>
-<li>New: valuation class on the product category. A product without its own valuation class
-  uses the class of its category; the class set on the product still takes priority.</li>
 </ul>
 <p><em>Older releases are listed in the module's HISTORY file.</em></p>
 </div>
