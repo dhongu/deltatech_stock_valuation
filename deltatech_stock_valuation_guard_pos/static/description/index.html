@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="flex-shrink-0 rounded-3 px-3 py-3 my-2" style="width:240px;background-color:#00432a;">
-      <div class="fw-semibold" style="font-size:15px;color:#ffffff;">&#10003; 3 automated tests</div>
+      <div class="fw-semibold" style="font-size:15px;color:#ffffff;">&#10003; 5 automated tests</div>
       <div class="rounded-pill mt-2" style="height:8px;background-color:#2a6b4d;overflow:hidden;">
         <div class="rounded-pill" style="height:8px;width:100%;background-color:#57B952;"></div>
       </div>
@@ -38,6 +38,11 @@
        style="padding:10px 22px;">Overview</a>
   </li>
   <li class="nav-item mx-1 mb-2">
+    <a class="nav-link fw-semibold rounded-pill border" id="tb-tab-usage"
+       data-bs-toggle="pill" data-bs-target="#tb-panel-usage" href="#tb-panel-usage"
+       style="padding:10px 22px;">Usage</a>
+  </li>
+  <li class="nav-item mx-1 mb-2">
     <a class="nav-link fw-semibold rounded-pill border" id="tb-tab-versions"
        data-bs-toggle="pill" data-bs-target="#tb-panel-versions" href="#tb-panel-versions"
        style="padding:10px 22px;">Versions</a>
@@ -58,8 +63,29 @@ directly (scan, variant card); when the variant is chosen in the configurator, t
 product shows up in the control lists of <em>Stock Valuation Guard</em> instead.</p>
 <p>The module is installed automatically with <em>Stock Valuation Guard</em> and <em>Point of Sale</em>.</p>
 </div>
+<div class="tab-pane fade py-2" id="tb-panel-usage" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
+<h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Usage</h2>
+<ol>
+<li>Tick <em>Block Unvalued Moves</em> in <em>Inventory &gt; Configuration &gt; Settings</em>, section
+   <em>Valuation</em> (module <em>Stock Valuation Guard</em>). Registers opened before need a reload.</li>
+<li>In the register, a storable product without cost cannot be added to the order: the
+   register shows <em>Product without cost</em> and the cart stays as it was. Ask the manager to
+   set the cost of the product, then reload the register.</li>
+</ol>
+<p><img class="img-fluid d-block" style="max-width:100%;height:auto;" alt="The register with the Product without cost message over the product list" src="en/01_pos_produs_fara_cost.png" /></p>
+<p>Refunds, consumables and services are not blocked. A variant chosen in the variant
+configurator is not checked; it shows up in the control lists of <em>Stock Valuation Guard</em>.</p>
+</div>
 <div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <h2 class="fw-bold mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">Versions</h2>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.3 (2026-11-04)</h2>
+<ul>
+<li>Consultant sheet reviewed: Odoo 19 bookkeeping mechanics, steps order, screenshots.</li>
+</ul>
+<h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.2 (2026-11-04)</h2>
+<ul>
+<li>Consultant sheet (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/FISA_CONSULTANT.md</code>), usage notes and screenshot.</li>
+</ul>
 <h2 class="fw-bold mt-4 mb-3" style="border:none;border-left:4px solid #57B952;padding-left:16px;font-size:24px;letter-spacing:-0.3px;line-height:1.2;">19.0.1.0.1 (2026-10-23)</h2>
 <ul>
 <li>Main image for the Odoo Apps Store (banner); the manifest points to it in <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">images</code>.</li>

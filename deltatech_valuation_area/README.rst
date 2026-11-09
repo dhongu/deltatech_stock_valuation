@@ -19,9 +19,9 @@ Stock Valuation Area
 .. |badge_fisa| image:: https://img.shields.io/badge/-Fi%C8%99%C4%83%20consultant-2ea44f.png
     :target: https://github.com/dhongu/deltatech_stock_valuation/blob/19.0/deltatech_valuation_area/readme/FISA_CONSULTANT.md
     :alt: Fișă consultant
-.. |badge_tests| image:: https://img.shields.io/badge/-23%20automated%20tests%20%C2%B7%2088%25%20code%20coverage-2ea44f.png
+.. |badge_tests| image:: https://img.shields.io/badge/-25%20automated%20tests%20%C2%B7%2088%25%20code%20coverage-2ea44f.png
     :target: https://app.codecov.io/gh/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_valuation_area
-    :alt: 23 automated tests · 88% code coverage
+    :alt: 25 automated tests · 88% code coverage
 
 |badge1| |badge2| |badge_fisa| |badge_tests|
 
@@ -144,6 +144,14 @@ Dependențe
 
 Changelog
 =========
+
+19.0.1.0.7 (2026-11-04)
+-----------------------
+
+- Fix: the valuation area is computed on invoice lines only for storable
+  products. Lines with services or consumables no longer get an area and
+  no longer raise "Valuation area is not defined" when the company has
+  no default area (VA-006).
 
 19.0.1.0.6 (2026-10-10)
 -----------------------
