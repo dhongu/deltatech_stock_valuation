@@ -600,6 +600,7 @@ Observații:
 - [ ] costul de achiziție: Dr 371 / Cr contul liniei de cost; contul liniei de cost este contul facturii de transport (408), care se stinge; produsul de transport nu are ca cont de cheltuială 624
 - [ ] costul de achiziție este pe jurnalul ales în document; recepția avea toată marfa în stoc sau partea livrată a fost tratată manual
 - [ ] livrarea directă furnizor → client are notă cu valoare (nu 0) și nu modifică stocul propriu
+- [ ] transferul între arii prin tranzit: notele *Ieșire transfer intern* și *Intrare transfer intern* au valoare, nu 0 (plecare la costul curent, sosire la valoarea ieșirii), iar 371.09 se stinge (Pasul 8b)
 - [ ] liniile notelor de stoc au produs, cantitate semnată (pozitivă pe debit, negativă pe credit) și unitate de măsură
 - [ ] la ajustările de inventar, plusul folosește regula **Ajustare inventar plus** și lipsa regula **Ajustare inventar minus**; la bazele actualizate de la o versiune anterioară 19.0.1.0.6, regulile au fost verificate (OBYC-005); imputarea și TVA-ul lipsurilor sunt înregistrate manual
 - [ ] **lunar:** soldul 371 (301, 345) = raportul de evaluare a stocului pe arie, la aceeași dată
