@@ -150,3 +150,83 @@ class TestLandedCostRouting(TestCommon):
         """The intermediary account cannot be a class 6 account (it would be on both debit and credit)."""
         with self.assertRaises(ValidationError):
             self.env.company.landed_cost_intermediary_account_id = self.account_624
+
+    # ---- costul adițional creat din factura de furnizor ---------------------------------
+    def _purchase_receipt(self, vendor):
+        po = self.env["purchase.order"].create(
+            {
+                "partner_id": vendor.id,
+                "order_line": [
+                    Command.create({"product_id": self.product.id, "product_qty": 10.0, "price_unit": 100.0})
+                ],
+            }
+        )
+        po.button_confirm()
+        picking = po.picking_ids
+        picking.move_ids._set_quantity_done(10.0)
+        picking.with_context(demo_mode=True).button_validate()
+        return po, picking
+
+    def _vendor_bill(self, vendor, orders):
+        lines = [
+            Command.create(
+                {
+                    "product_id": self.product.id,
+                    "quantity": 10.0,
+                    "price_unit": 100.0,
+                    "purchase_line_id": po.order_line.id,
+                    "account_id": self.account_408.id,
+                }
+            )
+            for po in orders
+        ]
+        lines.append(
+            Command.create(
+                {
+                    "product_id": self.cost_product.id,
+                    "quantity": 1.0,
+                    "price_unit": 50.0,
+                    "account_id": self.account_624.id,
+                    "is_landed_costs_line": True,
+                }
+            )
+        )
+        bill = self.env["account.move"].create(
+            {
+                "move_type": "in_invoice",
+                "partner_id": vendor.id,
+                "invoice_date": "2026-11-11",
+                "invoice_line_ids": lines,
+            }
+        )
+        bill.action_post()
+        return bill
+
+    def _vendor(self):
+        payable = self.env["account.account"].create(
+            {"name": "Payable LC", "code": "TLC401", "account_type": "liability_payable", "reconcile": True}
+        )
+        return self.env["res.partner"].create({"name": "Vendor LC", "property_account_payable_id": payable.id})
+
+    def test_09_bill_button_fills_receipts_and_accounts(self):
+        """The landed cost created from a bill takes the receipts of its purchase orders that are
+        not covered by a validated landed cost, and the account of the matching bill line."""
+        vendor = self._vendor()
+        po1, picking1 = self._purchase_receipt(vendor)
+        po2, picking2 = self._purchase_receipt(vendor)
+        self._landed_cost(picking1, self.account_624)  # picking1 already covered
+        bill = self._vendor_bill(vendor, po1 | po2)
+        action = bill.button_create_landed_costs()
+        landed = self.env["stock.landed.cost"].browse(action["res_id"])
+        self.assertEqual(landed.picking_ids, picking2)
+        self.assertEqual(landed.cost_lines.account_id, self.account_624)
+        self.assertEqual(landed.cost_lines.price_unit, 50.0)
+
+    def test_10_bill_without_purchase_order(self):
+        """A bill without purchase order creates an empty landed cost; the cost line keeps the
+        account of the bill line."""
+        vendor = self._vendor()
+        bill = self._vendor_bill(vendor, self.env["purchase.order"])
+        landed = self.env["stock.landed.cost"].browse(bill.button_create_landed_costs()["res_id"])
+        self.assertFalse(landed.picking_ids)
+        self.assertEqual(landed.cost_lines.account_id, self.account_624)

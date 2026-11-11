@@ -14,6 +14,8 @@
    The same document can be created from a vendor bill: the receipts of the bill's purchase orders
    not yet covered by another landed cost and the account of each bill line are filled in.
 
+![Vendor bill with the Create Landed Costs button](static/description/en/05_vendor_bill_button.png)
+
 ![Validated landed cost](static/description/en/02_landed_cost_form.png)
 
 2. Open the journal entry. With the standard method it is Dr stock / Cr 624:

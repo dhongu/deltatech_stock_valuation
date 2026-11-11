@@ -57,7 +57,7 @@ evaluare și cost mediu sau FIFO, produs de serviciu cu **Este cost adițional**
 
 ## 5. Configurare inițială
 
-1. *Inventar → Configurare → Setări*, blocul **Evaluare**: **Metoda pentru creditul clasei 6** =
+1. *Inventar → Configurare → Setări*, blocul **Evaluare**: **Metoda pentru creditul clasei 6 la costuri adiționale** =
    *Prin cont intermediar*; apare **Cont intermediar** (obligatoriu).
 2. Regula OBYC **Costuri Adiționale Stoc** cu **Contul de evaluare** completat (fișa `deltatech_obyc`,
    Pasul 10).
@@ -72,7 +72,7 @@ Metoda *Standard* (implicită) păstrează comportamentul Odoo: Dr 371 / Cr 6xx.
 
 *Inventar → Configurare → Setări*, blocul **Evaluare**.
 
-1. **Găsiți pe ecran:** **Metoda pentru creditul clasei 6** și **Cont intermediar** (vizibil doar la
+1. **Găsiți pe ecran:** **Metoda pentru creditul clasei 6 la costuri adiționale** și **Cont intermediar** (vizibil doar la
    metoda *Prin cont intermediar*).
 2. **Completați:** metoda *Prin cont intermediar* și contul tehnic ales de firmă (aici 473900).
 3. **Verificați:** setarea se salvează cu **Salvează**; fără cont, câmpul e obligatoriu.
@@ -110,14 +110,19 @@ Același cost, cu metoda *Prin cont intermediar*: o notă cu patru linii.
 
 ### Pasul 5 — Costul adițional creat din factura de furnizor
 
-Factura transportatorului se înregistrează Dr 624 (50,00) + Dr 4426 (10,50, TVA 21%) / Cr 401 (60,50).
-Pe factura postată, butonul **Creați costuri adiționale** creează documentul și îl completează:
+*Contabilitate → Furnizori → Facturi*: factura transportatorului, postată, cu linia de transport
+(produs „Este cost adițional”) de 50,00 lei pe 624000. Nota facturii: Dr 624 (50,00) + Dr 4426 (10,50,
+TVA 21%) / Cr 401 (60,50).
 
-- **recepțiile** comenzilor de achiziție de pe factură, terminate și neacoperite de un alt cost
-  adițional validat (un al doilea cost, de exemplu vama, nu va găsi recepția: se adaugă manual);
-- **contul** fiecărei linii de cost, luat din linia facturii.
+1. **Găsiți pe ecran:** butonul **Creați costuri adiționale** din antetul facturii (apare doar când
+   factura are linii de cost adițional).
+2. **Apăsați** butonul: se deschide documentul de costuri adiționale, completat cu **recepțiile**
+   comenzilor de achiziție de pe factură (terminate, neacoperite de un alt cost adițional validat) și
+   cu **contul** fiecărei linii de cost, luat din linia facturii cu același produs.
+3. **Verificați:** recepțiile și contul 624000; un al doilea cost (de exemplu vama) nu găsește
+   recepția, deci se adaugă manual. Apoi **Calculează** și **Validează**, ca la Pasul 2.
 
-Documentul se validează ca la Pasul 2.
+![Factura transportatorului postată, cu butonul Creați costuri adiționale evidențiat](../static/description/05_vendor_bill_button.png)
 
 ### Note de monografie
 
@@ -144,6 +149,9 @@ Nu se rutează: clasa 609, conturile din afara clasei 6, debitul unui cost negat
 - Soldul contului intermediar este 0 după fiecare cost adițional.
 - Valoarea recepției crește cu suma costului (1.000 → 1.050 lei în exemplu).
 - Nota e pe jurnalul din document, în aria produsului.
+- Costul creat din factură: recepțiile comenzilor de achiziție terminate și neacoperite sunt completate,
+  iar contul fiecărei linii este cel din linia facturii cu același produs (o linie de cost fără linie
+  de factură cu același produs rămâne cu contul produsului de transport).
 - Partea de marfă deja vândută nu se capitalizează: rămâne pe 624 și se tratează conform politicii
   de evaluare a firmei.
 
@@ -164,6 +172,7 @@ Nu se rutează: clasa 609, conturile din afara clasei 6, debitul unui cost negat
 | `02_landed_cost_form.png` | Costul adițional validat |
 | `03_note_standard.png` | Nota Dr 371 / Cr 624 |
 | `04_note_intermediary.png` | Nota prin cont intermediar |
+| `05_vendor_bill_button.png` | Factura transportatorului cu butonul Creați costuri adiționale |
 
 ## 11. Observații pentru manual
 
