@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <menuitem
+        id="menu_stock_reclassification"
+        name="Reclassifications"
+        parent="stock.menu_stock_warehouse_mgmt"
+        action="action_stock_reclassification"
+        groups="group_stock_reclassification_user"
+        sequence="5"
+    />
+    <menuitem
+        id="menu_stock_reclassification_rule"
+        name="Reclassification Rules"
+        parent="stock.menu_stock_warehouse_mgmt"
+        action="action_stock_reclassification_rule"
+        groups="group_stock_reclassification_manager"
+        sequence="6"
+    />
+</odoo>
