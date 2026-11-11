@@ -22,8 +22,10 @@ class AccountMove(models.Model):
             .picking_ids
         )
         landed_cost.picking_ids = pickings.filtered(lambda picking: picking not in covered and picking.state == "done")
-        for line in landed_cost.cost_lines:
-            bill_line = self.line_ids.filtered(lambda aml, product=line.product_id: aml.product_id == product)
-            if bill_line:
-                line.account_id = bill_line[0].account_id
+        # the cost lines mirror the bill lines flagged as landed costs, in the same order:
+        # pair them one to one, so two lines of the same product keep their own account
+        bill_lines = self.line_ids.filtered("is_landed_costs_line").sorted("id")
+        for line, bill_line in zip(landed_cost.cost_lines.sorted("id"), bill_lines, strict=False):
+            if line.product_id == bill_line.product_id:
+                line.account_id = bill_line.account_id
         return res

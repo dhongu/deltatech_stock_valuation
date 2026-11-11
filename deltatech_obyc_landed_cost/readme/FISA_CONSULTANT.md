@@ -160,6 +160,7 @@ Nu se rutează: clasa 609, conturile din afara clasei 6, debitul unui cost negat
 | Situație | Cauză | Remediere |
 |---|---|---|
 | Nu apare nicio rutare, deși metoda e *Prin cont intermediar* | Contul intermediar lipsește (date importate sau setate pe altă companie; din Setări câmpul e obligatoriu); se aplică tăcut metoda standard | Completați contul în Setări |
+| `The landed cost intermediary account must not be a class 6 (expense) account` | S-a ales ca intermediar un cont din clasa 6 (ar apărea și pe debit, și pe credit) | Alegeți un cont tehnic din altă clasă (analitic de 473) |
 | Nu se generează nicio notă | Produsul nu are evaluare în timp real sau metoda de cost nu e mediu/FIFO | Categoria produsului: evaluare în timp real, cost mediu sau FIFO |
 | `Please configure Stock Expense Account` | Linia de cost fără cont și produsul de transport fără cont de cheltuială | Completați contul liniei sau al produsului |
 | Costul creat din factură nu are recepții | Recepțiile au deja un cost adițional validat sau nu sunt terminate | Adăugați recepțiile manual |
