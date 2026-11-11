@@ -368,6 +368,10 @@ tranzit către locația gestiunii care primește, și **Validați**-l. Deschide�
    chiar dacă între cele două transferuri costul produsului s-a schimbat. Contul 371.09 se stinge.
    Niciuna dintre note nu trebuie să aibă sume 0.
 
+![Nota de ieșire prin tranzit](screenshots/08b_transit_out_entry.png)
+
+![Nota de intrare prin tranzit](screenshots/08b_transit_in_entry.png)
+
 ### Pasul 9 — Factura de vânzare: doar venit și TVA
 
 *Facturare → Clienți → Facturi* → **Nou(ă)** → client „Client Demo SRL", produsul livrat,
@@ -726,6 +730,8 @@ produs de pe factura de vânzare și de pe cea de furnizor, apoi capturează ecr
 | `11_vendor_bill_408.png` | factura de furnizor: Dr 408 + 4426 / Cr 401, linia de produs pe 408 (OBYC-001) |
 | `07_storno_return.png` | returul la furnizor cu storno: Dr 371 −500 / Cr 408 −500 |
 | `08_delivery_cogs_entry.png` | nota livrării: Dr 607 / Cr 371 (costul la livrare) |
+| `08b_transit_out_entry.png` | nota de ieșire prin tranzit: Dr 371.09 / Cr 371.00, 400,00 lei (4 buc.), pe aria care predă |
+| `08b_transit_in_entry.png` | nota de intrare prin tranzit: Dr 371.02 / Cr 371.09, aceeași valoare, pe aria care primește |
 | `09_sale_invoice_no_cogs.png` | factura de vânzare: Dr 4111 / Cr 707 + 4427, fără linii de cost |
 | `09b_service_invoice_no_area.png` | factura unui serviciu fără arie de evaluare: linia pe 704, contul de venit al categoriei |
 | `10_landed_cost_entry.png` | nota costului de achiziție: Dr 371 / Cr contul liniei de cost |

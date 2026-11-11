@@ -176,6 +176,39 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         #     regulii de recepție, care stinge 408 (OBYC-001): Dr 408 + Dr 4426 / Cr 401
         cls.vendor_bill = cls._make_vendor_bill(qty=10.0, price=100.0)
 
+        # 1c) Transfer între arii prin locația de tranzit (Pasul 8b): ieșire din Magazin central
+        #    către tranzit (Dr 371.09 / Cr 371.00) și intrare în Depozit (Dr 371.02 / Cr 371.09)
+        cls.account_transit = cls._get_or_create_account("371090", "Mărfuri în tranzit între gestiuni")
+        cls.account_valuation2 = cls._get_or_create_account("371020", "Mărfuri - Depozit")
+        cls.valuation_area2 = env["valuation.area"].create(
+            {"name": "Depozit", "code": "DEP", "company_id": company.id, "stock_journal_id": cls.stock_journal.id}
+        )
+        warehouse2 = env["stock.warehouse"].create(
+            {"name": "Depozit secundar", "code": "DEP", "company_id": company.id}
+        )
+        warehouse2.valuation_area_id = cls.valuation_area2
+        for key, area, valuation, src, dest in [
+            ("internal_transfer_out", cls.valuation_area, cls.account_valuation, False, cls.account_transit),
+            ("internal_transfer_in", cls.valuation_area2, cls.account_valuation2, cls.account_transit, False),
+        ]:
+            det.create(
+                {
+                    "transaction_key": key,
+                    "valuation_class_id": cls.valuation_class.id,
+                    "valuation_area_id": area.id,
+                    "company_id": company.id,
+                    "acc_src_id": src and src.id,
+                    "acc_dest_id": dest and dest.id,
+                    "acc_valuation_id": valuation.id,
+                }
+            )
+        transit = company.internal_transit_location_id
+        internal_type = cls.stock_location.warehouse_id.int_type_id
+        cls.transit_out_picking = cls._make_picking(internal_type, cls.stock_location, transit, 4.0, cls.supplier)
+        cls.move_transit_out = cls.transit_out_picking.move_ids.account_move_id[:1]
+        cls.transit_in_picking = cls._make_picking(internal_type, transit, warehouse2.lot_stock_id, 4.0, cls.supplier)
+        cls.move_transit_in = cls.transit_in_picking.move_ids.account_move_id[:1]
+
         # 2) Retur la furnizor cu Storno activ → aceleași conturi, sume negative (roșu)
         cls.move_storno = cls._make_storno_return(cls.receipt_picking, qty=5.0)
 
@@ -229,6 +262,15 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         if not account:
             account = env["account.account"].create({"name": name, "code": code, "account_type": account_type})
         return account
+
+    @classmethod
+    def _get_or_create_account(cls, code, name):
+        account = cls.env["account.account"].search(
+            [("code", "=", code), ("company_ids", "in", [cls.env.company.id])], limit=1
+        )
+        return account or cls.env["account.account"].create(
+            {"name": name, "code": code, "account_type": "asset_current"}
+        )
 
     @classmethod
     def _validate_picking(cls, picking):
@@ -365,6 +407,15 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         self.assertEqual(self._dr_cr(self.move_receipt), [("371", 1000.0, 0.0), ("408", 0.0, 1000.0)])
         self.assertEqual(self._dr_cr(self.move_storno), [("371", -500.0, 0.0), ("408", 0.0, -500.0)])
         self.assertEqual(self._dr_cr(self.move_delivery), [("371", 0.0, 200.0), ("607", 200.0, 0.0)])
+        # transfer prin tranzit (Pasul 8b): aceeași valoare la ieșire și la intrare, 371.09 se stinge
+        self.assertEqual(self._dr_cr(self.move_transit_out), [("371", 0.0, 400.0), ("371", 400.0, 0.0)])
+        self.assertEqual(self._dr_cr(self.move_transit_in), [("371", 0.0, 400.0), ("371", 400.0, 0.0)])
+        transit_balance = sum(
+            (self.move_transit_out | self.move_transit_in)
+            .line_ids.filtered(lambda line: line.account_id == self.account_transit)
+            .mapped("balance")
+        )
+        self.assertEqual(transit_balance, 0.0)
         self.assertFalse(self.invoice.line_ids.filtered(lambda line: line.display_type == "cogs"))
         self.assertEqual(
             [code for code, _dr, _cr in self._dr_cr(self.invoice)], ["411", "442", "707"], self._dr_cr(self.invoice)
@@ -453,6 +504,9 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
             self.account_move_shot(self.move_storno, "07_storno_return.png"),
             # 8. Nota livrării: costul mărfii vândute la livrare (Dr 607 / Cr 371)
             self.account_move_shot(self.move_delivery, "08_delivery_cogs_entry.png"),
+            # 8b. Transferul între arii prin tranzit: nota de ieșire și nota de intrare, cu valoare
+            self.account_move_shot(self.move_transit_out, "08b_transit_out_entry.png"),
+            self.account_move_shot(self.move_transit_in, "08b_transit_in_entry.png"),
             # 9. Factura de vânzare: doar venit + TVA, fără linii de cost
             {
                 **self.account_move_shot(self.invoice, "09_sale_invoice_no_cogs.png"),
