@@ -4,6 +4,7 @@
 # Landed cost on OBYC: standard note and class 6 credit routed through the intermediary account.
 
 from odoo import Command
+from odoo.exceptions import ValidationError
 from odoo.tests import tagged
 
 from odoo.addons.deltatech_obyc.tests.test_common import TestCommon
@@ -144,3 +145,8 @@ class TestLandedCostRouting(TestCommon):
         receipt = self._receipt(10.0)
         self._landed_cost(receipt, self.account_624)
         self.assertAlmostEqual(receipt.move_ids.value, 1050.0)
+
+    def test_08_intermediary_account_not_class_6(self):
+        """The intermediary account cannot be a class 6 account (it would be on both debit and credit)."""
+        with self.assertRaises(ValidationError):
+            self.env.company.landed_cost_intermediary_account_id = self.account_624

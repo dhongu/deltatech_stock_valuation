@@ -4,7 +4,7 @@
 # Capturi pentru fișa consultant a modulului `deltatech_obyc_landed_cost`, pe planul de conturi RO.
 # Seed: companie RO cu arie de evaluare, regulile OBYC `stock_receipt` și `landed_cost`, o recepție
 # de 10 buc. și două costuri de achiziție de 50 lei cu contul liniei 624: unul cu metoda standard
-# (Dr 371 / Cr 624) și unul cu metoda „Prin cont intermediar" (Dr 371 / Cr 624900 + Dr 624900 / Cr 624000).
+# (Dr 371 / Cr 624) și unul cu metoda „Prin cont intermediar" (Dr 371 / Cr 473900 + Dr 473900 / Cr 624000).
 #
 # Rulare:
 #   ./odoo/odoo-bin -c odoo.conf -d test19 -i deltatech_obyc_landed_cost \
@@ -41,7 +41,7 @@ class TestLandedCostScreenshots(AccountTestInvoicingCommon, ScreenshotCase or ob
         cls.account_src = cls._ro_account("408%", "Furnizori - facturi nesosite", "408000", "liability_current")
         cls.account_transport = cls._ro_account("624%", "Cheltuieli cu transportul", "624000", "expense")
         cls.account_inter = env["account.account"].create(
-            {"name": "Transport de repartizat (analitic tehnic)", "code": "624900", "account_type": "expense"}
+            {"name": "Costuri de repartizat (analitic tehnic)", "code": "473900", "account_type": "asset_current"}
         )
         cls.valuation_class = env["product.valuation.class"].create({"name": "Marfă", "code": "MF"})
         cls.stock_journal = env["account.journal"].create(
@@ -180,7 +180,7 @@ class TestLandedCostScreenshots(AccountTestInvoicingCommon, ScreenshotCase or ob
         )
         self.assertEqual(
             self._dr_cr(self.landed_routed.account_move_id),
-            [("371000", 50.0, 0.0), ("624000", 0.0, 50.0), ("624900", 0.0, 50.0), ("624900", 50.0, 0.0)],
+            [("371000", 50.0, 0.0), ("473900", 0.0, 50.0), ("473900", 50.0, 0.0), ("624000", 0.0, 50.0)],
         )
         self.capture_screenshots(self._shots())
 
