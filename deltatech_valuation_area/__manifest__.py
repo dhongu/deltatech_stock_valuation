@@ -20,6 +20,7 @@
     ],
     "depends": ["stock", "account", "stock_account"],
     "license": "OPL-1",
+    "consultant_sheet": "full",
     "images": ["static/description/main_screenshot.png"],
     "development_status": "Beta",
     "maintainers": ["dhongu"],
