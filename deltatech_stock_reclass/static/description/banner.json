@@ -1,0 +1,11 @@
+{
+  "title": "Stock Reclassification",
+  "summary": "Move stock between accounts with a document, a transfer and a journal entry",
+  "edition": "community",
+  "lang": "en",
+  "features": [
+    "Allowed account pairs set by rules",
+    "Transfer and journal entry in one step",
+    "History, with reversal on cancel"
+  ]
+}

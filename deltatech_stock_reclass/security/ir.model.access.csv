@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_stock_reclassification_user,stock.reclassification user,model_stock_reclassification,group_stock_reclassification_user,1,1,1,1
+access_stock_reclassification_line_user,stock.reclassification.line user,model_stock_reclassification_line,group_stock_reclassification_user,1,1,1,1
+access_stock_reclassification_rule_user,stock.reclassification.rule user,model_stock_reclassification_rule,group_stock_reclassification_user,1,0,0,0
+access_stock_reclassification_rule_manager,stock.reclassification.rule manager,model_stock_reclassification_rule,group_stock_reclassification_manager,1,1,1,1
