@@ -1,0 +1,11 @@
+{
+  "title": "OBYC Landed Cost",
+  "summary": "Landed costs on OBYC with class 6 routing",
+  "icon": "truck",
+  "lang": "en",
+  "features": [
+    "Stock account from the OBYC rule",
+    "Class 6 credit via intermediary account",
+    "Landed cost from the vendor bill"
+  ]
+}

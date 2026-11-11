@@ -16,7 +16,11 @@ class AccountMove(models.Model):
         if not landed_cost:
             return res
         pickings = self.line_ids.purchase_line_id.order_id.picking_ids
-        covered = self.env["stock.landed.cost"].search([("state", "=", "done")]).picking_ids
+        covered = (
+            self.env["stock.landed.cost"]
+            .search([("state", "=", "done"), ("picking_ids", "in", pickings.ids)])
+            .picking_ids
+        )
         landed_cost.picking_ids = pickings.filtered(lambda picking: picking not in covered and picking.state == "done")
         for line in landed_cost.cost_lines:
             bill_line = self.line_ids.filtered(lambda aml, product=line.product_id: aml.product_id == product)
