@@ -1,0 +1,646 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* deltatech_stock_reclass
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-11 10:12+0000\n"
+"PO-Revision-Date: 2026-11-11 10:12+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid ""
+"%(product)s: the cost of the stock (%(cost)s) differs from the price of the "
+"bill line %(bill)s (%(price)s)."
+msgstr ""
+"%(product)s: costul din stoc (%(cost)s) diferă de prețul liniei facturii "
+"%(bill)s (%(price)s)."
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "%s (reversal)"
+msgstr "%s (stornare)"
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "%s is not tracked: remove the lot."
+msgstr "%s nu este urmărit: scoateți lotul."
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "A serial number has quantity 1 (%s)."
+msgstr "Un număr de serie are cantitatea 1 (%s)."
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "A validated reclassification cannot be deleted: cancel it instead."
+msgstr "O reclasificare validată nu poate fi ștearsă: anulați-o."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__message_needaction
+msgid "Action Needed"
+msgstr "Intervenție necesară"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__active
+msgid "Active"
+msgstr "Activ"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__activity_ids
+msgid "Activities"
+msgstr "Activități"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Activitate Excepție Decorare"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__activity_state
+msgid "Activity State"
+msgstr "Stare activitate"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Pictograma tipului de activitate"
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "Add at least one product."
+msgstr "Adăugați cel puțin un produs."
+
+#. module: deltatech_stock_reclass
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_rule_form
+msgid "Archived"
+msgstr "Arhivat"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__message_attachment_count
+msgid "Attachment Count"
+msgstr "Număr atașamente"
+
+#. module: deltatech_stock_reclass
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_form
+msgid "Cancel"
+msgstr "Anulează"
+
+#. module: deltatech_stock_reclass
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_form
+msgid ""
+"Cancel the reclassification? For a validated one the transfer and the "
+"journal entry are reversed."
+msgstr ""
+"Anulați reclasificarea? Pentru una validată se stornează transferul și nota "
+"contabilă."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields.selection,name:deltatech_stock_reclass.selection__stock_reclassification__state__cancel
+msgid "Cancelled"
+msgstr "Anulat"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__company_id
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__company_id
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__company_id
+msgid "Company"
+msgstr "Companie"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__create_uid
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__create_uid
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__create_uid
+msgid "Created by"
+msgstr "Creat de"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__create_date
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__create_date
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__create_date
+msgid "Created on"
+msgstr "Creat în"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__currency_id
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__date
+msgid "Date"
+msgstr "Dată"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification_line__product_uom_id
+msgid "Default unit of measure used for all stock operations."
+msgstr "Unitatea de măsură implicită folosită în toate operațiunile stocului."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__account_dest_id
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__account_dest_id
+msgid "Destination Account"
+msgstr "Cont destinație"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__location_dest_id
+msgid "Destination Location"
+msgstr "Locație destinație"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__destination_type
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__destination_type
+msgid "Destination Type"
+msgstr "Tip destinație"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_move__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__display_name
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__display_name
+msgid "Display Name"
+msgstr "Nume afișat"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields.selection,name:deltatech_stock_reclass.selection__stock_reclassification__state__done
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_search
+msgid "Done"
+msgstr "Efectuat"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields.selection,name:deltatech_stock_reclass.selection__stock_reclassification__state__draft
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_search
+msgid "Draft"
+msgstr "Ciornă"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification_line__tracking
+msgid "Ensure the traceability of a storable product in your warehouse."
+msgstr ""
+"Asigurați trasabilitatea unui produs stocabil în depozitul dumneavoastră."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__message_follower_ids
+msgid "Followers"
+msgstr "Persoane interesate"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Urmăritori (Parteneri)"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Pictogramă minunată pentru font, de ex. fa-sarcini"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__has_message
+msgid "Has Message"
+msgstr "Are mesaj"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_move__id
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__id
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__id
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__id
+msgid "ID"
+msgstr "ID"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__activity_exception_icon
+msgid "Icon"
+msgstr "Pictogramă"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Pictograma pentru a indica o activitate de excepție."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Dacă este selectat, mesajele noi necesită atenția dumneavoastră."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__message_has_error
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Dacă este bifată, unele mesaje au o eroare de livrare."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__message_is_follower
+msgid "Is Follower"
+msgstr "Este urmăritor"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__journal_id
+msgid "Journal"
+msgstr "Jurnal"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__account_move_id
+msgid "Journal Entry"
+msgstr "Notă contabilă"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__write_uid
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__write_uid
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__write_uid
+msgid "Last Updated by"
+msgstr "Ultima actualizare făcută de"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__write_date
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__write_date
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__write_date
+msgid "Last Updated on"
+msgstr "Ultima actualizare pe"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__lot_id
+msgid "Lot/Serial Number"
+msgstr "Lot/Număr de serie"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__decision_note
+msgid "Management Decision"
+msgstr "Decizie conducere"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__require_decision
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__require_decision
+msgid "Management Decision Required"
+msgstr "Decizia conducerii este obligatorie"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__message_has_error
+msgid "Message Delivery error"
+msgstr "Eroare livrare mesaj"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__message_ids
+msgid "Messages"
+msgstr "Mesaje"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Data limită a activității mele"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__name
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__name
+msgid "Name"
+msgstr "Nume"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Data limită pentru următoarea activitate"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__activity_summary
+msgid "Next Activity Summary"
+msgstr "Sumarul următoarei activități"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__activity_type_id
+msgid "Next Activity Type"
+msgstr "Tip de activitate urmatoare"
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "No internal operation type found for the company %s."
+msgstr "Nu există un tip de operațiune internă pentru compania %s."
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid ""
+"Not enough stock of %(product)s in %(location)s: %(taken)s available, "
+"%(needed)s needed."
+msgstr ""
+"Stoc insuficient pentru %(product)s în %(location)s: %(taken)s disponibil, "
+"%(needed)s necesar."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Număr de acțiuni"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__message_has_error_counter
+msgid "Number of errors"
+msgstr "Numărul de erori"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Număr de mesaje care necesită acțiune"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Numărul de mesaje cu eroare de livrare"
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "Only a draft reclassification can be validated."
+msgstr "Doar o reclasificare în ciornă poate fi validată."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification_line__invoice_line_id
+msgid ""
+"Optional: the vendor bill line the reclassified goods were bought with."
+msgstr ""
+"Opțional: linia facturii de furnizor cu care au fost cumpărate bunurile "
+"reclasificate."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__product_id
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_search
+msgid "Product"
+msgstr "Produs"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__line_ids
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_form
+msgid "Products"
+msgstr "Produse"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__quantity
+msgid "Quantity"
+msgstr "Cantitate"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__reason
+msgid "Reason"
+msgstr "Motiv"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__require_reason
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__require_reason
+msgid "Reason Required"
+msgstr "Motivul este obligatoriu"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__reclassification_id
+msgid "Reclassification"
+msgstr "Reclasificare"
+
+#. module: deltatech_stock_reclass
+#: model:res.groups,name:deltatech_stock_reclass.group_stock_reclassification_manager
+msgid "Reclassification Configuration"
+msgstr "Configurare reclasificări"
+
+#. module: deltatech_stock_reclass
+#: model:ir.actions.act_window,name:deltatech_stock_reclass.action_stock_reclassification_rule
+#: model:ir.ui.menu,name:deltatech_stock_reclass.menu_stock_reclassification_rule
+msgid "Reclassification Rules"
+msgstr "Reguli de reclasificare"
+
+#. module: deltatech_stock_reclass
+#: model:ir.ui.menu,name:deltatech_stock_reclass.menu_stock_reclassification
+#: model:res.groups,name:deltatech_stock_reclass.group_stock_reclassification_user
+msgid "Reclassifications"
+msgstr "Reclasificări"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__decision_note
+msgid ""
+"Reference of the written decision that changes the destination of the goods."
+msgstr "Referința deciziei scrise care schimbă destinația bunurilor."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__activity_user_id
+msgid "Responsible User"
+msgstr "Utilizator responsabil"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__reverse_account_move_id
+msgid "Reversal Entry"
+msgstr "Nota de stornare"
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "Reversal of %s"
+msgstr "Stornare a %s"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__reverse_picking_id
+msgid "Reverse Transfer"
+msgstr "Transfer invers"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__rule_id
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_search
+msgid "Rule"
+msgstr "Regulă"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Eroare livrare SMS"
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "Select the lot or serial number of %s."
+msgstr "Selectați lotul sau seria pentru %s."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__account_src_id
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_rule__account_src_id
+msgid "Source Account"
+msgstr "Cont sursă"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__location_src_id
+msgid "Source Location"
+msgstr "Locație sursă"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__state
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__state
+msgid "State"
+msgstr "Stare"
+
+#. module: deltatech_stock_reclass
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_search
+msgid "Status"
+msgstr "Stare"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Stare bazată pe activități\n"
+"Întârziată: data scadentă este deja trecută\n"
+"Astăzi: activității pentru astăzi\n"
+"Planificate: activități viitoare."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model,name:deltatech_stock_reclass.model_stock_move
+msgid "Stock Move"
+msgstr "Mișcare stoc"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model,name:deltatech_stock_reclass.model_stock_reclassification
+#: model:res.groups.privilege,name:deltatech_stock_reclass.privilege_stock_reclassification
+msgid "Stock Reclassification"
+msgstr "Reclasificare stoc"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model,name:deltatech_stock_reclass.model_stock_reclassification_line
+msgid "Stock Reclassification Line"
+msgstr "Linie de reclasificare stoc"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model,name:deltatech_stock_reclass.model_stock_reclassification_rule
+msgid "Stock Reclassification Rule"
+msgstr "Regulă de reclasificare stoc"
+
+#. module: deltatech_stock_reclass
+#: model:ir.actions.act_window,name:deltatech_stock_reclass.action_stock_reclassification
+msgid "Stock Reclassifications"
+msgstr "Reclasificări de stoc"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields.selection,name:deltatech_stock_reclass.selection__stock_reclassification_rule__destination_type__stock
+msgid "Stock account change"
+msgstr "Schimbarea contului de stoc"
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "The bill line does not match the product or is not posted."
+msgstr "Linia facturii nu corespunde produsului sau nu este postată."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__require_decision
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification_rule__require_decision
+msgid ""
+"The document cannot be validated without the management decision (the change"
+" of destination of the goods must be supported by a written decision)."
+msgstr ""
+"Documentul nu poate fi validat fără decizia conducerii (schimbarea "
+"destinației bunurilor trebuie susținută de o decizie scrisă)."
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "The quantity must be positive."
+msgstr "Cantitatea trebuie să fie pozitivă."
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid ""
+"The reclassified quantity of %(product)s exceeds the quantity of the bill "
+"line %(bill)s."
+msgstr ""
+"Cantitatea reclasificată din %(product)s depășește cantitatea liniei "
+"facturii %(bill)s."
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "The rule %s is archived."
+msgstr "Regula %s este arhivată."
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "The rule %s requires the management decision."
+msgstr "Regula %s cere decizia conducerii."
+
+#. module: deltatech_stock_reclass
+#. odoo-python
+#: code:addons/deltatech_stock_reclass/models/reclassification.py:0
+msgid "The rule %s requires the reason."
+msgstr "Regula %s cere motivul."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.constraint,message:deltatech_stock_reclass.constraint_stock_reclassification_rule_accounts_differ
+msgid "The source and the destination account must be different."
+msgstr "Contul sursă și contul destinație trebuie să fie diferite."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.constraint,message:deltatech_stock_reclass.constraint_stock_reclassification_rule_pair_unique
+msgid "There is already a rule for this pair of accounts."
+msgstr "Există deja o regulă pentru această pereche de conturi."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__tracking
+msgid "Tracking"
+msgstr "Trasabilitate"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__picking_id
+msgid "Transfer"
+msgstr "Transfer"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Tipul activității de excepție din înregistrare."
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__product_uom_id
+msgid "Unit"
+msgstr "Unitate"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__unit_cost
+msgid "Unit Cost"
+msgstr "Cost unitar"
+
+#. module: deltatech_stock_reclass
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_form
+msgid "Validate"
+msgstr "Validează"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__value
+msgid "Value"
+msgstr "Valoare"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification_line__invoice_line_id
+msgid "Vendor Bill Line"
+msgstr "Linie factură furnizor"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__website_message_ids
+msgid "Website Messages"
+msgstr "Mesaje Website"
+
+#. module: deltatech_stock_reclass
+#: model:ir.model.fields,help:deltatech_stock_reclass.field_stock_reclassification__website_message_ids
+msgid "Website communication history"
+msgstr "Istoric comunicare website"

@@ -1,0 +1,314 @@
+<div class="mx-auto px-3 py-3 rounded-4" style="max-width:1100px;font-family:'Segoe UI','Avenir Next','Helvetica Neue',Arial,sans-serif;color:#212529;font-weight:400;background-color:#ffffff;--bs-body-color:#212529;--bs-body-bg:#ffffff;--bs-emphasis-color:#212529;--bs-border-color:#dee2e6;--bs-card-bg:#ffffff;--bs-card-color:#212529;--bs-card-border-color:#dee2e6;--bs-link-color:#006F42;--bs-link-hover-color:#00432a;--bs-nav-link-color:#212529;--bs-nav-pills-link-active-bg:#006F42;--bs-nav-pills-link-active-color:#ffffff;--bs-code-color:#b4266b;--bs-heading-color:#212529;">
+<!-- tb-gen v1 -->
+<div class="rounded-4 shadow px-4 py-4 mt-2 mb-4" style="background-color:#006F42;background-image:radial-gradient(circle at 92% 8%, rgba(87,185,82,0.45), rgba(87,185,82,0) 38%),radial-gradient(circle at 4% 100%, rgba(255,255,255,0.12), rgba(255,255,255,0) 32%),linear-gradient(135deg, #007a49 0%, #005c38 55%, #00432a 100%);color:#ffffff;">
+  <div class="d-flex flex-wrap align-items-center">
+    <span class="d-inline-block rounded-4 p-2 flex-shrink-0 my-2" style="background-color:#ffffff;margin-right:24px;"><img src="icon.png" alt="Stock Reclassification" style="width:80px;height:80px;border:none;"/></span>
+    <div class="flex-grow-1 my-2" style="width:320px;min-width:0;margin-right:24px;">
+      <h1 class="fw-bold mb-2" style="color:#ffffff;font-size:36px;line-height:1.1;letter-spacing:-0.5px;border:none;">Stock Reclassification</h1>
+      <p class="mb-3" style="font-size:18px;color:#cdeccf;line-height:1.45;">Move stock between accounts with a document, a transfer and a journal entry</p>
+      <div>
+        <span class="d-inline-block rounded-pill fw-bold me-2 mb-2" style="background-color:#ffffff;border:1px solid #ffffff;color:#006F42;padding:6px 14px;font-size:12px;"><span class="fa fa-check-circle" style="margin-right:6px;" aria-hidden="true"></span>Odoo 19.0</span>
+        <span class="d-inline-block rounded-pill fw-semibold me-2 mb-2" style="border:1px solid #8fd1ad;color:#ffffff;padding:6px 14px;font-size:12px;"><span class="fa fa-folder-open-o" style="margin-right:6px;" aria-hidden="true"></span>Valuation/Valuation</span>
+        <span class="d-inline-block rounded-pill fw-semibold me-2 mb-2" style="border:1px solid #8fd1ad;color:#ffffff;padding:6px 14px;font-size:12px;"><span class="fa fa-cloud" style="margin-right:6px;" aria-hidden="true"></span>Odoo.sh &bull; On-premise</span>
+        <span class="d-inline-block rounded-pill fw-semibold me-2 mb-2" style="border:1px dashed #8fd1ad;color:#ffffff;padding:6px 14px;font-size:12px;"><span class="fa fa-balance-scale" style="margin-right:6px;" aria-hidden="true"></span>OPL-1</span>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+
+<div class="d-flex align-items-start rounded-4 px-4 py-3 mb-4" style="background-color:#DEF1DD;color:#212529;">
+  <span class="flex-shrink-0 me-3" style="font-size:26px;line-height:1.2;color:#006F42;">&#9733;</span>
+  <div style="font-size:16px;line-height:1.55;">
+    <span class="fw-bold" style="color:#006F42;">Did this module help you?</span> It is free, built and maintained by the Terrabit developers. If it saved you time, a rating on this page is the best way to say thanks &mdash; and it helps other Odoo users find it too. Thank you for your support!
+  </div>
+</div>
+
+<ul class="nav nav-pills justify-content-center mb-4 pb-3 border-bottom" style="--bs-nav-pills-link-active-bg:#006F42;">
+  <li class="nav-item mx-1 mb-2">
+    <a class="nav-link active fw-semibold rounded-pill border" id="tb-tab-overview"
+       data-bs-toggle="pill" data-bs-target="#tb-panel-overview" href="#tb-panel-overview"
+       style="padding:10px 22px;"><span class="fa fa-star" style="margin-right:6px;" aria-hidden="true"></span>Overview</a>
+  </li>
+  <li class="nav-item mx-1 mb-2">
+    <a class="nav-link fw-semibold rounded-pill border" id="tb-tab-usage"
+       data-bs-toggle="pill" data-bs-target="#tb-panel-usage" href="#tb-panel-usage"
+       style="padding:10px 22px;"><span class="fa fa-book" style="margin-right:6px;" aria-hidden="true"></span>Usage</a>
+  </li>
+  <li class="nav-item mx-1 mb-2">
+    <a class="nav-link fw-semibold rounded-pill border" id="tb-tab-versions"
+       data-bs-toggle="pill" data-bs-target="#tb-panel-versions" href="#tb-panel-versions"
+       style="padding:10px 22px;"><span class="fa fa-history" style="margin-right:6px;" aria-hidden="true"></span>Versions</a>
+  </li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade show active py-2" id="tb-panel-overview" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
+<div class="mb-2"><span class="d-inline-block rounded-pill fw-bold text-uppercase" style="background-color:#DEF1DD;color:#006F42;padding:5px 14px;font-size:12px;letter-spacing:0.14em;"><span class="fa fa-star" style="margin-right:6px;" aria-hidden="true"></span>Overview</span></div>
+<p class="mb-4" style="font-size:16px;line-height:1.65;max-width:780px;">Moves stock from one account to another with a document of its own: a rule says which pairs of accounts are allowed, the document records the source and destination locations and the products, and its validation creates the stock transfer and posts the journal entry between the two accounts at the cost of the goods.</p>
+<p>The document keeps the history (who, when, what, from which account to which), links the transfer and the journal entry, and can be cancelled with a reversal of both. Access is limited to a dedicated group.</p>
+</div>
+<div class="tab-pane fade py-2" id="tb-panel-usage" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
+<div class="mb-2"><span class="d-inline-block rounded-pill fw-bold text-uppercase" style="background-color:#DEF1DD;color:#006F42;padding:5px 14px;font-size:12px;letter-spacing:0.14em;"><span class="fa fa-book" style="margin-right:6px;" aria-hidden="true"></span>Usage</span></div>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">1. Define the allowed pairs of <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">accounts</span></h2>
+<p>Open <strong>Inventory &#8594; Operations &#8594; Reclassification Rules</strong> and create a rule for each reclassification you accept: the <strong>Source Account</strong>, the <strong>Destination Account</strong> and, optionally:</p>
+<ul>
+<li><strong>Management Decision Required</strong>: the document cannot be validated without the text of the management decision (use it when the destination of the goods changes);</li>
+<li><strong>Reason Required</strong>: the document cannot be validated without a reason.</li>
+</ul>
+<p>The pair of accounts is unique per company and the two accounts must differ. No rule is delivered with the module: each company creates the pairs it needs (for example <em>3028 &#8594; 371</em>).</p>
+<div class="border rounded-4 shadow-sm my-4" style="background-color:#ffffff;">
+  <div class="p-2 rounded-top-4" style="background-color:#f4f8f4;">
+    <img class="img-fluid d-block mx-auto rounded-3" style="max-width:100%;height:auto;" alt="Reclassification rule 302800 &#8594; 371000: Source Account 302800 Other consumables and Destination Account 371000 Merchandise are highlighted, Destination Type is Stock account change, Management Decision Required is ticked and Reason Required is not" src="en/01_regula_reclasificare.png"/>
+  </div>
+  <div class="d-flex align-items-center px-3 py-2 border-top">
+    <span class="flex-shrink-0 text-center fw-bold rounded-circle d-inline-block me-2"
+          style="background-color:#006F42;color:#ffffff;width:26px;height:26px;line-height:26px;font-size:13px;">1</span>
+    <span style="font-size:14px;line-height:1.4;color:#3d4752;">Reclassification rule 302800 &#8594; 371000: Source Account 302800 Other consumables and Destination Account 371000 Merchandise are highlighted, Destination Type is Stock account change, Management Decision Required is ticked and Reason Required is not</span>
+  </div>
+</div>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">2. Create the reclassification <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">document</span></h2>
+<p>Open <strong>Inventory &#8594; Operations &#8594; Reclassifications</strong> and create a document:</p>
+<ul>
+<li><strong>Rule</strong>: brings the source and destination accounts (read only);</li>
+<li><strong>Source Location</strong> and <strong>Destination Location</strong>: they can be the same location, when only the account changes, or two locations; the destination can also be a location outside the stock, but only when the destination account is not a stock account (for example stock &#8594; fixed asset): with a stock-to-stock rule the goods would leave the stock while the destination account keeps the value;</li>
+<li><strong>Journal</strong> and <strong>Date</strong>, and <strong>Management Decision</strong> / <strong>Reason</strong> when the rule asks for them;</li>
+<li>in the <strong>Products</strong> tab: the product, the <strong>Lot/Serial Number</strong> (required for tracked products; a serial number has quantity 1), the <strong>Quantity</strong> and, optionally, the <strong>Vendor Bill Line</strong> the goods were bought with. The quantity reclassified on a bill line cannot exceed the quantity of the line.</li>
+</ul>
+<div class="border rounded-4 shadow-sm my-4" style="background-color:#ffffff;">
+  <div class="p-2 rounded-top-4" style="background-color:#f4f8f4;">
+    <img class="img-fluid d-block mx-auto rounded-3" style="max-width:100%;height:auto;" alt="Draft reclassification: rule 302800 &#8594; 371000 and the Validate button are highlighted; source and destination location DC/Stock, journal Inventory Valuation, management decision filled in and the Products tab with Marf&#259; de reclasificat, quantity 4.00" src="en/02_document_ciorna.png"/>
+  </div>
+  <div class="d-flex align-items-center px-3 py-2 border-top">
+    <span class="flex-shrink-0 text-center fw-bold rounded-circle d-inline-block me-2"
+          style="background-color:#006F42;color:#ffffff;width:26px;height:26px;line-height:26px;font-size:13px;">2</span>
+    <span style="font-size:14px;line-height:1.4;color:#3d4752;">Draft reclassification: rule 302800 &#8594; 371000 and the Validate button are highlighted; source and destination location DC/Stock, journal Inventory Valuation, management decision filled in and the Products tab with Marf&#259; de reclasificat, quantity 4.00</span>
+  </div>
+</div>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">3. <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">Validate</span></h2>
+<p>Press <strong>Validate</strong>. The module checks the rule, the decision and the reason, the lots and serial numbers and the stock available in the source location, then:</p>
+<ol>
+<li>does an internal transfer of the products (it does not post the automatic valuation entry);</li>
+<li>sets the <strong>Unit Cost</strong> and the <strong>Value</strong> of each line: the cost of the goods in stock at the validation date;</li>
+<li>posts the journal entry on the chosen journal.</li>
+</ol>
+<p>The document moves to <strong>Done</strong> and links the <strong>Transfer</strong> and the <strong>Journal Entry</strong>.</p>
+<div class="border rounded-4 shadow-sm my-4" style="background-color:#ffffff;">
+  <div class="p-2 rounded-top-4" style="background-color:#f4f8f4;">
+    <img class="img-fluid d-block mx-auto rounded-3" style="max-width:100%;height:auto;" alt="Validated reclassification: the status is Done, the Transfer (DC/INT/00001) and Journal Entry fields are highlighted, and the product line shows quantity 4.00, unit cost 25.00 lei and value 100.00 lei" src="en/03_document_validat.png"/>
+  </div>
+  <div class="d-flex align-items-center px-3 py-2 border-top">
+    <span class="flex-shrink-0 text-center fw-bold rounded-circle d-inline-block me-2"
+          style="background-color:#006F42;color:#ffffff;width:26px;height:26px;line-height:26px;font-size:13px;">3</span>
+    <span style="font-size:14px;line-height:1.4;color:#3d4752;">Validated reclassification: the status is Done, the Transfer (DC/INT/00001) and Journal Entry fields are highlighted, and the product line shows quantity 4.00, unit cost 25.00 lei and value 100.00 lei</span>
+  </div>
+</div>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">4. The journal <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">entry</span></h2>
+<p>Open the <strong>Journal Entry</strong> from the document: it is posted on the chosen journal, with the reference of the document. It debits the destination account and credits the source account at the cost of the goods.</p>
+<div class="border rounded-4 shadow-sm my-4" style="background-color:#ffffff;">
+  <div class="p-2 rounded-top-4" style="background-color:#f4f8f4;">
+    <img class="img-fluid d-block mx-auto rounded-3" style="max-width:100%;height:auto;" alt="Journal entry of the reclassification: credit 302800 Other consumables 100.00 lei and debit 371000 Merchandise 100.00 lei, with the product in the label of both lines" src="en/04_nota_contabila.png"/>
+  </div>
+  <div class="d-flex align-items-center px-3 py-2 border-top">
+    <span class="flex-shrink-0 text-center fw-bold rounded-circle d-inline-block me-2"
+          style="background-color:#006F42;color:#ffffff;width:26px;height:26px;line-height:26px;font-size:13px;">4</span>
+    <span style="font-size:14px;line-height:1.4;color:#3d4752;">Journal entry of the reclassification: credit 302800 Other consumables 100.00 lei and debit 371000 Merchandise 100.00 lei, with the product in the label of both lines</span>
+  </div>
+</div>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">5. Decision or reason required by the <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">rule</span></h2>
+<p>When the rule asks for the <strong>Management Decision</strong> (or the <strong>Reason</strong>), the field is required on the document. If it is empty, <strong>Validate</strong> does not go through: the field turns red and the message <em>Missing required fields</em> appears. Fill in the field and validate again.</p>
+<div class="border rounded-4 shadow-sm my-4" style="background-color:#ffffff;">
+  <div class="p-2 rounded-top-4" style="background-color:#f4f8f4;">
+    <img class="img-fluid d-block mx-auto rounded-3" style="max-width:100%;height:auto;" alt="Draft document without the management decision after pressing Validate: the Management Decision field is red and the message Missing required fields appears in the top right corner; the document stays in Draft" src="en/05_decizie_obligatorie.png"/>
+  </div>
+  <div class="d-flex align-items-center px-3 py-2 border-top">
+    <span class="flex-shrink-0 text-center fw-bold rounded-circle d-inline-block me-2"
+          style="background-color:#006F42;color:#ffffff;width:26px;height:26px;line-height:26px;font-size:13px;">5</span>
+    <span style="font-size:14px;line-height:1.4;color:#3d4752;">Draft document without the management decision after pressing Validate: the Management Decision field is red and the message Missing required fields appears in the top right corner; the document stays in Draft</span>
+  </div>
+</div>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">6. <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">Cancel</span></h2>
+<p><strong>Cancel</strong> on a validated document does a reverse transfer (from the destination location back to the source one, with the same products and serial numbers) and posts a reversal of the journal entry. If the stock in the destination is no longer enough, the cancellation is refused. A draft document is cancelled without transfer or entry. A validated document cannot be deleted, only cancelled. Cancel it only from the document, not with <em>Reverse Entry</em> on the journal entry: that button does not cancel the transfer, so the document and the entry would no longer match.</p>
+<div class="border rounded-4 shadow-sm my-4" style="background-color:#ffffff;">
+  <div class="p-2 rounded-top-4" style="background-color:#f4f8f4;">
+    <img class="img-fluid d-block mx-auto rounded-3" style="max-width:100%;height:auto;" alt="Cancelled document: the status is Cancelled and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry" src="en/06_document_anulat.png"/>
+  </div>
+  <div class="d-flex align-items-center px-3 py-2 border-top">
+    <span class="flex-shrink-0 text-center fw-bold rounded-circle d-inline-block me-2"
+          style="background-color:#006F42;color:#ffffff;width:26px;height:26px;line-height:26px;font-size:13px;">6</span>
+    <span style="font-size:14px;line-height:1.4;color:#3d4752;">Cancelled document: the status is Cancelled and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry</span>
+  </div>
+</div>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;"><span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">Access</span></h2>
+<p>Two groups control the module: <strong>Reclassifications</strong> (create and validate documents) and <strong>Reclassification Configuration</strong> (manage the rules). The <strong>Reclassification Rules</strong> menu (under <strong>Inventory &#8594; Operations</strong>) is visible only to the second one.</p>
+</div>
+<div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
+<div class="mb-2"><span class="d-inline-block rounded-pill fw-bold text-uppercase" style="background-color:#DEF1DD;color:#006F42;padding:5px 14px;font-size:12px;letter-spacing:0.14em;"><span class="fa fa-history" style="margin-right:6px;" aria-hidden="true"></span>Versions</span></div>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">19.0.1.0.0 <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">(2026-11-11)</span></h2>
+<ul>
+<li>First version: reclassification rules by pair of accounts, the reclassification document with products (lot/serial required for tracked products, vendor bill line optional), validation with transfer and journal entry, cancellation with reversal, dedicated groups.</li>
+</ul>
+</div>
+</div>
+
+<div class="row text-center mt-4 mb-1 g-3">
+  <div class="col-md-6">
+    <div class="border rounded-3 px-4 py-2 h-100">
+      <div class="fw-bold" style="font-size:2.2rem;color:#006F42;line-height:1;">600+</div>
+      <div class="mt-2" style="font-size:0.9rem;color:#3d4752;">Modules published on Odoo Apps</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="border rounded-3 px-4 py-2 h-100">
+      <div class="fw-bold" style="font-size:2.2rem;color:#006F42;line-height:1;">Silver</div>
+      <div class="mt-2" style="font-size:0.9rem;color:#3d4752;">Odoo Partner &mdash; implementation &amp; support</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="text-center rounded-4 px-4 pt-3 pb-4 mt-4 mb-3" style="background-color:#00432a;color:#ffffff;">
+  <h2 class="fw-bold mb-2" style="color:#ffffff;font-size:26px;letter-spacing:-0.3px;border:none;">Need help getting started?</h2>
+  <p class="mx-auto mb-2" style="color:#bfe3cc;max-width:660px;line-height:1.6;font-size:16px;">
+     Our 600+ apps on the Odoo Apps Store are used in Odoo implementations across Europe,
+     the Americas, Asia and Africa &mdash; by companies we have never even met. That is the
+     advantage of building modules that simply work.</p>
+  <p class="mx-auto mb-4" style="color:#bfe3cc;max-width:660px;line-height:1.6;font-size:16px;">
+     Questions about this module, or need it adapted to your processes?
+     Write to us &mdash; the developers who build it will answer.</p>
+  <a href="mailto:support@terrabit.ro" target="_blank" rel="noopener"
+     class="d-inline-block fw-bold text-decoration-none rounded-3"
+     style="background-color:#DEF1DD;color:#00432a;padding:14px 32px;font-size:15px;">Terrabit support &rarr;</a>
+</div>
+
+
+<section class="rounded-4 p-4 mb-3 border">
+  <h2 class="text-center fw-bold mb-1" style="color:#212529;font-size:24px;border:none;">More apps by Terrabit</h2>
+  <p class="text-center mb-4" style="color:#3d4752;">Other modules from the same publisher, built to work together.
+    <a href="https://apps.odoo.com/apps/browse?author=Terrabit" target="_blank" rel="noopener"
+       class="fw-semibold" style="color:#006F42;">All apps &rarr;</a></p>
+  <div class="row g-3">
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/19.0/deltatech_obyc" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">OA</span>
+              <img src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_obyc/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">OBYC - Account Determination</span>
+              <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:15px;line-height:1.45;color:#3d4752;">Implementare OBYC-style account mapping pentru tranzac&#539;ii de stoc</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/19.0/deltatech_obyc_landed_cost" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">OL</span>
+              <img src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_obyc_landed_cost/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">OBYC - Landed Cost Class 6 Routing</span>
+              <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:15px;line-height:1.45;color:#3d4752;">Landed costs on OBYC: route class 6 credit through an intermediary account</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/19.0/deltatech_stock_valuation" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">PV</span>
+              <img src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">Product Valuation</span>
+              <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:15px;line-height:1.45;color:#3d4752;">Weighted average cost per product, valuation area and account, from journal entries</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/19.0/deltatech_stock_valuation_guard" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">SV</span>
+              <img src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation_guard/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">Stock Valuation Guard</span>
+              <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:15px;line-height:1.45;color:#3d4752;">One cost method for every product category and no stock move without a value</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/19.0/deltatech_stock_valuation_guard_pos" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">SV</span>
+              <img src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_valuation_guard_pos/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">Stock Valuation Guard - Point of Sale</span>
+              <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:15px;line-height:1.45;color:#3d4752;">Stop products without cost at the POS cart, before the receipt is printed</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/19.0/deltatech_valuation_area" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">SV</span>
+              <img src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_valuation_area/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">Stock Valuation Area</span>
+              <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:15px;line-height:1.45;color:#3d4752;">Stock Valuation Area Management</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+</div>
