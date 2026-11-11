@@ -158,7 +158,9 @@ class StockReclassification(models.Model):
                 ],
             }
         )
-        picking.action_confirm()
+        # no merge on confirmation: two lines of the same product stay two moves, so that each
+        # line is paired with its own move (picking.action_confirm() would merge them)
+        picking.move_ids.filtered(lambda move: move.state == "draft")._action_confirm(merge=False)
         moves = picking.move_ids.sorted("id")
         # the confirmation may already reserve (FIFO, any lot): reserve exactly what the line asks for
         moves._do_unreserve()

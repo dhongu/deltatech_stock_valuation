@@ -8,12 +8,15 @@ class StockReclassificationRule(models.Model):
     _name = "stock.reclassification.rule"
     _description = "Stock Reclassification Rule"
     _order = "company_id, account_src_id, account_dest_id"
+    _check_company_auto = True
 
     name = fields.Char(compute="_compute_name", store=True)
     active = fields.Boolean(default=True)
     company_id = fields.Many2one("res.company", required=True, default=lambda self: self.env.company)
-    account_src_id = fields.Many2one("account.account", string="Source Account", required=True)
-    account_dest_id = fields.Many2one("account.account", string="Destination Account", required=True)
+    account_src_id = fields.Many2one("account.account", string="Source Account", required=True, check_company=True)
+    account_dest_id = fields.Many2one(
+        "account.account", string="Destination Account", required=True, check_company=True
+    )
     destination_type = fields.Selection(
         selection=[("stock", "Stock account change")],
         string="Destination Type",

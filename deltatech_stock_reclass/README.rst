@@ -166,6 +166,15 @@ Operations**) is visible only to the second one.
 Changelog
 =========
 
+19.0.1.0.1 (2026-11-11)
+-----------------------
+
+- Fix: a document with two lines of the same product could not be
+  validated: the transfer merged their moves on confirmation and the
+  lines no longer matched the moves. The moves are now confirmed without
+  merge.
+- The accounts of a rule must belong to the company of the rule.
+
 19.0.1.0.0 (2026-11-11)
 -----------------------
 

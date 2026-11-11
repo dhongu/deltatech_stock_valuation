@@ -104,6 +104,17 @@ class TestStockReclassification(TransactionCase):
         doc.action_validate()
         self.assertEqual(doc.picking_id.picking_type_id, self.warehouse.int_type_id)
 
+    def test_two_lines_of_the_same_product(self):
+        """The moves of a transfer are not merged on confirmation: each line keeps its own move."""
+        self._receive(self.product, 10)
+        doc = self._doc(qty=4)
+        doc.line_ids = [Command.create({"product_id": self.product.id, "quantity": 3.0})]
+        doc.action_validate()
+        self.assertEqual(doc.state, "done")
+        self.assertEqual(len(doc.picking_id.move_ids), 2)
+        self.assertEqual(sorted(doc.line_ids.mapped("value")), [30.0, 40.0])
+        self.assertEqual(doc.account_move_id.amount_total, 70.0)
+
     def test_other_location(self):
         self._receive(self.product, 10)
         doc = self._doc(qty=4, dest=self.sub)
@@ -160,6 +171,21 @@ class TestStockReclassification(TransactionCase):
             doc.action_validate()
         self.assertEqual(doc.state, "draft")
         self.assertFalse(self.env["stock.picking"].search([("origin", "=", doc.name)]))
+
+    def test_rule_accounts_must_belong_to_the_company(self):
+        other_company = self.env["res.company"].create({"name": "Other reclass company"})
+        foreign = self.env["account.account"].create(
+            {
+                "name": "Foreign",
+                "code": "991999",
+                "account_type": "asset_current",
+                "company_ids": [Command.set(other_company.ids)],
+            }
+        )
+        with self.assertRaises(UserError):
+            self.env["stock.reclassification.rule"].create(
+                {"company_id": self.company.id, "account_src_id": foreign.id, "account_dest_id": self.acc_b.id}
+            )
 
     def test_archived_rule_refused(self):
         self._receive(self.product, 10)
