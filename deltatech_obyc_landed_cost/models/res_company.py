@@ -17,8 +17,8 @@ class ResCompany(models.Model):
         help="How a landed cost entry that would credit a class 6 (expense) account is generated:\n"
         "- Standard: native Odoo behaviour (stock valuation = class 6);\n"
         "- Through intermediary account: the class 6 credit is routed through a technical "
-        "intermediary account, producing two balanced entries (stock valuation = intermediary "
-        "and intermediary = class 6) with the same net effect.",
+        "intermediary account, producing a single entry with two balanced pairs (stock valuation = intermediary "
+        "and intermediary = class 6) and the same net effect.",
     )
     landed_cost_intermediary_account_id = fields.Many2one(
         "account.account",
