@@ -47,3 +47,15 @@ class TestObycAreaPrice(TestObycEntries):
         self._valuation().write({"price": 0.0})
         delivery = self._delivery(4.0)
         self.assertAlmostEqual(delivery.move_ids.value, 400.0)
+
+    def test_transfer_through_transit_uses_area_price(self):
+        """The transfer leaves the source area at the price of that area, and the incoming move
+        takes the same value."""
+        _account_transfer, _account_valuation2, warehouse2 = self._prepare_transit()
+        self._receipt(10.0)
+        self._valuation().write({"price": 60.0})
+
+        out_move, in_move = self._transit_transfer(warehouse2, 4.0)
+
+        self.assertAlmostEqual(out_move.value, 240.0)
+        self.assertAlmostEqual(in_move.value, 240.0)

@@ -231,10 +231,15 @@ Date minime pentru demo:
 
    O notă Dr 371 / Cr 371 (același cont sintetic) este legitimă aici: analiticele diferă, iar nota
    de ieșire poartă aria gestiunii care predă, cea de intrare aria gestiunii care primește. Transferul
-   direct între locații interne din arii diferite nu este permis (secțiunea 9). **De verificat pe o
-   mișcare de test** că notele de tranzit au valoare: în Odoo 19 locația de tranzit a companiei este
-   evaluată, iar mișcarea gestiune → tranzit nu este nici intrare, nici ieșire, deci valoarea ei
-   poate rămâne 0; fluxul nu are încă test automat.
+   direct între locații interne din arii diferite nu este permis (secțiunea 9). În Odoo 19 locația
+   de tranzit a companiei este evaluată, iar mișcarea gestiune → tranzit nu este nici intrare, nici
+   ieșire; de la versiunea 19.0.1.0.21 modulul o evaluează el: **la plecare, la costul unităților
+   mutate, după metoda produsului** (FIFO: următoarele straturi de cost, pe lot la evaluarea pe lot;
+   cost mediu cu evaluare pe lot: costul lotului; cost mediu cu preț pe aria de evaluare: prețul ariei
+   din care pleacă marfa; altfel costul curent), **iar la sosire, la valoarea ieșirii** (din mișcările
+   înlănțuite sau, la două transferuri introduse separat, din costul mediu al mărfii rămase în
+   tranzit), astfel încât valoarea ieșită dintr-o arie intră întreagă în cealaltă și 371.09 se
+   stinge (Pasul 8b).
 7. **Storno:** *Facturare (sau Contabilitate) → Configurare → Setări*, blocul **Contabilitate
    storno** → verificați că **Contabilitate storno** este bifat (la firmele RO este bifat implicit).
 
@@ -353,6 +358,24 @@ nota din *Note contabile*, după referința livrării.
 
 ![Notă livrare: cost la livrare](screenshots/08_delivery_cogs_entry.png)
 
+### Pasul 8b — Transferul între arii prin tranzit
+
+*Inventar → Operații → Transferuri* → creați un transfer intern de 4 buc. din locația gestiunii
+care predă către locația de tranzit a companiei și **Validați**-l; apoi un al doilea, din locația de
+tranzit către locația gestiunii care primește, și **Validați**-l. Deschideți cele două note din
+*Note contabile*, după referința transferurilor.
+
+1. **Găsiți pe ecran:** pe fiecare notă, jurnalul și aria gestiunii respective, liniile cu conturile
+   regulilor *Ieșire transfer intern* și *Intrare transfer intern*, cantitatea ±4.
+2. **Verificați:** nota de ieșire are Dr 371.09 / Cr 371.01 = 400,00 lei (4 buc. × costul curent de
+   100 lei); nota de intrare are Dr 371.02 / Cr 371.09 = 400,00 lei, aceeași valoare ca la ieșire,
+   chiar dacă între cele două transferuri costul produsului s-a schimbat. Contul 371.09 se stinge.
+   Niciuna dintre note nu trebuie să aibă sume 0.
+
+![Nota de ieșire prin tranzit](screenshots/08b_transit_out_entry.png)
+
+![Nota de intrare prin tranzit](screenshots/08b_transit_in_entry.png)
+
 ### Pasul 9 — Factura de vânzare: doar venit și TVA
 
 *Facturare → Clienți → Facturi* → **Nou(ă)** → client „Client Demo SRL", produsul livrat,
@@ -429,6 +452,8 @@ Note generate în baza demo (marfă, cost mediu 100 lei/buc.):
 | Retur la furnizor (5 buc.), **fără** storno | Retur la furnizor | 408 | 371 | 500,00 |
 | Retur la furnizor (5 buc.), **cu** storno | Retur la furnizor | 371 | 408 | −500,00 |
 | Livrare la client (2 buc.) | Livrare stoc | 607 | 371 | 200,00 |
+| Transfer între arii prin tranzit, ieșire (4 buc.) | Ieșire transfer intern | 371.09 | 371.01 | 400,00 |
+| Transfer între arii prin tranzit, intrare (4 buc.) | Intrare transfer intern | 371.02 | 371.09 | 400,00 (valoarea ieșirii) |
 | Factura de vânzare (2 × 150 lei + TVA 21%) | Venituri (Cont destinație) | 4111 | 707 / 4427 | 363,00 = 300,00 + 63,00 |
 | Retur de la client, **cu** storno (implicit la firmele RO) | Retur de la client | 607 | 371 | −V |
 | Retur de la client, **fără** storno | Retur de la client | 371 | 607 | V |
@@ -583,6 +608,7 @@ Observații:
 - [ ] costul de achiziție: Dr 371 / Cr contul liniei de cost; contul liniei de cost este contul facturii de transport (408), care se stinge; produsul de transport nu are ca cont de cheltuială 624
 - [ ] costul de achiziție este pe jurnalul ales în document; recepția avea toată marfa în stoc sau partea livrată a fost tratată manual
 - [ ] livrarea directă furnizor → client are notă cu valoare (nu 0) și nu modifică stocul propriu
+- [ ] transferul între arii prin tranzit: notele *Ieșire transfer intern* și *Intrare transfer intern* au valoare, nu 0 (plecare la costul curent, sosire la valoarea ieșirii), iar 371.09 se stinge (Pasul 8b)
 - [ ] liniile notelor de stoc au produs, cantitate semnată (pozitivă pe debit, negativă pe credit) și unitate de măsură
 - [ ] la ajustările de inventar, plusul folosește regula **Ajustare inventar plus** și lipsa regula **Ajustare inventar minus**; la bazele actualizate de la o versiune anterioară 19.0.1.0.6, regulile au fost verificate (OBYC-005); imputarea și TVA-ul lipsurilor sunt înregistrate manual
 - [ ] **lunar:** soldul 371 (301, 345) = raportul de evaluare a stocului pe arie, la aceeași dată
@@ -677,9 +703,9 @@ Observații:
   avans din comanda de vânzare cere conturile produsului fără cheie de tranzacție și se oprește
   probabil cu „Transaction key is not defined” pe comenzile cu produse OBYC. Testați pe baza
   clientului înainte de a folosi fluxul OBYC-004.
-- **OBYC-009 — transfer prin tranzit cu valoare 0 (dedus din cod, netestat).** Mișcarea gestiune →
-  tranzit nu primește valoare în Odoo 19, deci nota OBYC poate ieși cu 0; nu folosiți ruta prin
-  tranzit fără un test pe baza clientului.
+- **OBYC-009 — reparat în 19.0.1.0.21:** transferul între arii prin tranzit este evaluat (la
+  plecare costul curent, la sosire valoarea ieșirii), deci notele nu mai ies cu 0 (Pasul 8b).
+  Notele postate înainte de reparație cu valoare 0 nu se corectează automat.
 - Cheile **Evaluare stoc**, **Diferență de preț** și **Diferență de preț la recepție stoc** apar
   în listă, dar nu sunt folosite de fluxurile actuale; diferențele de preț nu au tratament OBYC
   (secțiunea 6, „Note de monografie").
@@ -708,6 +734,8 @@ produs de pe factura de vânzare și de pe cea de furnizor, apoi capturează ecr
 | `11_vendor_bill_408.png` | factura de furnizor: Dr 408 + 4426 / Cr 401, linia de produs pe 408 (OBYC-001) |
 | `07_storno_return.png` | returul la furnizor cu storno: Dr 371 −500 / Cr 408 −500 |
 | `08_delivery_cogs_entry.png` | nota livrării: Dr 607 / Cr 371 (costul la livrare) |
+| `08b_transit_out_entry.png` | nota de ieșire prin tranzit: Dr 371.09 / Cr 371.00, 400,00 lei (4 buc.), pe aria care predă |
+| `08b_transit_in_entry.png` | nota de intrare prin tranzit: Dr 371.02 / Cr 371.09, aceeași valoare, pe aria care primește |
 | `09_sale_invoice_no_cogs.png` | factura de vânzare: Dr 4111 / Cr 707 + 4427, fără linii de cost |
 | `09b_service_invoice_no_area.png` | factura unui serviciu fără arie de evaluare: linia pe 704, contul de venit al categoriei |
 | `10_landed_cost_entry.png` | nota costului de achiziție: Dr 371 / Cr contul liniei de cost |

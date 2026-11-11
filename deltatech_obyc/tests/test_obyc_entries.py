@@ -541,6 +541,157 @@ class TestObycEntries(TestCommon):
             ),
         )
 
+    def _prepare_transit(self):
+        """Două arii (aria companiei și aria unui al doilea depozit) cu regulile de ieșire și de
+        intrare prin tranzit; întoarce (cont tranzit, cont evaluare arie 2, depozitul 2)."""
+        company = self.env.company
+        account_transfer = self.env["account.account"].create(
+            {"name": "Test Transfer", "code": "TTRF01", "account_type": "asset_current"}
+        )
+        account_valuation2 = self.env["account.account"].create(
+            {"name": "Stock Valuation Area 2", "code": "SVC004", "account_type": "asset_current"}
+        )
+        area2 = self.env["valuation.area"].create(
+            {
+                "name": "Area 2",
+                "code": "AR2",
+                "company_id": company.id,
+                "stock_journal_id": self.stock_journal.id,
+            }
+        )
+        warehouse2 = self.env["stock.warehouse"].create(
+            {"name": "Warehouse 2", "code": "WH2", "company_id": company.id}
+        )
+        warehouse2.valuation_area_id = area2
+        for key, area, valuation, src, dest in [
+            ("internal_transfer_out", self.valuation_area, self.account_valuation, False, account_transfer),
+            ("internal_transfer_in", area2, account_valuation2, account_transfer, False),
+        ]:
+            self.env["product.account.determination"].create(
+                {
+                    "transaction_key": key,
+                    "valuation_class_id": self.valuation_class.id,
+                    "valuation_area_id": area.id,
+                    "company_id": company.id,
+                    "acc_src_id": src and src.id,
+                    "acc_dest_id": dest and dest.id,
+                    "acc_valuation_id": valuation.id,
+                }
+            )
+        return account_transfer, account_valuation2, warehouse2
+
+    def _transit_transfer(self, warehouse2, qty):
+        """Ieșire din depozitul principal în tranzit, apoi intrare în depozitul 2."""
+        transit = self.env.company.internal_transit_location_id
+        picking_type = self.env.ref("stock.picking_type_internal")
+        out_picking = self._picking(picking_type, self.stock_location, transit, qty)
+        in_picking = self._picking(picking_type, transit, warehouse2.lot_stock_id, qty)
+        return out_picking.move_ids, in_picking.move_ids
+
+    def test_transfer_through_transit_is_valued(self):
+        """A transfer between two areas through the transit location moves the value.
+
+        The stock-to-transit and transit-to-stock moves are neither entries nor exits in the core,
+        so their value stayed empty and the entries were posted at 0.
+        """
+        account_transfer, account_valuation2, warehouse2 = self._prepare_transit()
+        self._receipt(10.0)
+        out_move, in_move = self._transit_transfer(warehouse2, 4.0)
+
+        self.assertRecordValues(
+            out_move.account_move_id.line_ids.sorted("debit"),
+            [
+                {"account_id": self.account_valuation.id, "debit": 0.0, "credit": 400.0, "quantity": -4.0},
+                {"account_id": account_transfer.id, "debit": 400.0, "credit": 0.0, "quantity": 4.0},
+            ],
+        )
+        self.assertRecordValues(
+            in_move.account_move_id.line_ids.sorted("debit"),
+            [
+                {"account_id": account_transfer.id, "debit": 0.0, "credit": 400.0, "quantity": -4.0},
+                {"account_id": account_valuation2.id, "debit": 400.0, "credit": 0.0, "quantity": 4.0},
+            ],
+        )
+
+    def test_transfer_through_transit_fifo(self):
+        """With FIFO the transfer is valued at the next cost layers, and the incoming move
+        takes exactly the value of the outgoing one."""
+        if "use_valuation_area_price" in self.product_category._fields:
+            self.product_category.use_valuation_area_price = False  # incompatibil cu FIFO
+        self.product_category.property_cost_method = "fifo"
+        _account_transfer, _account_valuation2, warehouse2 = self._prepare_transit()
+        self._receipt(5.0)  # first layer: 5 pieces at 100
+        self._receipt(5.0).move_ids.value = 600.0  # second layer: 5 pieces at 120
+        self.assertAlmostEqual(self.product.with_company(self.env.company)._run_fifo(6.0), 620.0)
+
+        out_move, in_move = self._transit_transfer(warehouse2, 6.0)
+
+        self.assertAlmostEqual(out_move.value, 620.0)
+        self.assertAlmostEqual(in_move.value, 620.0)
+
+    def test_transfer_through_transit_incoming_follows_outgoing(self):
+        """The cost can change between the two transfers: the incoming value stays the outgoing one."""
+        _account_transfer, _account_valuation2, warehouse2 = self._prepare_transit()
+        self._receipt(10.0)
+        transit = self.env.company.internal_transit_location_id
+        picking_type = self.env.ref("stock.picking_type_internal")
+        out_move = self._picking(picking_type, self.stock_location, transit, 4.0).move_ids
+        self.product.standard_price = 150.0
+        in_move = self._picking(picking_type, transit, warehouse2.lot_stock_id, 4.0).move_ids
+
+        self.assertAlmostEqual(out_move.value, 400.0)
+        self.assertAlmostEqual(in_move.value, 400.0)
+
+    def test_transfer_through_transit_lot_valuation(self):
+        """With lot valuation the transfer is valued at the cost of each lot moved."""
+        self.product.write({"tracking": "lot", "lot_valuated": True})
+        lot_a = self.env["stock.lot"].create(
+            {"name": "LOT-A", "product_id": self.product.id, "company_id": self.env.company.id}
+        )
+        lot_b = self.env["stock.lot"].create(
+            {"name": "LOT-B", "product_id": self.product.id, "company_id": self.env.company.id}
+        )
+        lot_a.standard_price = 100.0
+        lot_b.standard_price = 130.0
+        transit = self.env.company.internal_transit_location_id
+        picking = self.env["stock.picking"].create(
+            {
+                "picking_type_id": self.env.ref("stock.picking_type_internal").id,
+                "location_id": self.stock_location.id,
+                "location_dest_id": transit.id,
+                "move_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.product.id,
+                            "product_uom_qty": 5.0,
+                            "product_uom": self.product.uom_id.id,
+                            "location_id": self.stock_location.id,
+                            "location_dest_id": transit.id,
+                        }
+                    )
+                ],
+            }
+        )
+        picking.action_confirm()
+        move = picking.move_ids
+        for lot, qty in [(lot_a, 3.0), (lot_b, 2.0)]:
+            self.env["stock.move.line"].create(
+                {
+                    "move_id": move.id,
+                    "picking_id": picking.id,
+                    "product_id": self.product.id,
+                    "product_uom_id": self.product.uom_id.id,
+                    "lot_id": lot.id,
+                    "quantity": qty,
+                    "location_id": self.stock_location.id,
+                    "location_dest_id": transit.id,
+                }
+            )
+
+        self.assertEqual(dict(move._get_obyc_transit_quantities()), {lot_a: 3.0, lot_b: 2.0})
+        # 3 pieces from the lot at 100 and 2 from the lot at 130
+        self.assertAlmostEqual(move._get_obyc_transit_cost_value(), 3 * 100.0 + 2 * 130.0)
+
     def test_entry_lines_carry_the_area_of_the_stock_move(self):
         """The lines of a stock entry get the area of the warehouse, not the company default.
 
