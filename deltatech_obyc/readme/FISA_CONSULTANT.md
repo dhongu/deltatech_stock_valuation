@@ -233,9 +233,13 @@ Date minime pentru demo:
    de ieșire poartă aria gestiunii care predă, cea de intrare aria gestiunii care primește. Transferul
    direct între locații interne din arii diferite nu este permis (secțiunea 9). În Odoo 19 locația
    de tranzit a companiei este evaluată, iar mișcarea gestiune → tranzit nu este nici intrare, nici
-   ieșire; de la versiunea 19.0.1.0.21 modulul o evaluează el: **la plecare, la costul curent al
-   produsului; la sosire, la valoarea mișcării de plecare** (proporțional cu cantitatea primită),
-   astfel încât valoarea ieșită dintr-o arie intră întreagă în cealaltă (Pasul 8b).
+   ieșire; de la versiunea 19.0.1.0.21 modulul o evaluează el: **la plecare, la costul unităților
+   mutate, după metoda produsului** (FIFO: următoarele straturi de cost, pe lot la evaluarea pe lot;
+   cost mediu cu evaluare pe lot: costul lotului; cost mediu cu preț pe aria de evaluare: prețul ariei
+   din care pleacă marfa; altfel costul curent), **iar la sosire, la valoarea ieșirii** (din mișcările
+   înlănțuite sau, la două transferuri introduse separat, din costul mediu al mărfii rămase în
+   tranzit), astfel încât valoarea ieșită dintr-o arie intră întreagă în cealaltă și 371.09 se
+   stinge (Pasul 8b).
 7. **Storno:** *Facturare (sau Contabilitate) → Configurare → Setări*, blocul **Contabilitate
    storno** → verificați că **Contabilitate storno** este bifat (la firmele RO este bifat implicit).
 

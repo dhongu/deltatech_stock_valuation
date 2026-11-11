@@ -541,12 +541,9 @@ class TestObycEntries(TestCommon):
             ),
         )
 
-    def test_transfer_through_transit_is_valued(self):
-        """A transfer between two areas through the transit location moves the value.
-
-        The stock-to-transit and transit-to-stock moves are neither entries nor exits in the core,
-        so their value stayed empty and the entries were posted at 0.
-        """
+    def _prepare_transit(self):
+        """Două arii (aria companiei și aria unui al doilea depozit) cu regulile de ieșire și de
+        intrare prin tranzit; întoarce (cont tranzit, cont evaluare arie 2, depozitul 2)."""
         company = self.env.company
         account_transfer = self.env["account.account"].create(
             {"name": "Test Transfer", "code": "TTRF01", "account_type": "asset_current"}
@@ -581,25 +578,66 @@ class TestObycEntries(TestCommon):
                     "acc_valuation_id": valuation.id,
                 }
             )
-        self._receipt(10.0)
-        transit = company.internal_transit_location_id
-        picking_type = self.env.ref("stock.picking_type_internal")
-        out_picking = self._picking(picking_type, self.stock_location, transit, 4.0)
-        in_picking = self._picking(picking_type, transit, warehouse2.lot_stock_id, 4.0)
+        return account_transfer, account_valuation2, warehouse2
 
-        out_lines = out_picking.move_ids.account_move_id.line_ids
-        in_lines = in_picking.move_ids.account_move_id.line_ids
+    def _transit_transfer(self, warehouse2, qty):
+        """Ieșire din depozitul principal în tranzit, apoi intrare în depozitul 2."""
+        transit = self.env.company.internal_transit_location_id
+        picking_type = self.env.ref("stock.picking_type_internal")
+        out_picking = self._picking(picking_type, self.stock_location, transit, qty)
+        in_picking = self._picking(picking_type, transit, warehouse2.lot_stock_id, qty)
+        return out_picking.move_ids, in_picking.move_ids
+
+    def test_transfer_through_transit_is_valued(self):
+        """A transfer between two areas through the transit location moves the value.
+
+        The stock-to-transit and transit-to-stock moves are neither entries nor exits in the core,
+        so their value stayed empty and the entries were posted at 0.
+        """
+        account_transfer, account_valuation2, warehouse2 = self._prepare_transit()
+        self._receipt(10.0)
+        out_move, in_move = self._transit_transfer(warehouse2, 4.0)
+
         self.assertRecordValues(
-            out_lines.sorted("debit"),
+            out_move.account_move_id.line_ids.sorted("debit"),
             [
                 {"account_id": self.account_valuation.id, "debit": 0.0, "credit": 400.0, "quantity": -4.0},
                 {"account_id": account_transfer.id, "debit": 400.0, "credit": 0.0, "quantity": 4.0},
             ],
         )
         self.assertRecordValues(
-            in_lines.sorted("debit"),
+            in_move.account_move_id.line_ids.sorted("debit"),
             [
                 {"account_id": account_transfer.id, "debit": 0.0, "credit": 400.0, "quantity": -4.0},
                 {"account_id": account_valuation2.id, "debit": 400.0, "credit": 0.0, "quantity": 4.0},
             ],
         )
+
+    def test_transfer_through_transit_fifo(self):
+        """With FIFO the transfer is valued at the next cost layers, and the incoming move
+        takes exactly the value of the outgoing one."""
+        if "use_valuation_area_price" in self.product_category._fields:
+            self.product_category.use_valuation_area_price = False  # incompatibil cu FIFO
+        self.product_category.property_cost_method = "fifo"
+        _account_transfer, _account_valuation2, warehouse2 = self._prepare_transit()
+        self._receipt(5.0)  # first layer: 5 pieces at 100
+        self._receipt(5.0).move_ids.value = 600.0  # second layer: 5 pieces at 120
+        self.assertAlmostEqual(self.product.with_company(self.env.company)._run_fifo(6.0), 620.0)
+
+        out_move, in_move = self._transit_transfer(warehouse2, 6.0)
+
+        self.assertAlmostEqual(out_move.value, 620.0)
+        self.assertAlmostEqual(in_move.value, 620.0)
+
+    def test_transfer_through_transit_incoming_follows_outgoing(self):
+        """The cost can change between the two transfers: the incoming value stays the outgoing one."""
+        _account_transfer, _account_valuation2, warehouse2 = self._prepare_transit()
+        self._receipt(10.0)
+        transit = self.env.company.internal_transit_location_id
+        picking_type = self.env.ref("stock.picking_type_internal")
+        out_move = self._picking(picking_type, self.stock_location, transit, 4.0).move_ids
+        self.product.standard_price = 150.0
+        in_move = self._picking(picking_type, transit, warehouse2.lot_stock_id, 4.0).move_ids
+
+        self.assertAlmostEqual(out_move.value, 400.0)
+        self.assertAlmostEqual(in_move.value, 400.0)
