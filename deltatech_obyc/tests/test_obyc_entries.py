@@ -562,7 +562,9 @@ class TestObycEntries(TestCommon):
                 "stock_journal_id": self.stock_journal.id,
             }
         )
-        warehouse2 = self.env["stock.warehouse"].create({"name": "Warehouse 2", "code": "WH2", "company_id": company.id})
+        warehouse2 = self.env["stock.warehouse"].create(
+            {"name": "Warehouse 2", "code": "WH2", "company_id": company.id}
+        )
         warehouse2.valuation_area_id = area2
         for key, area, valuation, src, dest in [
             ("internal_transfer_out", self.valuation_area, self.account_valuation, False, account_transfer),

@@ -101,7 +101,7 @@ class StockMove(models.Model):
         quantity = sum(self.move_line_ids.mapped("quantity_product_uom"))
         if self._compute_transaction_key(raise_if_not_found=False) == "internal_transfer_in":
             origins = self.move_orig_ids.filtered(lambda m: m.state == "done" and m.value and m.quantity)
-            origin_quantity = sum(origins.mapped("quantity"))
+            origin_quantity = sum(origins.move_line_ids.mapped("quantity_product_uom"))
             if origins and origin_quantity:
                 return sum(origins.mapped("value")) / origin_quantity * quantity
         product = self.product_id.with_company(self.company_id)

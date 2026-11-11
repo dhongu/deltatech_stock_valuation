@@ -231,10 +231,11 @@ Date minime pentru demo:
 
    O notă Dr 371 / Cr 371 (același cont sintetic) este legitimă aici: analiticele diferă, iar nota
    de ieșire poartă aria gestiunii care predă, cea de intrare aria gestiunii care primește. Transferul
-   direct între locații interne din arii diferite nu este permis (secțiunea 9). **De verificat pe o
-   mișcare de test** că notele de tranzit au valoare: în Odoo 19 locația de tranzit a companiei este
-   evaluată, iar mișcarea gestiune → tranzit nu este nici intrare, nici ieșire, deci valoarea ei
-   poate rămâne 0; fluxul nu are încă test automat.
+   direct între locații interne din arii diferite nu este permis (secțiunea 9). În Odoo 19 locația
+   de tranzit a companiei este evaluată, iar mișcarea gestiune → tranzit nu este nici intrare, nici
+   ieșire; de la versiunea 19.0.1.0.21 modulul o evaluează el: **la plecare, la costul curent al
+   produsului; la sosire, la valoarea mișcării de plecare** (proporțional cu cantitatea primită),
+   astfel încât valoarea ieșită dintr-o arie intră întreagă în cealaltă (Pasul 8b).
 7. **Storno:** *Facturare (sau Contabilitate) → Configurare → Setări*, blocul **Contabilitate
    storno** → verificați că **Contabilitate storno** este bifat (la firmele RO este bifat implicit).
 
@@ -353,6 +354,20 @@ nota din *Note contabile*, după referința livrării.
 
 ![Notă livrare: cost la livrare](screenshots/08_delivery_cogs_entry.png)
 
+### Pasul 8b — Transferul între arii prin tranzit
+
+*Inventar → Operații → Transferuri* → creați un transfer intern de 4 buc. din locația gestiunii
+care predă către locația de tranzit a companiei și **Validați**-l; apoi un al doilea, din locația de
+tranzit către locația gestiunii care primește, și **Validați**-l. Deschideți cele două note din
+*Note contabile*, după referința transferurilor.
+
+1. **Găsiți pe ecran:** pe fiecare notă, jurnalul și aria gestiunii respective, liniile cu conturile
+   regulilor *Ieșire transfer intern* și *Intrare transfer intern*, cantitatea ±4.
+2. **Verificați:** nota de ieșire are Dr 371.09 / Cr 371.01 = 400,00 lei (4 buc. × costul curent de
+   100 lei); nota de intrare are Dr 371.02 / Cr 371.09 = 400,00 lei, aceeași valoare ca la ieșire,
+   chiar dacă între cele două transferuri costul produsului s-a schimbat. Contul 371.09 se stinge.
+   Niciuna dintre note nu trebuie să aibă sume 0.
+
 ### Pasul 9 — Factura de vânzare: doar venit și TVA
 
 *Facturare → Clienți → Facturi* → **Nou(ă)** → client „Client Demo SRL", produsul livrat,
@@ -429,6 +444,8 @@ Note generate în baza demo (marfă, cost mediu 100 lei/buc.):
 | Retur la furnizor (5 buc.), **fără** storno | Retur la furnizor | 408 | 371 | 500,00 |
 | Retur la furnizor (5 buc.), **cu** storno | Retur la furnizor | 371 | 408 | −500,00 |
 | Livrare la client (2 buc.) | Livrare stoc | 607 | 371 | 200,00 |
+| Transfer între arii prin tranzit, ieșire (4 buc.) | Ieșire transfer intern | 371.09 | 371.01 | 400,00 |
+| Transfer între arii prin tranzit, intrare (4 buc.) | Intrare transfer intern | 371.02 | 371.09 | 400,00 (valoarea ieșirii) |
 | Factura de vânzare (2 × 150 lei + TVA 21%) | Venituri (Cont destinație) | 4111 | 707 / 4427 | 363,00 = 300,00 + 63,00 |
 | Retur de la client, **cu** storno (implicit la firmele RO) | Retur de la client | 607 | 371 | −V |
 | Retur de la client, **fără** storno | Retur de la client | 371 | 607 | V |
@@ -677,9 +694,9 @@ Observații:
   avans din comanda de vânzare cere conturile produsului fără cheie de tranzacție și se oprește
   probabil cu „Transaction key is not defined” pe comenzile cu produse OBYC. Testați pe baza
   clientului înainte de a folosi fluxul OBYC-004.
-- **OBYC-009 — transfer prin tranzit cu valoare 0 (dedus din cod, netestat).** Mișcarea gestiune →
-  tranzit nu primește valoare în Odoo 19, deci nota OBYC poate ieși cu 0; nu folosiți ruta prin
-  tranzit fără un test pe baza clientului.
+- **OBYC-009 — reparat în 19.0.1.0.21:** transferul între arii prin tranzit este evaluat (la
+  plecare costul curent, la sosire valoarea ieșirii), deci notele nu mai ies cu 0 (Pasul 8b).
+  Notele postate înainte de reparație cu valoare 0 nu se corectează automat.
 - Cheile **Evaluare stoc**, **Diferență de preț** și **Diferență de preț la recepție stoc** apar
   în listă, dar nu sunt folosite de fluxurile actuale; diferențele de preț nu au tratament OBYC
   (secțiunea 6, „Note de monografie").
