@@ -421,7 +421,9 @@ class StockMove(models.Model):
         reclassification_moves._set_obyc_reclassification_value()
         # transferul prin locația de tranzit nu e nici intrare, nici ieșire în nucleu (`_set_value`
         # nu îl atinge), deci `value` rămâne gol, iar nota OBYC ar fi postată pe zero
-        for move in self.filtered(lambda m: not m.value and m._is_obyc_transit_transfer()):
+        for move in self.filtered(
+            lambda m: not m.value and m._should_create_account_move() and m._is_obyc_transit_transfer()
+        ):
             move.value = move._get_obyc_transit_value()
         result = self.env["account.move"]
         default_moves = self.browse()
