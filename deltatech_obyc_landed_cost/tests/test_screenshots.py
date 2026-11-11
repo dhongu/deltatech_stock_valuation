@@ -11,7 +11,7 @@
 #       --test-tags=fise_screenshots --stop-after-init --http-port=8170
 import unittest
 
-from odoo import Command
+from odoo import Command, fields
 from odoo.tests import tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
@@ -118,6 +118,35 @@ class TestLandedCostScreenshots(AccountTestInvoicingCommon, ScreenshotCase or ob
             {"landed_cost_method": "intermediary", "landed_cost_intermediary_account_id": cls.account_inter.id}
         )
         cls.landed_routed = cls._landed_cost(picking)
+        payable = env["account.account"].create(
+            {"name": "Furnizori", "code": "401900", "account_type": "liability_payable", "reconcile": True}
+        )
+        carrier = env["res.partner"].create(
+            {"name": "Transportator Demo SRL", "property_account_payable_id": payable.id}
+        )
+        tax = company.account_purchase_tax_id
+        cls.carrier_bill = env["account.move"].create(
+            {
+                "move_type": "in_invoice",
+                "partner_id": carrier.id,
+                "invoice_date": fields.Date.today(),
+                "ref": "FT-2001",
+                "invoice_payment_term_id": env.ref("account.account_payment_term_immediate").id,
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": cls.cost_product.id,
+                            "quantity": 1.0,
+                            "price_unit": 50.0,
+                            "account_id": cls.account_transport.id,
+                            "is_landed_costs_line": True,
+                            "tax_ids": [Command.set(tax.ids)],
+                        }
+                    )
+                ],
+            }
+        )
+        cls.carrier_bill.action_post()
 
     @classmethod
     def _ro_account(cls, code_like, name, code, account_type):
@@ -171,6 +200,13 @@ class TestLandedCostScreenshots(AccountTestInvoicingCommon, ScreenshotCase or ob
             },
             self.account_move_shot(self.landed_standard.account_move_id, "03_note_standard.png"),
             self.account_move_shot(self.landed_routed.account_move_id, "04_note_intermediary.png"),
+            {
+                "path": f"/web?debug=0#id={self.carrier_bill.id}&model=account.move&view_type=form",
+                "name": "05_vendor_bill_button.png",
+                "wait": ".o_form_view",
+                "highlight": ["button[name='button_create_landed_costs']"],
+                "settle": 2500,
+            },
         ]
 
     def test_capture_fise(self):

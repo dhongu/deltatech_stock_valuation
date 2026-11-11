@@ -15,6 +15,7 @@
     "depends": [
         "deltatech_obyc",
         "stock_landed_costs",
+        "purchase_stock",
         "account",
     ],
     "license": "OPL-1",

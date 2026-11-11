@@ -58,6 +58,8 @@ Usage
    bill's purchase orders not yet covered by another landed cost and the
    account of each bill line are filled in.
 
+|Vendor bill with the Create Landed Costs button|
+
 |Validated landed cost|
 
 2. Open the journal entry. With the standard method it is Dr stock / Cr
@@ -74,6 +76,7 @@ Class 609, accounts outside class 6 and the debit of a negative cost are
 never rerouted.
 
 .. |Landed cost method setting| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/01_settings_landed_cost.png
+.. |Vendor bill with the Create Landed Costs button| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/05_vendor_bill_button.png
 .. |Validated landed cost| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/02_landed_cost_form.png
 .. |Standard entry| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/03_note_standard.png
 .. |Entry through the intermediary account| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/04_note_intermediary.png
