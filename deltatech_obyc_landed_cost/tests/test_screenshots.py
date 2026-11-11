@@ -91,46 +91,55 @@ class TestLandedCostScreenshots(AccountTestInvoicingCommon, ScreenshotCase or ob
         )
         warehouse = env["stock.warehouse"].search([("company_id", "=", company.id)], limit=1)
         warehouse.code = "MAG"
-        picking = env["stock.picking"].create(
-            {
-                "picking_type_id": warehouse.in_type_id.id,
-                "location_id": env.ref("stock.stock_location_suppliers").id,
-                "location_dest_id": warehouse.lot_stock_id.id,
-                "partner_id": cls.partner_b.id,
-                "move_ids": [
-                    Command.create(
-                        {
-                            "product_id": cls.product.id,
-                            "product_uom_qty": 10.0,
-                            "product_uom": cls.product.uom_id.id,
-                            "location_id": env.ref("stock.stock_location_suppliers").id,
-                            "location_dest_id": warehouse.lot_stock_id.id,
-                        }
-                    )
-                ],
-            }
-        )
-        picking.action_confirm()
-        picking.move_ids._set_quantity_done(10.0)
-        picking.with_context(demo_mode=True).button_validate()
-        cls.landed_standard = cls._landed_cost(picking)
-        company.write(
-            {"landed_cost_method": "intermediary", "landed_cost_intermediary_account_id": cls.account_inter.id}
-        )
-        cls.landed_routed = cls._landed_cost(picking)
         payable = env["account.account"].create(
             {"name": "Furnizori", "code": "401900", "account_type": "liability_payable", "reconcile": True}
         )
-        carrier = env["res.partner"].create(
+        cls.vendor = env["res.partner"].create({"name": "Furnizor Demo SRL", "property_account_payable_id": payable.id})
+        cls.carrier = env["res.partner"].create(
             {"name": "Transportator Demo SRL", "property_account_payable_id": payable.id}
         )
-        tax = company.account_purchase_tax_id
-        cls.carrier_bill = env["account.move"].create(
+        # comanda de achiziție -> recepția -> factura furnizorului de marfă
+        cls.purchase_order = env["purchase.order"].create(
+            {
+                "partner_id": cls.vendor.id,
+                "order_line": [
+                    Command.create({"product_id": cls.product.id, "product_qty": 10.0, "price_unit": 100.0})
+                ],
+            }
+        )
+        cls.purchase_order.button_confirm()
+        cls.receipt = cls.purchase_order.picking_ids
+        cls.receipt.move_ids._set_quantity_done(10.0)
+        cls.receipt.with_context(demo_mode=True).button_validate()
+        cls.receipt_note = cls.receipt.move_ids.account_move_id[:1]
+        cls.purchase_order.action_create_invoice()
+        cls.goods_bill = cls.purchase_order.invoice_ids
+        cls.goods_bill.write(
+            {
+                "invoice_date": fields.Date.today(),
+                "ref": "FF-1001",
+                "invoice_payment_term_id": env.ref("account.account_payment_term_immediate").id,
+            }
+        )
+        cls.goods_bill.action_post()
+        # facturile transportatorului (linie cu produs „Este cost adițional") -> costuri adiționale
+        cls.carrier_bill_standard = cls._carrier_bill("FT-2001")
+        cls.landed_standard = cls._landed_cost_from_bill(cls.carrier_bill_standard)
+        company.write(
+            {"landed_cost_method": "intermediary", "landed_cost_intermediary_account_id": cls.account_inter.id}
+        )
+        cls.carrier_bill_routed = cls._carrier_bill("FT-2002")
+        cls.landed_routed = cls._landed_cost_from_bill(cls.carrier_bill_routed)
+
+    @classmethod
+    def _carrier_bill(cls, ref):
+        env = cls.env
+        bill = env["account.move"].create(
             {
                 "move_type": "in_invoice",
-                "partner_id": carrier.id,
+                "partner_id": cls.carrier.id,
                 "invoice_date": fields.Date.today(),
-                "ref": "FT-2001",
+                "ref": ref,
                 "invoice_payment_term_id": env.ref("account.account_payment_term_immediate").id,
                 "invoice_line_ids": [
                     Command.create(
@@ -140,13 +149,24 @@ class TestLandedCostScreenshots(AccountTestInvoicingCommon, ScreenshotCase or ob
                             "price_unit": 50.0,
                             "account_id": cls.account_transport.id,
                             "is_landed_costs_line": True,
-                            "tax_ids": [Command.set(tax.ids)],
+                            "tax_ids": [Command.set(env.company.account_purchase_tax_id.ids)],
                         }
                     )
                 ],
             }
         )
-        cls.carrier_bill.action_post()
+        bill.action_post()
+        return bill
+
+    @classmethod
+    def _landed_cost_from_bill(cls, bill):
+        """Ca operatorul: butonul de pe factura transportatorului, apoi recepția în câmpul Transferuri."""
+        landed = cls.env["stock.landed.cost"].browse(bill.button_create_landed_costs()["res_id"])
+        landed.write({"picking_ids": [Command.set(cls.receipt.ids)], "account_journal_id": cls.stock_journal.id})
+        landed.cost_lines.split_method = "by_quantity"
+        landed.compute_landed_cost()
+        landed.button_validate()
+        return landed
 
     @classmethod
     def _ro_account(cls, code_like, name, code, account_type):
@@ -155,31 +175,17 @@ class TestLandedCostScreenshots(AccountTestInvoicingCommon, ScreenshotCase or ob
         )
         return account or cls.env["account.account"].create({"name": name, "code": code, "account_type": account_type})
 
-    @classmethod
-    def _landed_cost(cls, picking):
-        landed = cls.env["stock.landed.cost"].create(
-            {
-                "picking_ids": [Command.set(picking.ids)],
-                "account_journal_id": cls.stock_journal.id,
-                "cost_lines": [
-                    Command.create(
-                        {
-                            "name": "Transport marfă",
-                            "product_id": cls.cost_product.id,
-                            "price_unit": 50.0,
-                            "split_method": "by_quantity",
-                            "account_id": cls.account_transport.id,
-                        }
-                    )
-                ],
-            }
-        )
-        landed.compute_landed_cost()
-        landed.button_validate()
-        return landed
-
     def _dr_cr(self, move):
         return sorted((line.account_id.code[:6], round(line.debit, 2), round(line.credit, 2)) for line in move.line_ids)
+
+    def _form(self, record, name, **kw):
+        return {
+            "path": f"/web?debug=0#id={record.id}&model={record._name}&view_type=form",
+            "name": name,
+            "wait": ".o_form_view",
+            "settle": 2500,
+            **kw,
+        }
 
     def _shots(self):
         action = self.env.ref("stock.action_stock_config_settings").id
@@ -192,25 +198,25 @@ class TestLandedCostScreenshots(AccountTestInvoicingCommon, ScreenshotCase or ob
                 "highlight": ["div[name='landed_cost_method']", "div[name='landed_cost_intermediary_account_id']"],
                 "settle": 3000,
             },
-            {
-                "path": f"/web?debug=0#id={self.landed_routed.id}&model=stock.landed.cost&view_type=form",
-                "name": "02_landed_cost_form.png",
-                "wait": ".o_form_view",
-                "settle": 2000,
-            },
-            self.account_move_shot(self.landed_standard.account_move_id, "03_note_standard.png"),
-            self.account_move_shot(self.landed_routed.account_move_id, "04_note_intermediary.png"),
-            {
-                "path": f"/web?debug=0#id={self.carrier_bill.id}&model=account.move&view_type=form",
-                "name": "05_vendor_bill_button.png",
-                "wait": ".o_form_view",
-                "highlight": ["button[name='button_create_landed_costs']"],
-                "settle": 2500,
-            },
+            self._form(self.purchase_order, "02_purchase_order.png"),
+            self._form(self.receipt, "03_receipt.png"),
+            self.account_move_shot(self.receipt_note, "04_receipt_note.png"),
+            self._form(self.goods_bill, "05_goods_bill.png"),
+            self._form(
+                self.carrier_bill_standard,
+                "06_transport_bill_button.png",
+                highlight=["button[name='button_create_landed_costs']"],
+            ),
+            self._form(self.landed_standard, "07_landed_cost_form.png"),
+            self.account_move_shot(self.landed_standard.account_move_id, "08_note_standard.png"),
+            self.account_move_shot(self.landed_routed.account_move_id, "09_note_intermediary.png"),
         ]
 
     def test_capture_fise(self):
         # notele din capturi trebuie să fie cele descrise în fișă
+        self.assertEqual(
+            self._dr_cr(self.receipt_note), sorted([("371000", 1000.0, 0.0), (self.account_src.code[:6], 0.0, 1000.0)])
+        )
         self.assertEqual(
             self._dr_cr(self.landed_standard.account_move_id), [("371000", 50.0, 0.0), ("624000", 0.0, 50.0)]
         )
