@@ -4,7 +4,7 @@
 
 {
     "name": "OBYC - Landed Cost Class 6 Routing",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "summary": "Landed costs on OBYC: route class 6 credit through an intermediary account",
     "category": "Valuation/Valuation",
     "author": "Terrabit, Dorin Hongu",
