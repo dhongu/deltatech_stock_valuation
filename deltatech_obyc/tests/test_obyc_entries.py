@@ -641,3 +641,53 @@ class TestObycEntries(TestCommon):
 
         self.assertAlmostEqual(out_move.value, 400.0)
         self.assertAlmostEqual(in_move.value, 400.0)
+
+    def test_transfer_through_transit_lot_valuation(self):
+        """With lot valuation the transfer is valued at the cost of each lot moved."""
+        self.product.write({"tracking": "lot", "lot_valuated": True})
+        lot_a = self.env["stock.lot"].create(
+            {"name": "LOT-A", "product_id": self.product.id, "company_id": self.env.company.id}
+        )
+        lot_b = self.env["stock.lot"].create(
+            {"name": "LOT-B", "product_id": self.product.id, "company_id": self.env.company.id}
+        )
+        lot_a.standard_price = 100.0
+        lot_b.standard_price = 130.0
+        transit = self.env.company.internal_transit_location_id
+        picking = self.env["stock.picking"].create(
+            {
+                "picking_type_id": self.env.ref("stock.picking_type_internal").id,
+                "location_id": self.stock_location.id,
+                "location_dest_id": transit.id,
+                "move_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.product.id,
+                            "product_uom_qty": 5.0,
+                            "product_uom": self.product.uom_id.id,
+                            "location_id": self.stock_location.id,
+                            "location_dest_id": transit.id,
+                        }
+                    )
+                ],
+            }
+        )
+        picking.action_confirm()
+        move = picking.move_ids
+        for lot, qty in [(lot_a, 3.0), (lot_b, 2.0)]:
+            self.env["stock.move.line"].create(
+                {
+                    "move_id": move.id,
+                    "picking_id": picking.id,
+                    "product_id": self.product.id,
+                    "product_uom_id": self.product.uom_id.id,
+                    "lot_id": lot.id,
+                    "quantity": qty,
+                    "location_id": self.stock_location.id,
+                    "location_dest_id": transit.id,
+                }
+            )
+
+        self.assertEqual(dict(move._get_obyc_transit_quantities()), {lot_a: 3.0, lot_b: 2.0})
+        # 3 pieces from the lot at 100 and 2 from the lot at 130
+        self.assertAlmostEqual(move._get_obyc_transit_cost_value(), 3 * 100.0 + 2 * 130.0)
