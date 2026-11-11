@@ -222,6 +222,32 @@ class TestLandedCostRouting(TestCommon):
         self.assertEqual(landed.cost_lines.account_id, self.account_624)
         self.assertEqual(landed.cost_lines.price_unit, 50.0)
 
+    def test_11_bill_two_lines_same_product_keep_own_account(self):
+        """Two cost lines of the same product on the bill keep the account of their own bill line."""
+        vendor = self._vendor()
+        bill = self._vendor_bill(vendor, self.env["purchase.order"])
+        other = self.env["account.account"].create({"name": "Other 628", "code": "628TLC", "account_type": "expense"})
+        bill.button_draft()
+        bill.write(
+            {
+                "invoice_line_ids": [
+                    Command.create(
+                        {
+                            "product_id": self.cost_product.id,
+                            "quantity": 1.0,
+                            "price_unit": 30.0,
+                            "account_id": other.id,
+                            "is_landed_costs_line": True,
+                        }
+                    )
+                ]
+            }
+        )
+        bill.action_post()
+        landed = self.env["stock.landed.cost"].browse(bill.button_create_landed_costs()["res_id"])
+        accounts = {line.price_unit: line.account_id for line in landed.cost_lines}
+        self.assertEqual(accounts, {50.0: self.account_624, 30.0: other})
+
     def test_10_bill_without_purchase_order(self):
         """A bill without purchase order creates an empty landed cost; the cost line keeps the
         account of the bill line."""
