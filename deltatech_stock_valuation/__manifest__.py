@@ -12,6 +12,7 @@
     "category": "Valuation/Valuation",
     "depends": ["stock_account", "deltatech_valuation_area"],
     "license": "OPL-1",
+    "consultant_sheet": "full",
     "data": [
         "security/ir.model.access.csv",
         "security/security.xml",

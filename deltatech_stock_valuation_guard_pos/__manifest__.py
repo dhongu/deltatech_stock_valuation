@@ -18,6 +18,7 @@
     },
     "auto_install": True,
     "license": "OPL-1",
+    "consultant_sheet": "full",
     "development_status": "Beta",
     "maintainers": ["dhongu"],
 }
