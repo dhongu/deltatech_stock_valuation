@@ -557,7 +557,10 @@ class TestObycEntries(TestCommon):
         )
         self.assertNotEqual(area, self.env.company.valuation_area_id)
         self.stock_location.warehouse_id.valuation_area_id = area
-        for key, src, dest in [("stock_receipt", self.account_src, False), ("stock_delivery", False, self.account_dest)]:
+        for key, src, dest in [
+            ("stock_receipt", self.account_src, False),
+            ("stock_delivery", False, self.account_dest),
+        ]:
             self.env["product.account.determination"].create(
                 {
                     "transaction_key": key,
