@@ -541,6 +541,53 @@ class TestObycEntries(TestCommon):
             ),
         )
 
+    def test_transfer_with_skip_entry_context_posts_nothing(self):
+        """A transfer validated with the context key of the stock reclassification document
+        does not post the OBYC entry, even when the rule of the key has different accounts or
+        is missing; the same transfer without the key posts it as before."""
+        account_goods, _picking_type, location = self._reclassification_setup()
+        rule = self.env["product.account.determination"].search(
+            [
+                ("transaction_key", "=", "internal_transfer"),
+                ("account_modifier_id", "=", False),
+                ("valuation_class_id", "=", self.valuation_class.id),
+            ]
+        )
+        rule.write({"acc_src_id": self.account_valuation.id, "acc_valuation_id": account_goods.id})
+        self._receipt(10.0)
+        internal_type = self.env.ref("stock.picking_type_internal")
+
+        def transfer(destination, with_key):
+            picking = self.env["stock.picking"].create(
+                {
+                    "picking_type_id": internal_type.id,
+                    "location_id": self.stock_location.id,
+                    "location_dest_id": destination.id,
+                    "move_ids": [
+                        Command.create(
+                            {
+                                "product_id": self.product.id,
+                                "product_uom_qty": 2.0,
+                                "product_uom": self.product.uom_id.id,
+                                "location_id": self.stock_location.id,
+                                "location_dest_id": destination.id,
+                            }
+                        )
+                    ],
+                }
+            )
+            picking.action_confirm()
+            picking.move_ids._set_quantity_done(2.0)
+            picking = picking.with_context(demo_mode=True, stock_reclassification_skip_entry=with_key)
+            picking.button_validate()
+            return picking
+
+        self.assertTrue(transfer(location, with_key=False).move_ids.account_move_id)
+        self.assertFalse(transfer(location, with_key=True).move_ids.account_move_id)
+        # no rule at all for the key: the validation is not refused when the key is set
+        rule.unlink()
+        self.assertFalse(transfer(location, with_key=True).move_ids.account_move_id)
+
     def _prepare_transit(self):
         """Două arii (aria companiei și aria unui al doilea depozit) cu regulile de ieșire și de
         intrare prin tranzit; întoarce (cont tranzit, cont evaluare arie 2, depozitul 2)."""

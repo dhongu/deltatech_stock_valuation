@@ -1,3 +1,7 @@
+## 19.0.1.0.22
+
+- The stock moves of a transfer validated with the context key `stock_reclassification_skip_entry` (set by the stock reclassification document, `deltatech_stock_reclass`) do not post the OBYC entry: the document posts its own. Without it a reclassification toward a location outside the stock (for example fixed assets) was posted twice when the rule of the move key had accounts, and was refused when the rule was missing.
+
 ## 19.0.1.0.21
 
 - Fix: a transfer between two valuation areas through the transit location is valued. In Odoo 19 a stock-to-transit move is neither an entry nor an exit, so `stock.move.value` stayed empty and the OBYC entries of `internal_transfer_out` / `internal_transfer_in` were posted with value and quantity 0. The outgoing move is valued at the cost of the moved units according to the valuation method of the product: FIFO at the next cost layers (per lot for lot valuation), average cost with lot valuation at the cost of each lot, average cost with area price (`deltatech_stock_valuation`) at the price of the source area, otherwise at the current cost. The incoming move takes the value of the outgoing one: from the chained moves, or, when the two transfers were entered separately, from the average cost of the goods left in the transit location, so the transit account is cleared. Entries already posted at 0 are not changed.
