@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 06:50+0000\n"
-"PO-Revision-Date: 2026-11-11 06:50+0000\n"
+"POT-Creation-Date: 2026-11-11 06:56+0000\n"
+"PO-Revision-Date: 2026-11-11 06:56+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ro\n"
@@ -39,8 +39,8 @@ msgstr "Nume afișat"
 msgid ""
 "How a landed cost entry that would credit a class 6 (expense) account is "
 "generated. 'Through intermediary account' routes the class 6 credit through "
-"a technical account, producing two balanced entries with the same net "
-"effect."
+"a technical account, producing a single entry with two balanced pairs and "
+"the same net effect."
 msgstr ""
 "Cum se generează nota costului adițional care ar credita un cont de clasa 6 "
 "(cheltuieli). „Prin cont intermediar” trece creditul clasei 6 printr-un cont"
@@ -53,7 +53,7 @@ msgstr ""
 msgid ""
 "How a landed cost entry that would credit a class 6 (expense) account is generated:\n"
 "- Standard: native Odoo behaviour (stock valuation = class 6);\n"
-"- Through intermediary account: the class 6 credit is routed through a technical intermediary account, producing two balanced entries (stock valuation = intermediary and intermediary = class 6) with the same net effect."
+"- Through intermediary account: the class 6 credit is routed through a technical intermediary account, producing a single entry with two balanced pairs (stock valuation = intermediary and intermediary = class 6) and the same net effect."
 msgstr ""
 "Cum se generează nota costului adițional care ar credita un cont de clasa 6 "
 "(cheltuieli). „Prin cont intermediar” trece creditul clasei 6 printr-un cont"
@@ -67,11 +67,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:deltatech_obyc_landed_cost.field_stock_valuation_adjustment_lines__id
 msgid "ID"
 msgstr "ID"
-
-#. module: deltatech_obyc_landed_cost
-#: model_terms:ir.ui.view,arch_db:deltatech_obyc_landed_cost.res_config_settings_view_form
-msgid "Intermediary Account"
-msgstr "Cont intermediar"
 
 #. module: deltatech_obyc_landed_cost
 #: model:ir.model,name:deltatech_obyc_landed_cost.model_account_move
@@ -106,6 +101,18 @@ msgstr ""
 "Cont tehnic prin care trece creditul clasei 6 al notei costului adițional. "
 "Se stinge (sold zero) la fiecare cost adițional. Clasa 609 nu se rutează "
 "niciodată."
+
+#. module: deltatech_obyc_landed_cost
+#. odoo-python
+#: code:addons/deltatech_obyc_landed_cost/models/res_company.py:0
+msgid ""
+"The landed cost intermediary account must not be a class 6 (expense) "
+"account: it would appear on both debit and credit of the same entry. Use a "
+"technical account from another class (for example an analytic of 473)."
+msgstr ""
+"Contul intermediar al costurilor adiționale nu poate fi un cont de clasa 6 "
+"(cheltuieli): ar apărea și pe debit, și pe credit în aceeași notă. Folosiți "
+"un cont tehnic din altă clasă (de exemplu un analitic de 473)."
 
 #. module: deltatech_obyc_landed_cost
 #: model:ir.model.fields.selection,name:deltatech_obyc_landed_cost.selection__res_company__landed_cost_method__intermediary

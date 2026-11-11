@@ -20,13 +20,15 @@ Modulul înlocuiește `l10n_ro_stock_account_landed_cost_account` la companiile 
 
 ## 2. Bază legală și context
 
-- **OMFP 1802/2014**, cap. 1 sec. 1.2 pct. 6: cheltuielile de transport, manipulare și alte cheltuieli
+- **OMFP 1802/2014**, definiția costului de achiziție: cheltuielile de transport, manipulare și alte cheltuieli
   direct atribuibile achiziției intră în costul de achiziție al stocului (verificat cu Pacioli,
   11.11.2026).
 - Efectul net Dr 371 / Cr 624 și cel prin contul intermediar este identic. Contul intermediar este o
   soluție tehnică: planul de conturi nu are un cont consacrat pentru el, iar Pacioli nu recomandă 482
-  (decontări între subunități) și nici 473. Firma își definește un **analitic tehnic propriu**, cu
-  sold zero la fiecare operațiune, prin politica contabilă (în exemple: `624900 Transport de
+  (decontări între subunități). Contul nu poate fi din clasa 6 (ar apărea și pe debit, și pe credit
+  în aceeași notă); exemplul folosește un analitic de 473 „Decontări din operații în curs de
+  clarificare”. Firma își definește un **analitic tehnic propriu**, cu
+  sold zero la fiecare operațiune, prin politica contabilă (în exemple: `473900 Costuri de
   repartizat`).
 - Se capitalizează doar cantitatea rămasă în stoc; partea deja vândută rămâne pe 624. Dacă se
   reclasifică în costul vânzărilor (Dr 607 / Cr 624) este o decizie a politicii de evaluare a
@@ -47,8 +49,8 @@ Modulul înlocuiește `l10n_ro_stock_account_landed_cost_account` la companiile 
 |---|---|
 | 371 Mărfuri | Cont de evaluare din regula `landed_cost` (Dr) |
 | 624 Cheltuieli cu transportul | Contul liniei de cost (Cr), înregistrat la factura transportatorului |
-| 624900 Transport de repartizat | Exemplu de analitic tehnic intermediar, definit de firmă |
-| 609 | Nu se rutează niciodată |
+| 473900 Costuri de repartizat | Exemplu de analitic tehnic intermediar (clasa 4), definit de firmă; nu poate fi cont de clasa 6 |
+| 609 Reduceri comerciale primite | Nu se rutează niciodată |
 
 Date: regula OBYC `Costuri Adiționale Stoc` cu **Contul de evaluare**, produs stocabil cu clasă de
 evaluare și cost mediu sau FIFO, produs de serviciu cu **Este cost adițional** bifat.
@@ -72,10 +74,10 @@ Metoda *Standard* (implicită) păstrează comportamentul Odoo: Dr 371 / Cr 6xx.
 
 1. **Găsiți pe ecran:** **Metoda pentru creditul clasei 6** și **Cont intermediar** (vizibil doar la
    metoda *Prin cont intermediar*).
-2. **Completați:** metoda *Prin cont intermediar* și contul tehnic ales de firmă (aici 624900).
+2. **Completați:** metoda *Prin cont intermediar* și contul tehnic ales de firmă (aici 473900).
 3. **Verificați:** setarea se salvează cu **Salvează**; fără cont, câmpul e obligatoriu.
 
-![Setările Inventar, blocul Evaluare: metoda pentru creditul clasei 6 = Prin cont intermediar și contul intermediar 624900 completat](../static/description/01_settings_landed_cost.png)
+![Setările Inventar, blocul Evaluare: metoda pentru creditul clasei 6 = Prin cont intermediar și contul intermediar 473900 completat](../static/description/01_settings_landed_cost.png)
 
 ### Pasul 2 — Costul adițional pe o recepție
 
@@ -101,15 +103,15 @@ Același cost, cu metoda *Standard*: o singură pereche, Dr 371 / Cr 624.
 
 Același cost, cu metoda *Prin cont intermediar*: o notă cu patru linii.
 
-1. **Găsiți pe ecran:** 371000 (Dr 50), 624900 (Cr 50), 624900 (Dr 50), 624000 (Cr 50).
+1. **Găsiți pe ecran:** 371000 (Dr 50), 473900 (Cr 50), 473900 (Dr 50), 624000 (Cr 50).
 2. **Verificați:** totalul 100,00 / 100,00 lei; contul intermediar are sold zero (Dr = Cr).
 
-![Nota prin cont intermediar: Dr 371000 / Cr 624900 și Dr 624900 / Cr 624000, câte 50,00 lei, total 100,00 lei](../static/description/04_note_intermediary.png)
+![Nota prin cont intermediar: Dr 371000 / Cr 473900 și Dr 473900 / Cr 624000, câte 50,00 lei, total 100,00 lei](../static/description/04_note_intermediary.png)
 
 ### Pasul 5 — Costul adițional creat din factura de furnizor
 
-Factura transportatorului se înregistrează Dr 624 + Dr 4426 / Cr 401. Pe factura postată, butonul de
-costuri adiționale creează documentul și îl completează:
+Factura transportatorului se înregistrează Dr 624 (50,00) + Dr 4426 (10,50, TVA 21%) / Cr 401 (60,50).
+Pe factura postată, butonul **Creați costuri adiționale** creează documentul și îl completează:
 
 - **recepțiile** comenzilor de achiziție de pe factură, terminate și neacoperite de un alt cost
   adițional validat (un al doilea cost, de exemplu vama, nu va găsi recepția: se adaugă manual);
@@ -124,8 +126,8 @@ Exemplu: recepție de 10 buc., transport de 50 lei pe 624000.
 | Metodă | Debit | Credit | Sumă |
 |---|---|---|---|
 | Standard | 371 | 624 | 50,00 |
-| Prin cont intermediar | 371 | 624900 | 50,00 |
-| | 624900 | 624 | 50,00 |
+| Prin cont intermediar | 371 | 473900 | 50,00 |
+| | 473900 | 624 | 50,00 |
 
 Nu se rutează: clasa 609, conturile din afara clasei 6, debitul unui cost negativ.
 
@@ -149,7 +151,7 @@ Nu se rutează: clasa 609, conturile din afara clasei 6, debitul unui cost negat
 
 | Situație | Cauză | Remediere |
 |---|---|---|
-| Nu apare nicio rutare, deși metoda e *Prin cont intermediar* | Contul intermediar lipsește; în acest caz se aplică tăcut metoda standard | Completați contul în Setări |
+| Nu apare nicio rutare, deși metoda e *Prin cont intermediar* | Contul intermediar lipsește (date importate sau setate pe altă companie; din Setări câmpul e obligatoriu); se aplică tăcut metoda standard | Completați contul în Setări |
 | Nu se generează nicio notă | Produsul nu are evaluare în timp real sau metoda de cost nu e mediu/FIFO | Categoria produsului: evaluare în timp real, cost mediu sau FIFO |
 | `Please configure Stock Expense Account` | Linia de cost fără cont și produsul de transport fără cont de cheltuială | Completați contul liniei sau al produsului |
 | Costul creat din factură nu are recepții | Recepțiile au deja un cost adițional validat sau nu sunt terminate | Adăugați recepțiile manual |

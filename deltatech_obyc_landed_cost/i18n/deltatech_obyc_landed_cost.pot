@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 06:50+0000\n"
-"PO-Revision-Date: 2026-11-11 06:50+0000\n"
+"POT-Creation-Date: 2026-11-11 06:56+0000\n"
+"PO-Revision-Date: 2026-11-11 06:56+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -38,8 +38,8 @@ msgstr ""
 msgid ""
 "How a landed cost entry that would credit a class 6 (expense) account is "
 "generated. 'Through intermediary account' routes the class 6 credit through "
-"a technical account, producing two balanced entries with the same net "
-"effect."
+"a technical account, producing a single entry with two balanced pairs and "
+"the same net effect."
 msgstr ""
 
 #. module: deltatech_obyc_landed_cost
@@ -48,7 +48,7 @@ msgstr ""
 msgid ""
 "How a landed cost entry that would credit a class 6 (expense) account is generated:\n"
 "- Standard: native Odoo behaviour (stock valuation = class 6);\n"
-"- Through intermediary account: the class 6 credit is routed through a technical intermediary account, producing two balanced entries (stock valuation = intermediary and intermediary = class 6) with the same net effect."
+"- Through intermediary account: the class 6 credit is routed through a technical intermediary account, producing a single entry with two balanced pairs (stock valuation = intermediary and intermediary = class 6) and the same net effect."
 msgstr ""
 
 #. module: deltatech_obyc_landed_cost
@@ -57,11 +57,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:deltatech_obyc_landed_cost.field_res_config_settings__id
 #: model:ir.model.fields,field_description:deltatech_obyc_landed_cost.field_stock_valuation_adjustment_lines__id
 msgid "ID"
-msgstr ""
-
-#. module: deltatech_obyc_landed_cost
-#: model_terms:ir.ui.view,arch_db:deltatech_obyc_landed_cost.res_config_settings_view_form
-msgid "Intermediary Account"
 msgstr ""
 
 #. module: deltatech_obyc_landed_cost
@@ -93,6 +88,15 @@ msgstr ""
 msgid ""
 "Technical account used to route the class 6 credit of a landed cost entry. "
 "It nets to zero on every landed cost. Class 609 is never rerouted."
+msgstr ""
+
+#. module: deltatech_obyc_landed_cost
+#. odoo-python
+#: code:addons/deltatech_obyc_landed_cost/models/res_company.py:0
+msgid ""
+"The landed cost intermediary account must not be a class 6 (expense) "
+"account: it would appear on both debit and credit of the same entry. Use a "
+"technical account from another class (for example an analytic of 473)."
 msgstr ""
 
 #. module: deltatech_obyc_landed_cost

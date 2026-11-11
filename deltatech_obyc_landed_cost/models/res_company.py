@@ -1,7 +1,8 @@
 # © 2026 Deltatech
 # See README.rst file on addons root folder for license details
 
-from odoo import fields, models
+from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class ResCompany(models.Model):
@@ -27,3 +28,16 @@ class ResCompany(models.Model):
         help="Technical account used to route the class 6 credit of a landed cost entry. "
         "It nets to zero on every landed cost. Class 609 is never rerouted.",
     )
+
+    @api.constrains("landed_cost_intermediary_account_id")
+    def _check_landed_cost_intermediary_account(self):
+        for company in self:
+            account = company.landed_cost_intermediary_account_id
+            if account and account.code and account.code.startswith("6"):
+                raise ValidationError(
+                    self.env._(
+                        "The landed cost intermediary account must not be a class 6 (expense) account: "
+                        "it would appear on both debit and credit of the same entry. Use a technical "
+                        "account from another class (for example an analytic of 473)."
+                    )
+                )
