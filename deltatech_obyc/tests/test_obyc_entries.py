@@ -540,3 +540,38 @@ class TestObycEntries(TestCommon):
                 key=lambda v: self.env["account.account"].browse(v["account_id"]).code,
             ),
         )
+
+    def test_entry_lines_carry_the_area_of_the_stock_move(self):
+        """The lines of a stock entry get the area of the warehouse, not the company default.
+
+        The entry is created before the stock move is linked to it, so the area computed on the
+        lines used to fall back on the default area of the company.
+        """
+        area = self.env["valuation.area"].create(
+            {
+                "name": "Warehouse area",
+                "code": "WHA",
+                "company_id": self.env.company.id,
+                "stock_journal_id": self.stock_journal.id,
+            }
+        )
+        self.assertNotEqual(area, self.env.company.valuation_area_id)
+        self.stock_location.warehouse_id.valuation_area_id = area
+        for key, src, dest in [("stock_receipt", self.account_src, False), ("stock_delivery", False, self.account_dest)]:
+            self.env["product.account.determination"].create(
+                {
+                    "transaction_key": key,
+                    "valuation_class_id": self.valuation_class.id,
+                    "valuation_area_id": area.id,
+                    "company_id": self.env.company.id,
+                    "acc_src_id": src and src.id,
+                    "acc_dest_id": dest and dest.id,
+                    "acc_valuation_id": self.account_valuation.id,
+                }
+            )
+        receipt = self._receipt(10.0)
+        delivery = self._delivery(4.0)
+        for picking in (receipt, delivery):
+            lines = picking.move_ids.account_move_id.line_ids
+            self.assertTrue(lines)
+            self.assertEqual(lines.mapped("valuation_area_id"), area)
