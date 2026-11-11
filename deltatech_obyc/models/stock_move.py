@@ -280,6 +280,13 @@ class StockMove(models.Model):
                     "product_uom_id": self.product_id.uom_id.id,
                 },
             ]
+            # aria mișcării se pune explicit: la crearea liniilor mișcarea de stoc nu e încă
+            # legată de notă (`account_move_id` se setează după creare), deci compute-ul de pe
+            # account.move.line nu o găsește și ar folosi aria implicită a companiei
+            valuation_area = self._get_valuation_area(raise_if_not_found=False)
+            if valuation_area:
+                for vals in vals_list:
+                    vals["valuation_area_id"] = valuation_area.id
 
         if self._is_storno_return():
             # transformare în storno (roșu): nota „neagră" de retur (Dr A / Cr B)

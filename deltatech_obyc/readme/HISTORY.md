@@ -1,3 +1,7 @@
+## 19.0.1.0.20
+
+- Fix: the lines of an OBYC stock entry get the valuation area of the stock move (for example the area of the warehouse). Until now the area stored on the lines was the default area of the company, because the lines were created before the stock move was linked to the entry. The account rule and the journal were already chosen from the area of the move; only the area stored on the lines was wrong, so any report or balance per area was off. Entries already posted are not changed.
+
 ## 19.0.1.0.19 (2026-11-04)
 
 - Fix: on a company with valuation areas enabled and no default area, an invoice for a service or consumable from a category with a valuation class failed with "Valuation area is not defined". Only storable products require a valuation area now. For a non-storable product without an area, the OBYC rule without an area is used when one exists; otherwise the line gets the standard income or expense account of the product or its category. Storable products are not affected.
