@@ -1,0 +1,3 @@
+## 19.0.1.0.0 (2026-11-11)
+
+- First version. Replaces `l10n_ro_stock_account_landed_cost_account` for companies that use `deltatech_obyc` instead of `l10n_ro_stock_account`: the stock account comes from the OBYC rule `landed_cost` (no more account on the location). A landed cost entry that would credit a class 6 account (except 609) can be routed through an intermediary account (Dr stock / Cr intermediary and Dr intermediary / Cr class 6), configured per company in Inventory settings. The landed cost created from a vendor bill takes the receipts of the bill's purchase orders not yet covered by another landed cost and the account of each bill line.
