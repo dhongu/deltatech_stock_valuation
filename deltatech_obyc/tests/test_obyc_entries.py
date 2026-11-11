@@ -540,3 +540,64 @@ class TestObycEntries(TestCommon):
                 key=lambda v: self.env["account.account"].browse(v["account_id"]).code,
             ),
         )
+
+    def test_transfer_through_transit_is_valued(self):
+        """A transfer between two areas through the transit location moves the value.
+
+        The stock-to-transit and transit-to-stock moves are neither entries nor exits in the core,
+        so their value stayed empty and the entries were posted at 0.
+        """
+        company = self.env.company
+        account_transfer = self.env["account.account"].create(
+            {"name": "Test Transfer", "code": "TTRF01", "account_type": "asset_current"}
+        )
+        account_valuation2 = self.env["account.account"].create(
+            {"name": "Stock Valuation Area 2", "code": "SVC004", "account_type": "asset_current"}
+        )
+        area2 = self.env["valuation.area"].create(
+            {
+                "name": "Area 2",
+                "code": "AR2",
+                "company_id": company.id,
+                "stock_journal_id": self.stock_journal.id,
+            }
+        )
+        warehouse2 = self.env["stock.warehouse"].create({"name": "Warehouse 2", "code": "WH2", "company_id": company.id})
+        warehouse2.valuation_area_id = area2
+        for key, area, valuation, src, dest in [
+            ("internal_transfer_out", self.valuation_area, self.account_valuation, False, account_transfer),
+            ("internal_transfer_in", area2, account_valuation2, account_transfer, False),
+        ]:
+            self.env["product.account.determination"].create(
+                {
+                    "transaction_key": key,
+                    "valuation_class_id": self.valuation_class.id,
+                    "valuation_area_id": area.id,
+                    "company_id": company.id,
+                    "acc_src_id": src and src.id,
+                    "acc_dest_id": dest and dest.id,
+                    "acc_valuation_id": valuation.id,
+                }
+            )
+        self._receipt(10.0)
+        transit = company.internal_transit_location_id
+        picking_type = self.env.ref("stock.picking_type_internal")
+        out_picking = self._picking(picking_type, self.stock_location, transit, 4.0)
+        in_picking = self._picking(picking_type, transit, warehouse2.lot_stock_id, 4.0)
+
+        out_lines = out_picking.move_ids.account_move_id.line_ids
+        in_lines = in_picking.move_ids.account_move_id.line_ids
+        self.assertRecordValues(
+            out_lines.sorted("debit"),
+            [
+                {"account_id": self.account_valuation.id, "debit": 0.0, "credit": 400.0, "quantity": -4.0},
+                {"account_id": account_transfer.id, "debit": 400.0, "credit": 0.0, "quantity": 4.0},
+            ],
+        )
+        self.assertRecordValues(
+            in_lines.sorted("debit"),
+            [
+                {"account_id": account_transfer.id, "debit": 0.0, "credit": 400.0, "quantity": -4.0},
+                {"account_id": account_valuation2.id, "debit": 400.0, "credit": 0.0, "quantity": 4.0},
+            ],
+        )

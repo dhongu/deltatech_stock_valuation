@@ -82,6 +82,37 @@ class StockMove(models.Model):
             move.value = move.sudo()._get_value()
         return res
 
+    def _is_obyc_transit_transfer(self):
+        """Mișcare dintr-o locație internă în tranzit sau din tranzit într-o locație internă,
+        pentru un produs cu clasă de evaluare."""
+        self.ensure_one()
+        if not self.product_id._get_valuation_class():
+            return False
+        return self._compute_transaction_key(raise_if_not_found=False) in (
+            "internal_transfer_out",
+            "internal_transfer_in",
+        )
+
+    def _get_obyc_transit_value(self):
+        """Valoarea unui transfer prin tranzit: la plecare, costul curent al produsului;
+        la sosire, valoarea mișcărilor de plecare (ce a ieșit dintr-o arie intră în cealaltă),
+        iar fără ele costul curent."""
+        self.ensure_one()
+        quantity = sum(self.move_line_ids.mapped("quantity_product_uom"))
+        if self._compute_transaction_key(raise_if_not_found=False) == "internal_transfer_in":
+            origins = self.move_orig_ids.filtered(lambda m: m.state == "done" and m.value and m.quantity)
+            origin_quantity = sum(origins.mapped("quantity"))
+            if origins and origin_quantity:
+                return sum(origins.mapped("value")) / origin_quantity * quantity
+        product = self.product_id.with_company(self.company_id)
+        value = 0.0
+        for move_line in self.move_line_ids:
+            cost = product.standard_price
+            if product.lot_valuated and move_line.lot_id:
+                cost = move_line.lot_id.with_company(self.company_id).standard_price
+            value += cost * move_line.quantity_product_uom
+        return value
+
     def _compute_transaction_key(self, raise_if_not_found=True):
         source_usage = self.location_id.usage
         dest_usage = self.location_dest_id.usage
@@ -258,7 +289,7 @@ class StockMove(models.Model):
             # necesare evaluării (deltatech_stock_valuation); aria de evaluare se
             # completează prin compute-ul de pe account.move.line
             quantity = self._get_valued_qty()
-            if not quantity and self._is_obyc_reclassification():
+            if not quantity and (self._is_obyc_reclassification() or self._is_obyc_transit_transfer()):
                 quantity = sum(self.move_line_ids.mapped("quantity_product_uom"))
             vals_list = [
                 {
@@ -313,6 +344,10 @@ class StockMove(models.Model):
             lambda m: m._should_create_account_move() and m._is_obyc_reclassification()
         )
         reclassification_moves._set_obyc_reclassification_value()
+        # transferul prin locația de tranzit nu e nici intrare, nici ieșire în nucleu (`_set_value`
+        # nu îl atinge), deci `value` rămâne gol, iar nota OBYC ar fi postată pe zero
+        for move in self.filtered(lambda m: not m.value and m._is_obyc_transit_transfer()):
+            move.value = move._get_obyc_transit_value()
         result = self.env["account.move"]
         default_moves = self.browse()
         by_journal = {}

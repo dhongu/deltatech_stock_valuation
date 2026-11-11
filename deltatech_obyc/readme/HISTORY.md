@@ -1,3 +1,7 @@
+## 19.0.1.0.21
+
+- Fix: a transfer between two valuation areas through the transit location is valued. In Odoo 19 a stock-to-transit move is neither an entry nor an exit, so `stock.move.value` stayed empty and the OBYC entries of `internal_transfer_out` / `internal_transfer_in` were posted with value and quantity 0. The outgoing move is now valued at the current cost of the product and the incoming move at the value of the outgoing one. Entries already posted at 0 are not changed.
+
 ## 19.0.1.0.19 (2026-11-04)
 
 - Fix: on a company with valuation areas enabled and no default area, an invoice for a service or consumable from a category with a valuation class failed with "Valuation area is not defined". Only storable products require a valuation area now. For a non-storable product without an area, the OBYC rule without an area is used when one exists; otherwise the line gets the standard income or expense account of the product or its category. Storable products are not affected.
