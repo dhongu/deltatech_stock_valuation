@@ -57,36 +57,13 @@ class TestStockReclassificationScreenshots(AccountTestInvoicingCommon, Screensho
         cls.warehouse.write({"name": "Depozit central", "code": "DC"})
         cls.warehouse.in_type_id.name = "Recepții"
         cls.stock = cls.warehouse.lot_stock_id
-        cls.supplier = cls.partner_a
-        cls.supplier.name = "Furnizor Demo SRL"
-
         cls.product = env["product.product"].create(
             {"name": "Marfă de reclasificat", "is_storable": True, "standard_price": 25.0}
         )
-        picking_type = cls.warehouse.in_type_id
-        receipt = env["stock.picking"].create(
-            {
-                "picking_type_id": picking_type.id,
-                "partner_id": cls.supplier.id,
-                "origin": "Stoc inițial",
-                "location_id": picking_type.default_location_src_id.id,
-                "location_dest_id": picking_type.default_location_dest_id.id,
-                "move_ids": [
-                    Command.create(
-                        {
-                            "product_id": cls.product.id,
-                            "product_uom_qty": 10.0,
-                            "product_uom": cls.product.uom_id.id,
-                            "location_id": picking_type.default_location_src_id.id,
-                            "location_dest_id": picking_type.default_location_dest_id.id,
-                        }
-                    )
-                ],
-            }
-        )
-        receipt.action_confirm()
-        receipt.move_ids.write({"quantity": 10.0, "picked": True})
-        receipt.button_validate()
+        # initial stock without a receipt: a receipt without valuation entry would show in the analytic
+        # stock balance on the line "No stock account", with a difference that has nothing to do with
+        # the reclassification
+        env["stock.quant"].sudo()._update_available_quantity(cls.product, cls.warehouse.lot_stock_id, 10.0)
 
         cls.rule = (
             env["stock.reclassification.rule"]
@@ -140,7 +117,7 @@ class TestStockReclassificationScreenshots(AccountTestInvoicingCommon, Screensho
         def doc_url(doc):
             return f"action={act_doc}&menu_id={menu}&id={doc.id}&view_type=form"
 
-        return [
+        shots = [
             {
                 "url": f"action={act_rule}&menu_id={menu}&id={self.rule.id}&view_type=form",
                 "name": "01_regula_reclasificare.png",
@@ -179,6 +156,33 @@ class TestStockReclassificationScreenshots(AccountTestInvoicingCommon, Screensho
                 "settle": 2000,
             },
         ]
+        # step 7: the analytic stock balance (l10n_ro_stock_sheet, optional: the capture is made only
+        # when the report is installed). `account.report` keeps its options in the session, so the
+        # unfolded view is asked explicitly (`unfold_all` + `ignore_session`), as in that module's tests
+        report = env.ref("l10n_ro_stock_sheet.l10n_ro_stock_sheet_report", raise_if_not_found=False)
+        if report:
+            action = (
+                env["ir.actions.client"]
+                .sudo()
+                .create(
+                    {
+                        "name": "Balanță analitică stocuri",
+                        "tag": "account_report",
+                        "context": {"report_id": report.id},
+                        "params": {"options": {"unfold_all": True}, "ignore_session": True},
+                    }
+                )
+            )
+            shots.append(
+                {
+                    "url": f"action={action.id}",
+                    "name": "07_balanta_analitica.png",
+                    "wait": ".o_content",
+                    "settle": 3000,
+                    "full": True,
+                }
+            )
+        return shots
 
     def test_capture_fise(self):
         self.capture_screenshots(self._shots())

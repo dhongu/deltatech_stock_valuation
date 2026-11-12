@@ -150,6 +150,24 @@ document and the entry would no longer match.
 Reversal Entry fields are highlighted next to the Transfer and Journal
 Entry|
 
+7. Stock reports
+----------------
+
+With the *Analytic Stock Balance and Stock Sheet* module
+(``l10n_ro_stock_sheet``) installed, open **Inventory → Reporting →
+Balanță analitică stocuri** and unfold the account and the product: the
+reclassification shows as an **outgoing** line on the source account and
+an **incoming** line on the destination account, with the quantity and
+the value of the line, on the row of the transfer; the reversal shows as
+the opposite lines. The difference between the analytic and the
+synthetic balance does not change. With a destination outside the stock,
+only the outgoing line from the source account appears (the fixed asset
+accounts are not stock accounts).
+
+|Analytic stock balance unfolded by account, product and document after
+a reclassification and a reversal: outgoing lines on the source account,
+incoming lines on the destination account|
+
 Access
 ------
 
@@ -164,6 +182,7 @@ Operations**) is visible only to the second one.
 .. |Journal entry of the reclassification: credit 302800 Other consumables 100.00 lei and debit 371000 Merchandise 100.00 lei, with the product in the label of both lines| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/04_nota_contabila.png
 .. |Draft document without the management decision after pressing Validate: the Management Decision field is red and the message Missing required fields appears in the top right corner; the document stays in Draft| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/05_decizie_obligatorie.png
 .. |Reversed document: the status is Reversed and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/06_document_anulat.png
+.. |Analytic stock balance unfolded by account, product and document after a reclassification and a reversal: outgoing lines on the source account, incoming lines on the destination account| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/07_balanta_analitica.png
 
 Changelog
 =========

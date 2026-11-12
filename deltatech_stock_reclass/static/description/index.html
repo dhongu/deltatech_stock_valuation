@@ -139,6 +139,18 @@
     <span style="font-size:14px;line-height:1.4;color:#3d4752;">Reversed document: the status is Reversed and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry</span>
   </div>
 </div>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">7. Stock <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">reports</span></h2>
+<p>With the <em>Analytic Stock Balance and Stock Sheet</em> module (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">l10n_ro_stock_sheet</code>) installed, open <strong>Inventory &#8594; Reporting &#8594; Balan&#539;&#259; analitic&#259; stocuri</strong> and unfold the account and the product: the reclassification shows as an <strong>outgoing</strong> line on the source account and an <strong>incoming</strong> line on the destination account, with the quantity and the value of the line, on the row of the transfer; the reversal shows as the opposite lines. The difference between the analytic and the synthetic balance does not change. With a destination outside the stock, only the outgoing line from the source account appears (the fixed asset accounts are not stock accounts).</p>
+<div class="border rounded-4 shadow-sm my-4" style="background-color:#ffffff;">
+  <div class="p-2 rounded-top-4" style="background-color:#f4f8f4;">
+    <img class="img-fluid d-block mx-auto rounded-3" style="max-width:100%;height:auto;" alt="Analytic stock balance unfolded by account, product and document after a reclassification and a reversal: outgoing lines on the source account, incoming lines on the destination account" src="en/07_balanta_analitica.png"/>
+  </div>
+  <div class="d-flex align-items-center px-3 py-2 border-top">
+    <span class="flex-shrink-0 text-center fw-bold rounded-circle d-inline-block me-2"
+          style="background-color:#006F42;color:#ffffff;width:26px;height:26px;line-height:26px;font-size:13px;">7</span>
+    <span style="font-size:14px;line-height:1.4;color:#3d4752;">Analytic stock balance unfolded by account, product and document after a reclassification and a reversal: outgoing lines on the source account, incoming lines on the destination account</span>
+  </div>
+</div>
 <h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;"><span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">Access</span></h2>
 <p>Two groups control the module: <strong>Reclassifications</strong> (create and validate documents) and <strong>Reclassification Configuration</strong> (manage the rules). The <strong>Reclassification Rules</strong> menu (under <strong>Inventory &#8594; Operations</strong>) is visible only to the second one.</p>
 </div>
