@@ -1,3 +1,7 @@
+## 19.0.1.0.3 (2026-11-12)
+
+- Consultant sheet: reclassification between two warehouses with their own stock accounts. The entry of the document takes the place of the inter-warehouse transfer entry, so the rule must have the account of the source warehouse as source and the account where the goods end up as destination (the account of the destination warehouse, or another stock account). Documentation only.
+
 ## 19.0.1.0.2 (2026-11-12)
 
 - The moves of the transfer (and of the reversal transfer on cancel) are linked to the journal entry of the document, and a transfer between two internal locations gets the value of the line on its moves. Without this the stock reports (analytic stock balance, stock sheet) did not show the reclassification: they take the stock account and the value of a move from its entry, so the analytic balance stayed on the source account while the entry moved the value.

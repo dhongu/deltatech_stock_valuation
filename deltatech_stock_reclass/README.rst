@@ -187,6 +187,16 @@ Operations**) is visible only to the second one.
 Changelog
 =========
 
+19.0.1.0.3 (2026-11-12)
+-----------------------
+
+- Consultant sheet: reclassification between two warehouses with their
+  own stock accounts. The entry of the document takes the place of the
+  inter-warehouse transfer entry, so the rule must have the account of
+  the source warehouse as source and the account where the goods end up
+  as destination (the account of the destination warehouse, or another
+  stock account). Documentation only.
+
 19.0.1.0.2 (2026-11-12)
 -----------------------
 
