@@ -41,7 +41,8 @@
             <form>
                 <header>
                     <button name="action_validate" string="Validate" type="object" class="btn-primary" invisible="state != 'draft'" />
-                    <button name="action_cancel" string="Cancel" type="object" invisible="state == 'cancel'" confirm="Cancel the reclassification? For a validated one the transfer and the journal entry are reversed." />
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state != 'draft'" />
+                    <button name="action_cancel" string="Reverse" type="object" invisible="state != 'done'" confirm="Reverse the reclassification? The goods go back to the source location and a reversal entry is posted." />
                     <field name="state" widget="statusbar" statusbar_visible="draft,done" />
                 </header>
                 <sheet>
