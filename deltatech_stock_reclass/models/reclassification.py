@@ -17,7 +17,7 @@ class StockReclassification(models.Model):
 
     name = fields.Char(default="/", copy=False, readonly=True)
     state = fields.Selection(
-        selection=[("draft", "Draft"), ("done", "Done"), ("cancel", "Cancelled")],
+        selection=[("draft", "Draft"), ("done", "Done"), ("cancel", "Reversed")],
         default="draft",
         required=True,
         copy=False,
@@ -87,7 +87,7 @@ class StockReclassification(models.Model):
     @api.ondelete(at_uninstall=False)
     def _unlink_except_done(self):
         if any(rec.state == "done" for rec in self):
-            raise UserError(self.env._("A validated reclassification cannot be deleted: cancel it instead."))
+            raise UserError(self.env._("A validated reclassification cannot be deleted: reverse it instead."))
 
     # ------------------------------------------------------------------ checks
 
@@ -132,13 +132,17 @@ class StockReclassification(models.Model):
             raise UserError(self.env._("No internal operation type found for the company %s.", self.company_id.name))
         return picking_type
 
-    def _create_transfer(self, location_src, location_dest, origin):
+    def _create_transfer(self, location_src, location_dest, origin, reverse=False):
         """Create, reserve and validate an internal transfer for the lines of the document.
-        Its moves do not post the automatic valuation entry (the document posts its own)."""
+        Its moves do not post the automatic valuation entry (the document posts its own).
+
+        The reverse transfer uses the operation type of the original one: the source of the reversal can
+        be a location outside the warehouses, without an internal type of its own."""
         self.ensure_one()
+        picking_type = self.picking_id.picking_type_id if reverse else self._get_picking_type(location_src)
         picking = self.env["stock.picking"].create(
             {
-                "picking_type_id": self._get_picking_type(location_src).id,
+                "picking_type_id": picking_type.id,
                 "location_id": location_src.id,
                 "location_dest_id": location_dest.id,
                 "origin": origin,
@@ -207,29 +211,62 @@ class StockReclassification(models.Model):
             ),
         ]
 
-    def _post_note(self):
+    def _post_note(self, reverse=False):
+        """Post the journal entry of the document: Dr destination account / Cr source account.
+
+        The reversal is a second entry with the accounts swapped and positive amounts (not a negative
+        "storno" entry): the stock reports read the accounts of a reclassification from the debit and
+        the credit of the entry, so a reversal in negative amounts would not show up in them."""
         self.ensure_one()
+        account_debit, account_credit = self.account_dest_id, self.account_src_id
+        if reverse:
+            account_debit, account_credit = account_credit, account_debit
         line_vals = []
         for line in self.line_ids:
             if self.currency_id.is_zero(line.value):
                 continue
-            line_vals += self._prepare_note_line_vals(line, self.account_dest_id, self.account_src_id)
+            line_vals += self._prepare_note_line_vals(line, account_debit, account_credit)
         if not line_vals:
             return self.env["account.move"]
-        note = (
-            self.env["account.move"]
-            .sudo()
-            .create(
-                {
-                    "ref": self.name,
-                    "journal_id": self.journal_id.id,
-                    "date": self.date,
-                    "line_ids": line_vals,
-                }
-            )
-        )
+        vals = {
+            "ref": self.env._("Reversal of %s", self.name) if reverse else self.name,
+            "journal_id": self.journal_id.id,
+            "date": fields.Date.context_today(self) if reverse else self.date,
+            "line_ids": line_vals,
+        }
+        if reverse:
+            vals["reversed_entry_id"] = self.account_move_id.id
+        note = self.env["account.move"].sudo().create(vals)
         note._post()
         return note
+
+    def _link_moves_to_note(self, picking, note, force_value=False):
+        """Link the moves of a transfer of the document to its journal entry.
+
+        The moves post no valuation entry of their own, but the stock reports (analytic stock
+        balance, stock sheet) take the stock account and the value of a move from its journal
+        entry: without the link the reclassification does not show up there. A transfer between
+        two internal locations is not valued by the core, so the move gets the value of the line. The
+        reverse transfer gets it too when the core valued it differently (``force_value``): the goods come
+        back from a location outside the stock at the cost of the day, while the reversal entry has the
+        value of the document, and the stock reports must match the entry."""
+        self.ensure_one()
+        if not note:
+            return
+        moves = picking.move_ids.sorted("id")
+        for line, move in zip(self.line_ids, moves, strict=True):
+            vals = {"account_move_id": note.id}
+            if len(moves) == 1 and "l10n_ro_transfer_move_id" in move._fields:
+                # inter-warehouse transfer entry (l10n_ro_stock_gestiune): the stock sheet per warehouse
+                # takes from it the account of each side, so a reclassification between two locations
+                # shows the source account on the source and the destination account on the destination.
+                # The sheet pairs the entry with the move without looking at the product, so it is
+                # written only when the entry belongs to a single move (a document with one line): the
+                # lines of a many-line entry would be repeated for every move
+                vals["l10n_ro_transfer_move_id"] = note.id
+            if force_value or float_is_zero(move.value, precision_rounding=0.0001):
+                vals["value"] = line.value
+            move.sudo().write(vals)
 
     # ------------------------------------------------------------------ actions
 
@@ -239,6 +276,7 @@ class StockReclassification(models.Model):
             rec.picking_id = rec._create_transfer(rec.location_src_id, rec.location_dest_id, rec.name)
             rec.line_ids._set_cost_from_moves(rec.picking_id)
             rec.account_move_id = rec._post_note()
+            rec._link_moves_to_note(rec.picking_id, rec.account_move_id)
             rec.state = "done"
             rec.line_ids._warn_invoice_price()
             rec._post_validate()
@@ -251,14 +289,12 @@ class StockReclassification(models.Model):
             if rec.state == "done":
                 rec._check_before_cancel()
                 rec.reverse_picking_id = rec._create_transfer(
-                    rec.location_dest_id, rec.location_src_id, self.env._("%s (reversal)", rec.name)
+                    rec.location_dest_id, rec.location_src_id, self.env._("%s (reversal)", rec.name), reverse=True
                 )
                 if rec.account_move_id:
-                    reversal = rec.account_move_id._reverse_moves(
-                        [{"date": fields.Date.context_today(rec), "ref": self.env._("Reversal of %s", rec.name)}],
-                        cancel=True,
-                    )
+                    reversal = rec._post_note(reverse=True)
                     rec.reverse_account_move_id = reversal
+                    rec._link_moves_to_note(rec.reverse_picking_id, reversal, force_value=True)
             rec.state = "cancel"
         return True
 

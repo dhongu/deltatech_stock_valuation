@@ -44,11 +44,11 @@ When the rule asks for the **Management Decision** (or the **Reason**), the fiel
 
 ![Draft document without the management decision after pressing Validate: the Management Decision field is red and the message Missing required fields appears in the top right corner; the document stays in Draft](static/description/en/05_decizie_obligatorie.png)
 
-## 6. Cancel
+## 6. Reverse
 
-**Cancel** on a validated document does a reverse transfer (from the destination location back to the source one, with the same products and serial numbers) and posts a reversal of the journal entry. If the stock in the destination is no longer enough, the cancellation is refused. A draft document is cancelled without transfer or entry. A validated document cannot be deleted, only cancelled. Cancel it only from the document, not with *Reverse Entry* on the journal entry: that button does not cancel the transfer, so the document and the entry would no longer match.
+**Reverse** on a validated document does a reverse transfer (from the destination location back to the source one, with the same products and serial numbers) and posts a reversal entry: the same amounts with the accounts swapped (Dr source account / Cr destination account), dated today, in positive amounts. If the stock in the destination is no longer enough, the reversal is refused. A draft document is cancelled with **Cancel**, without transfer or entry. A validated document cannot be deleted, only reversed. Reverse it only from the document, not with *Reverse Entry* on the journal entry: that button does not reverse the transfer, so the document and the entry would no longer match.
 
-![Cancelled document: the status is Cancelled and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry](static/description/en/06_document_anulat.png)
+![Reversed document: the status is Reversed and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry](static/description/en/06_document_anulat.png)
 
 ## Access
 

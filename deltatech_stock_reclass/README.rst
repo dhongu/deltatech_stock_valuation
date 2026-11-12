@@ -29,8 +29,9 @@ creates the stock transfer and posts the journal entry between the two
 accounts at the cost of the goods.
 
 The document keeps the history (who, when, what, from which account to
-which), links the transfer and the journal entry, and can be cancelled
-with a reversal of both. Access is limited to a dedicated group.
+which), links the transfer and the journal entry, and can be reversed,
+with a reverse transfer and a reversal entry. Access is limited to a
+dedicated group.
 
 **Table of contents**
 
@@ -131,22 +132,23 @@ fields* appears. Fill in the field and validate again.
 the Management Decision field is red and the message Missing required
 fields appears in the top right corner; the document stays in Draft|
 
-6. Cancel
----------
+6. Reverse
+----------
 
-**Cancel** on a validated document does a reverse transfer (from the
+**Reverse** on a validated document does a reverse transfer (from the
 destination location back to the source one, with the same products and
-serial numbers) and posts a reversal of the journal entry. If the stock
-in the destination is no longer enough, the cancellation is refused. A
-draft document is cancelled without transfer or entry. A validated
-document cannot be deleted, only cancelled. Cancel it only from the
-document, not with *Reverse Entry* on the journal entry: that button
-does not cancel the transfer, so the document and the entry would no
-longer match.
+serial numbers) and posts a reversal entry: the same amounts with the
+accounts swapped (Dr source account / Cr destination account), dated
+today, in positive amounts. If the stock in the destination is no longer
+enough, the reversal is refused. A draft document is cancelled with
+**Cancel**, without transfer or entry. A validated document cannot be
+deleted, only reversed. Reverse it only from the document, not with
+*Reverse Entry* on the journal entry: that button does not reverse the
+transfer, so the document and the entry would no longer match.
 
-|Cancelled document: the status is Cancelled and the Reverse Transfer
-and Reversal Entry fields are highlighted next to the Transfer and
-Journal Entry|
+|Reversed document: the status is Reversed and the Reverse Transfer and
+Reversal Entry fields are highlighted next to the Transfer and Journal
+Entry|
 
 Access
 ------
@@ -161,10 +163,47 @@ Operations**) is visible only to the second one.
 .. |Validated reclassification: the status is Done, the Transfer (DC/INT/00001) and Journal Entry fields are highlighted, and the product line shows quantity 4.00, unit cost 25.00 lei and value 100.00 lei| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/03_document_validat.png
 .. |Journal entry of the reclassification: credit 302800 Other consumables 100.00 lei and debit 371000 Merchandise 100.00 lei, with the product in the label of both lines| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/04_nota_contabila.png
 .. |Draft document without the management decision after pressing Validate: the Management Decision field is red and the message Missing required fields appears in the top right corner; the document stays in Draft| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/05_decizie_obligatorie.png
-.. |Cancelled document: the status is Cancelled and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/06_document_anulat.png
+.. |Reversed document: the status is Reversed and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/06_document_anulat.png
 
 Changelog
 =========
+
+19.0.1.0.2 (2026-11-12)
+-----------------------
+
+- The moves of the transfer (and of the reversal transfer on cancel) are
+  linked to the journal entry of the document, and a transfer between
+  two internal locations gets the value of the line on its moves.
+  Without this the stock reports (analytic stock balance, stock sheet)
+  did not show the reclassification: they take the stock account and the
+  value of a move from its entry, so the analytic balance stayed on the
+  source account while the entry moved the value.
+- "Cancel" of a validated document is now **Reverse** (state
+  **Reversed**): the reversal entry has the same amounts with the
+  accounts swapped, in positive amounts, instead of a negative "storno"
+  entry, because the stock reports read the accounts of a
+  reclassification from the debit and the credit of the entry. The
+  reversal entry is posted with elevated rights, so the operator who
+  validated the document can also reverse it without accounting rights.
+  A draft document is still cancelled with **Cancel**.
+- With ``l10n_ro_stock_gestiune`` installed, the entry of a document
+  with one line is also set as the inter-warehouse transfer entry of its
+  move, so that the stock sheet per warehouse or location shows the
+  source account on the source and the destination account on the
+  destination (it needs ``l10n_ro_stock_gestiune`` 19.0.3.1.8 or newer,
+  which does not post its own transfer entry for these moves). The sheet
+  pairs the entry with the move without looking at the product, so a
+  document with several lines does not write it: its entry would be
+  repeated for every move.
+- The reverse transfer uses the operation type of the original transfer
+  (it took the first internal type found, for example Quality Control,
+  when the destination of the document was a location outside the
+  warehouses), and its move gets the value of the document, so that the
+  stock reports match the reversal entry even if the cost of the product
+  changed meanwhile.
+- The context key that stops the automatic valuation entry is renamed
+  ``skip_stock_valuation_entry`` (it needs ``deltatech_obyc``
+  19.0.1.0.23 or newer when both are installed).
 
 19.0.1.0.1 (2026-11-11)
 -----------------------

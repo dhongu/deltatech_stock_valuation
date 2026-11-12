@@ -3,7 +3,7 @@
 
 from odoo import models
 
-SKIP_ENTRY_CONTEXT_KEY = "stock_reclassification_skip_entry"
+SKIP_ENTRY_CONTEXT_KEY = "skip_stock_valuation_entry"
 
 
 class StockMove(models.Model):
