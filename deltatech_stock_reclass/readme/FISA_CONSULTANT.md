@@ -131,7 +131,7 @@ Completați textul deciziei (de exemplu *Decizia administratorului nr. 12/2026*)
 
 Un document validat se poate inversa cu **Inversează**. Modulul:
 
-- face un **transfer invers** (din locația destinație în cea sursă), cu aceleași produse și serii; dacă stocul din destinație nu mai e suficient (marfa a fost livrată între timp), inversarea e refuzată;
+- face un **transfer invers** (din locația destinație în cea sursă), cu aceleași produse și serii, pe același **tip de operațiune** ca transferul inițial (nu pe tipul intern al locației destinație, care poate lipsi când destinația e în afara depozitelor); dacă stocul din destinație nu mai e suficient (marfa a fost livrată între timp), inversarea e refuzată;
 - postează **nota de inversare**, la data zilei, legată de nota inițială;
 - trece documentul în **Inversat** și arată **Transfer invers** și **Nota de inversare**.
 
@@ -149,6 +149,8 @@ Cu modulul `l10n_ro_stock_sheet` (Fișă de magazie și balanță analitică a s
 - **Spre o locație din afara stocului** (ex. mijloc fix): apare o ieșire din contul sursă, la costul din stoc. Contul de imobilizări nu apare în balanță, pentru că balanța de stoc cuprinde doar conturile din clasa 3.
 - **Inversarea** apare ca rânduri contrare (intrare pe contul sursă, ieșire din contul destinație), iar soldurile revin la valoarea de dinainte: mișcarea inversă primește valoarea documentului, nu costul zilei, ca să corespundă notei de inversare.
 - **Fișa pe gestiune** (cu `l10n_ro_stock_gestiune` și `l10n_ro_stock_sheet_gestiune`): într-o singură gestiune apare corect, ca la companie. Între două gestiuni, un document cu **o singură linie** apare ca ieșire din gestiunea sursă, pe contul sursă, și ca intrare în gestiunea destinație, pe contul destinație. Gestiunea nu mai postează nota ei de transfer pentru aceste mișcări (versiunea 19.0.3.1.8 a modulului `l10n_ro_stock_gestiune`), deci nu există două note.
+
+![Balanța analitică a stocurilor, desfășurată pe cont, produs și document, după reclasificarea 3028 → 371 și inversarea unui document: pe contul 302800 apar ieșirile, pe 371000 intrările, cu cantitate și valoare pe rândul fiecărui transfer; soldul final al contului 302800 este negativ doar pentru că stocul inițial al exemplului nu e înregistrat pe acest cont, iar Diferența rămâne 0](../static/description/07_balanta_analitica.png)
 
 **Atenție:**
 
@@ -217,6 +219,7 @@ Capturile sunt **generate automat** din `tests/test_screenshots.py` (mixinul `Sc
 | `04_nota_contabila.png` | 4 | nota contabilă Dr 371 / Cr 3028 |
 | `05_decizie_obligatorie.png` | 5 | validarea blocată în formular când lipsește decizia conducerii |
 | `06_document_anulat.png` | 6 | documentul inversat, cu transferul invers și nota de inversare |
+| `07_balanta_analitica.png` | 7 | balanța analitică a stocurilor desfășurată: ieșirile pe contul sursă, intrările pe contul destinație, pe rândul fiecărui transfer |
 
 Regenerare:
 

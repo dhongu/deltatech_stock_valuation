@@ -50,6 +50,12 @@ When the rule asks for the **Management Decision** (or the **Reason**), the fiel
 
 ![Reversed document: the status is Reversed and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry](static/description/en/06_document_anulat.png)
 
+## 7. Stock reports
+
+With the *Analytic Stock Balance and Stock Sheet* module (`l10n_ro_stock_sheet`) installed, open **Inventory → Reporting → Balanță analitică stocuri** and unfold the account and the product: the reclassification shows as an **outgoing** line on the source account and an **incoming** line on the destination account, with the quantity and the value of the line, on the row of the transfer; the reversal shows as the opposite lines. The difference between the analytic and the synthetic balance does not change. With a destination outside the stock, only the outgoing line from the source account appears (the fixed asset accounts are not stock accounts).
+
+![Analytic stock balance unfolded by account, product and document after a reclassification and a reversal: outgoing lines on the source account, incoming lines on the destination account](static/description/en/07_balanta_analitica.png)
+
 ## Access
 
 Two groups control the module: **Reclassifications** (create and validate documents) and **Reclassification Configuration** (manage the rules). The **Reclassification Rules** menu (under **Inventory → Operations**) is visible only to the second one.
