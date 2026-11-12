@@ -578,7 +578,7 @@ class TestObycEntries(TestCommon):
             )
             picking.action_confirm()
             picking.move_ids._set_quantity_done(2.0)
-            picking = picking.with_context(demo_mode=True, stock_reclassification_skip_entry=with_key)
+            picking = picking.with_context(demo_mode=True, skip_stock_valuation_entry=with_key)
             picking.button_validate()
             return picking
 

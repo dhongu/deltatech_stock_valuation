@@ -1,3 +1,7 @@
+## 19.0.1.0.23
+
+- The context key that stops the OBYC entry of the moves of a transfer is renamed from `stock_reclassification_skip_entry` to `skip_stock_valuation_entry`: it is a general key, any document that posts its own journal entry for the moves it creates can use it, it is not tied to the stock reclassification. The old key is no longer read: update `deltatech_stock_reclass` together with this module.
+
 ## 19.0.1.0.22
 
 - The stock moves of a transfer validated with the context key `stock_reclassification_skip_entry` (set by the stock reclassification document, `deltatech_stock_reclass`) do not post the OBYC entry: the document posts its own. Without it a reclassification toward a location outside the stock (for example fixed assets) was posted twice when the rule of the move key had accounts, and was refused when the rule was missing.
