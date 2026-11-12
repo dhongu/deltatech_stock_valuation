@@ -140,11 +140,11 @@ destination location back to the source one, with the same products and
 serial numbers) and posts a reversal entry: the same amounts with the
 accounts swapped (Dr source account / Cr destination account), dated
 today, in positive amounts. If the stock in the destination is no longer
-enough, the reversal is refused. A draft document is cancelled with
-**Cancel**, without transfer or entry. A validated document cannot be
-deleted, only reversed. Reverse it only from the document, not with
-*Reverse Entry* on the journal entry: that button does not reverse the
-transfer, so the document and the entry would no longer match.
+enough, the reversal is refused. A draft document has no transfer or
+entry: delete it. A validated document cannot be deleted, only reversed.
+Reverse it only from the document, not with *Reverse Entry* on the
+journal entry: that button does not reverse the transfer, so the
+document and the entry would no longer match.
 
 |Reversed document: the status is Reversed and the Reverse Transfer and
 Reversal Entry fields are highlighted next to the Transfer and Journal
@@ -185,7 +185,9 @@ Changelog
   reclassification from the debit and the credit of the entry. The
   reversal entry is posted with elevated rights, so the operator who
   validated the document can also reverse it without accounting rights.
-  A draft document is still cancelled with **Cancel**.
+  A draft document has no Cancel button any more: it is deleted, so the
+  state Reversed always means a document that had a transfer and an
+  entry.
 - With ``l10n_ro_stock_gestiune`` installed, the entry of a document
   with one line is also set as the inter-warehouse transfer entry of its
   move, so that the stock sheet per warehouse or location shows the

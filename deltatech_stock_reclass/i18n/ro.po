@@ -98,11 +98,6 @@ msgstr "Număr atașamente"
 
 #. module: deltatech_stock_reclass
 #: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_form
-msgid "Cancel"
-msgstr "Anulează"
-
-#. module: deltatech_stock_reclass
-#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_form
 msgid ""
 "Reverse the reclassification? The goods go back to the source location and "
 "a reversal entry is posted."
