@@ -3,7 +3,7 @@
 
 {
     "name": "Stock Reclassification",
-    "version": "19.0.1.0.2",
+    "version": "19.0.1.0.3",
     "images": ["static/description/main_screenshot.png"],
     "summary": "Move stock from one account to another with a document, a transfer and a journal entry",
     "category": "Valuation/Valuation",
