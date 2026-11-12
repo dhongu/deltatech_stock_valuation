@@ -145,9 +145,62 @@ class TestStockReclassification(TransactionCase):
         self._receive(product, 10)
         doc = self._doc(qty=4, product=product, dest=self.outside)
         doc.action_validate()
-        self.assertFalse(doc.picking_id.move_ids.account_move_id)
+        # the transfer posts no entry of its own: the only entry is the one of the document, and the
+        # move is linked to it (the stock reports take the account and the value from there)
         move = self.env["account.move"].search([("ref", "=", doc.name)])
         self.assertEqual(move, doc.account_move_id)
+        self.assertEqual(doc.picking_id.move_ids.account_move_id, doc.account_move_id)
+
+    def test_moves_linked_to_the_entry(self):
+        """Internal transfer: the core does not value it, the move gets the value of the line and the
+        link to the entry; the reversal transfer is linked to the reversal entry."""
+        self._receive(self.product, 10)
+        doc = self._doc(qty=4, dest=self.sub)
+        doc.action_validate()
+        move = doc.picking_id.move_ids
+        self.assertEqual(move.account_move_id, doc.account_move_id)
+        self.assertEqual(move.value, 40.0)
+        doc.action_cancel()
+        reverse_move = doc.reverse_picking_id.move_ids
+        self.assertEqual(reverse_move.account_move_id, doc.reverse_account_move_id)
+        self.assertEqual(reverse_move.value, 40.0)
+
+    def test_moves_linked_as_transfer_entry_with_the_warehouse_module(self):
+        """With l10n_ro_stock_gestiune the entry is also the inter-warehouse transfer entry of the moves
+        (the stock sheet per warehouse reads the accounts of each side from it)."""
+        if "l10n_ro_transfer_move_id" not in self.env["stock.move"]._fields:
+            self.skipTest("l10n_ro_stock_gestiune is not installed")
+        self._receive(self.product, 10)
+        doc = self._doc(qty=4, dest=self.sub)
+        doc.action_validate()
+        self.assertEqual(doc.picking_id.move_ids.l10n_ro_transfer_move_id, doc.account_move_id)
+        doc.action_cancel()
+        self.assertEqual(doc.reverse_picking_id.move_ids.l10n_ro_transfer_move_id, doc.reverse_account_move_id)
+
+    def test_many_lines_not_linked_as_transfer_entry(self):
+        """The inter-warehouse stock sheet pairs the entry with a move without looking at the product:
+        with more lines the entry is not written there (its lines would be repeated for each move)."""
+        if "l10n_ro_transfer_move_id" not in self.env["stock.move"]._fields:
+            self.skipTest("l10n_ro_stock_gestiune is not installed")
+        other = self.env["product.product"].create(
+            {"name": "Reclass Other", "is_storable": True, "standard_price": 5.0}
+        )
+        self._receive(self.product, 10)
+        self._receive(other, 10)
+        doc = self._doc(qty=4, dest=self.sub)
+        doc.write({"line_ids": [Command.create({"product_id": other.id, "quantity": 2.0})]})
+        doc.action_validate()
+        moves = doc.picking_id.move_ids
+        self.assertEqual(moves.account_move_id, doc.account_move_id)
+        self.assertFalse(moves.l10n_ro_transfer_move_id)
+
+    def test_move_outside_the_stock_keeps_the_value_of_the_core(self):
+        self._receive(self.product, 10)
+        doc = self._doc(qty=4, dest=self.outside)
+        doc.action_validate()
+        move = doc.picking_id.move_ids
+        self.assertEqual(move.account_move_id, doc.account_move_id)
+        self.assertEqual(move.value, 40.0)
 
     # ------------------------------------------------------------ validations
 
@@ -293,12 +346,66 @@ class TestStockReclassification(TransactionCase):
         self.assertEqual(self._qty(self.product, self.sub), 0)
         self.assertEqual(self._qty(self.product, self.stock), 10)
         self.assertEqual(doc.reverse_account_move_id.state, "posted")
+        # the reversal is a second entry with the accounts swapped and positive amounts (the stock
+        # reports read the accounts from the debit and the credit), linked to the original entry
+        self.assertEqual(self._lines(doc.reverse_account_move_id), {self.acc_a: (40.0, 0.0), self.acc_b: (0.0, 40.0)})
+        self.assertEqual(doc.reverse_account_move_id.reversed_entry_id, doc.account_move_id)
         balance = sum(
             self.env["account.move.line"]
             .search([("account_id", "=", self.acc_b.id), ("parent_state", "=", "posted")])
             .mapped("balance")
         )
         self.assertEqual(balance, 0.0)
+
+    def test_reverse_without_accounting_rights(self):
+        """The operator who validates a reclassification can also reverse it: the entries are
+        posted with elevated rights, the operator has no accounting rights."""
+        reclass_group = self.env.ref("deltatech_stock_reclass.group_stock_reclassification_user")
+        user = self.env["res.users"].create(
+            {
+                "name": "Reclass operator",
+                "login": "reclass_operator_rev",
+                "group_ids": [Command.set([reclass_group.id])],
+            }
+        )
+        self._receive(self.product, 10)
+        doc = self._doc(qty=4, dest=self.sub).with_user(user)
+        doc.action_validate()
+        doc.action_cancel()
+        self.assertEqual(doc.state, "cancel")
+        self.assertEqual(doc.reverse_account_move_id.state, "posted")
+
+    def test_reversal_keeps_the_value_of_the_entry(self):
+        """The reverse transfer is valued with the value of the document, not with the cost of the
+        day of the reversal: the entry and the stock reports must match even if the cost changed."""
+        categ = self.env["product.category"].create(
+            {
+                "name": "Reclass average",
+                "property_cost_method": "average",
+                "property_valuation": "real_time",
+                "property_stock_valuation_account_id": self.acc_a.id,
+            }
+        )
+        product = self.env["product.product"].create(
+            {"name": "Reclass AVCO", "is_storable": True, "standard_price": 10.0, "categ_id": categ.id}
+        )
+        self._receive(product, 10)
+        doc = self._doc(qty=4, product=product, dest=self.outside)
+        doc.action_validate()
+        self.assertEqual(doc.picking_id.move_ids.value, 40.0)
+        product.with_company(self.company).standard_price = 15.0
+        doc.action_cancel()
+        self.assertEqual(doc.reverse_account_move_id.amount_total, 40.0)
+        self.assertEqual(doc.reverse_picking_id.move_ids.value, 40.0)
+
+    def test_reverse_transfer_from_a_location_without_warehouse(self):
+        """The reverse transfer of a document with the destination outside the warehouses uses the
+        operation type of the original transfer, not the first internal type found."""
+        self._receive(self.product, 10)
+        doc = self._doc(qty=4, dest=self.outside)
+        doc.action_validate()
+        doc.action_cancel()
+        self.assertEqual(doc.reverse_picking_id.picking_type_id, doc.picking_id.picking_type_id)
 
     def test_cancel_draft(self):
         doc = self._doc(qty=4)

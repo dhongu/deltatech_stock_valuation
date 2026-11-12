@@ -30,7 +30,7 @@ msgstr ""
 #. odoo-python
 #: code:addons/deltatech_stock_reclass/models/reclassification.py:0
 msgid "%s (reversal)"
-msgstr "%s (stornare)"
+msgstr "%s (inversare)"
 
 #. module: deltatech_stock_reclass
 #. odoo-python
@@ -47,8 +47,8 @@ msgstr "Un număr de serie are cantitatea 1 (%s)."
 #. module: deltatech_stock_reclass
 #. odoo-python
 #: code:addons/deltatech_stock_reclass/models/reclassification.py:0
-msgid "A validated reclassification cannot be deleted: cancel it instead."
-msgstr "O reclasificare validată nu poate fi ștearsă: anulați-o."
+msgid "A validated reclassification cannot be deleted: reverse it instead."
+msgstr "O reclasificare validată nu poate fi ștearsă: inversați-o."
 
 #. module: deltatech_stock_reclass
 #: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__message_needaction
@@ -98,22 +98,17 @@ msgstr "Număr atașamente"
 
 #. module: deltatech_stock_reclass
 #: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_form
-msgid "Cancel"
-msgstr "Anulează"
-
-#. module: deltatech_stock_reclass
-#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_form
 msgid ""
-"Cancel the reclassification? For a validated one the transfer and the "
-"journal entry are reversed."
+"Reverse the reclassification? The goods go back to the source location and "
+"a reversal entry is posted."
 msgstr ""
-"Anulați reclasificarea? Pentru una validată se stornează transferul și nota "
-"contabilă."
+"Inversați reclasificarea? Marfa se întoarce în locația sursă și se "
+"postează o notă de inversare."
 
 #. module: deltatech_stock_reclass
 #: model:ir.model.fields.selection,name:deltatech_stock_reclass.selection__stock_reclassification__state__cancel
-msgid "Cancelled"
-msgstr "Anulat"
+msgid "Reversed"
+msgstr "Inversat"
 
 #. module: deltatech_stock_reclass
 #: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__company_id
@@ -439,13 +434,18 @@ msgstr "Utilizator responsabil"
 #. module: deltatech_stock_reclass
 #: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__reverse_account_move_id
 msgid "Reversal Entry"
-msgstr "Nota de stornare"
+msgstr "Nota de inversare"
 
 #. module: deltatech_stock_reclass
 #. odoo-python
 #: code:addons/deltatech_stock_reclass/models/reclassification.py:0
 msgid "Reversal of %s"
-msgstr "Stornare a %s"
+msgstr "Inversarea %s"
+
+#. module: deltatech_stock_reclass
+#: model_terms:ir.ui.view,arch_db:deltatech_stock_reclass.view_stock_reclassification_form
+msgid "Reverse"
+msgstr "Inversează"
 
 #. module: deltatech_stock_reclass
 #: model:ir.model.fields,field_description:deltatech_stock_reclass.field_stock_reclassification__reverse_picking_id

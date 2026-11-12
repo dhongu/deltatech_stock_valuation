@@ -6,6 +6,6 @@
   "features": [
     "Allowed account pairs set by rules",
     "Transfer and journal entry in one step",
-    "History, with reversal on cancel"
+    "History, with a reverse transfer and entry"
   ]
 }

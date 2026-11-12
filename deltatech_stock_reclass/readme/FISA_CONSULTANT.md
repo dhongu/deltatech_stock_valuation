@@ -16,7 +16,7 @@ Modulul permite mutarea stocului dintr-un cont în altul (de exemplu din **3028 
 - o **regulă** spune care perechi de conturi (sursă → destinație) sunt permise, deci contabilul-șef decide ce reclasificări se pot face;
 - **documentul** consemnează dată, locații, produse (cu lot sau serie, când e cazul), decizia conducerii și motivul;
 - la **validare**, modulul face transferul de stoc și postează nota contabilă între cele două conturi, la costul mărfii din stoc, ambele legate de document;
-- **anularea** unui document validat stornează transferul și nota.
+- **inversarea** unui document validat face transferul invers și postează o notă de inversare.
 
 Fără modul, mutarea se făcea cu tipuri de operațiune speciale, câte unul pe fiecare depozit, fără istoric și fără legătură între transfer și nota contabilă.
 
@@ -98,7 +98,8 @@ Apăsați **Validează**. Modulul:
 1. verifică regula (activă), decizia și motivul cerute, loturile și seriile și stocul disponibil în locația sursă;
 2. face un **transfer intern** al produselor, cu tipul de operațiune internă al depozitului locației sursă; transferul nu postează nota automată de evaluare;
 3. fixează **Cost unitar** și **Valoare** pe fiecare linie: costul vine din valoarea mișcării când marfa iese din stoc (FIFO/cost mediu), altfel din costul lotului sau al produsului;
-4. postează **nota contabilă** pe jurnalul ales.
+4. postează **nota contabilă** pe jurnalul ales;
+5. leagă mișcările transferului de notă și, la un transfer între două locații interne, le dă valoarea liniei: așa se văd în balanța analitică și în fișa de magazie (pasul 7).
 
 Documentul trece în **Efectuat** și arată legăturile spre **Transfer** și **Notă contabilă**.
 
@@ -126,29 +127,48 @@ Pe regulile care o cer, **Decizie conducere** (și **Motiv**) devin câmpuri obl
 
 Completați textul deciziei (de exemplu *Decizia administratorului nr. 12/2026*) și validați din nou. Atașați decizia semnată prin chatter.
 
-### Pasul 6 — Anularea
+### Pasul 6 — Inversarea
 
-Un document validat se poate anula cu **Anulează**. Modulul:
+Un document validat se poate inversa cu **Inversează**. Modulul:
 
-- face un **transfer invers** (din locația destinație în cea sursă), cu aceleași produse și serii; dacă stocul din destinație nu mai e suficient (marfa a fost livrată între timp), anularea e refuzată;
-- **stornează nota contabilă** cu o notă de stornare, postată la data zilei;
-- trece documentul în **Anulat** și arată **Transfer invers** și **Nota de stornare**.
+- face un **transfer invers** (din locația destinație în cea sursă), cu aceleași produse și serii, pe același **tip de operațiune** ca transferul inițial (nu pe tipul intern al locației destinație, care poate lipsi când destinația e în afara depozitelor); dacă stocul din destinație nu mai e suficient (marfa a fost livrată între timp), inversarea e refuzată;
+- postează **nota de inversare**, la data zilei, legată de nota inițială;
+- trece documentul în **Inversat** și arată **Transfer invers** și **Nota de inversare**.
 
-Un document în ciornă se anulează fără transfer sau notă. Un document validat nu se poate șterge, doar anula.
+Butonul **Inversează** cere o confirmare. Un document în ciornă nu are transfer sau notă: se șterge. Un document validat nu se poate șterge, doar inversa; starea **Inversat** înseamnă deci mereu un document care a avut transfer și notă, acum cu transfer invers și notă de inversare.
 
-**Monografie la anulare:** pe planul RO (`l10n_ro`, contabilitate storno activă) nota de stornare este **Dr 371000 = Cr 302800, −100,00 RON** (în roșu, pe aceleași laturi ca nota inițială; pentru documentul din captura 06, −50,00 RON). Fără contabilitate storno, nota inversează laturile: Dr 302800 = Cr 371000, 100,00 RON. Anulați reclasificarea doar din document, nu din nota contabilă: butonul standard *Intrare inversă* de pe notă nu anulează și transferul, deci documentul și nota nu ar mai corespunde.
+**Monografie la inversare:** nota de inversare are aceleași sume, cu conturile inversate și în valori pozitive: **Dr 302800 = Cr 371000, 100,00 RON** (pentru documentul din captura 06, 50,00 RON). Nu este o notă de stornare în roșu, nici pe companiile cu contabilitate storno activă: rapoartele de stoc (balanța analitică și fișa de magazie) citesc conturile reclasificării din debitul și creditul notei, iar o notă în valori negative nu ar apărea în ele. Inversați reclasificarea doar din document, nu din nota contabilă: butonul standard *Intrare inversă* de pe notă nu inversează și transferul, deci documentul și nota nu ar mai corespunde. Operatorul care validează poate și inversa, fără drepturi de contabilitate.
 
-![Documentul anulat: starea Anulat, câmpurile Transfer invers și Nota de stornare marcate, completate pe lângă Transfer și Notă contabilă, cu aceeași linie de produs: cantitate 2,00, cost unitar 25,00 lei, valoare 50,00 lei](../static/description/06_document_anulat.png)
+![Documentul inversat: starea Inversat, câmpurile Transfer invers și Nota de inversare marcate, completate pe lângă Transfer și Notă contabilă, cu aceeași linie de produs: cantitate 2,00, cost unitar 25,00 lei, valoare 50,00 lei](../static/description/06_document_anulat.png)
+
+### Pasul 7 — Cum se vede în balanța analitică și în fișa de magazie
+
+Cu modulul `l10n_ro_stock_sheet` (Fișă de magazie și balanță analitică a stocurilor), deschideți **Inventar → Raportare → Balanță analitică stocuri** (raportul *Balanța analitică a stocurilor (RO)*), alegeți perioada documentului și desfaceți contul și produsul:
+
+- **Între conturi de stoc** (ex. 371 → 3028): pe contul sursă apare o **ieșire**, iar pe contul destinație o **intrare**, cu cantitatea și valoarea liniei, pe rândul transferului documentului. Valoarea totală a stocului nu se schimbă, iar **Diferența** dintre analitic și sintetic rămâne aceeași ca înainte de document, cu condiția ca **Data** documentului să fie data validării (vezi pasul 4); altfel, în perioada dintre cele două date, analiticul și sinteticul diferă temporar.
+- **Spre o locație din afara stocului** (ex. mijloc fix): apare o ieșire din contul sursă, la costul din stoc. Contul de imobilizări nu apare în balanță, pentru că balanța de stoc cuprinde doar conturile din clasa 3.
+- **Inversarea** apare ca rânduri contrare (intrare pe contul sursă, ieșire din contul destinație), iar soldurile revin la valoarea de dinainte: mișcarea inversă primește valoarea documentului, nu costul zilei, ca să corespundă notei de inversare.
+- **Fișa pe gestiune** (cu `l10n_ro_stock_gestiune` și `l10n_ro_stock_sheet_gestiune`): într-o singură gestiune apare corect, ca la companie. Între două gestiuni, un document cu **o singură linie** apare ca ieșire din gestiunea sursă, pe contul sursă, și ca intrare în gestiunea destinație, pe contul destinație. Gestiunea nu mai postează nota ei de transfer pentru aceste mișcări (versiunea 19.0.3.1.8 a modulului `l10n_ro_stock_gestiune`), deci nu există două note.
+
+![Balanța analitică a stocurilor, desfășurată pe cont, produs și document, după reclasificarea 3028 → 371 și inversarea unui document: pe contul 302800 apar ieșirile, pe 371000 intrările, cu cantitate și valoare pe rândul fiecărui transfer; soldul final al contului 302800 este negativ doar pentru că stocul inițial al exemplului nu e înregistrat pe acest cont, iar Diferența rămâne 0](../static/description/07_balanta_analitica.png)
+
+**Atenție:**
+
+- Între două gestiuni sau locații, un document cu **mai multe linii** apare corect pe companie și în fișa gestiunii sursă, dar în fișa gestiunii destinație intrarea apare pe contul sursă, nu pe cel destinație. Același lucru se întâmplă la fișa unei singure locații, fără modulele `l10n_ro_stock_gestiune` și `l10n_ro_stock_sheet_gestiune`, la validare și la inversare. Pentru fișa corectă pe cont, reclasificați în aceeași locație sau gestiune, apoi mutați marfa cu un transfer obișnuit.
+- O **gestiune cu cont de stoc propriu**, diferit de contul categoriei, nu permite ieșiri din ea spre afara stocului (regula gestiunii: vezi secțiunea 9). Reclasificarea spre un mijloc fix se face din gestiunea care folosește contul categoriei.
+- Reclasificările stoc → stoc validate înainte de versiunea 19.0.1.0.2 nu au valoarea și legătura pe mișcări și nu apar în rapoarte; cele spre afara stocului apar pe contul categoriei. Documentele vechi nu se corectează automat.
 
 ## 7. Legături cu alte module / declarații
 
 | Modul | Rol |
 |---|---|
 | `stock_account` (Odoo standard) | costul mărfii, transferurile de stoc, jurnalul de stoc |
-| `deltatech_obyc` (de la versiunea 19.0.1.0.22) | determinarea conturilor după clasa de evaluare: transferurile documentului nu postează nota automată OBYC, pentru că documentul își postează propria notă |
+| `deltatech_obyc` (de la versiunea 19.0.1.0.23) | determinarea conturilor după clasa de evaluare: transferurile documentului nu postează nota automată OBYC, pentru că documentul își postează propria notă (cheia de context `skip_stock_valuation_entry`) |
+| `l10n_ro_stock_sheet` | balanța analitică a stocurilor și fișa de magazie: arată reclasificarea ca ieșire din contul sursă și intrare în contul destinație (pasul 7) |
+| `l10n_ro_stock_gestiune` (de la 19.0.3.1.8) | fișa pe gestiune; nu postează nota proprie de transfer între gestiuni pentru mișcările documentului, iar `l10n_ro_stock_obyc` (de la 19.0.1.0.6) permite inversarea reclasificărilor spre afara stocului fără regulă OBYC de regularizare |
 | modulul de active din `l10n_ro_ent` | pentru reclasificarea stoc → mijloc fix: pragul pe unitate și crearea activelor din documentul de reclasificare |
 
-**Ce e automat:** transferul de stoc, nota contabilă la costul din stoc, verificările de regulă, loturi, serii, stoc și cantitatea facturii, stornarea la anulare.
+**Ce e automat:** transferul de stoc, nota contabilă la costul din stoc, verificările de regulă, loturi, serii, stoc și cantitatea facturii, inversarea la nevoie.
 
 **Ce rămâne manual:** decizia conducerii (documentul o cere și o păstrează, nu o generează), alegerea tipului de livrare sau a regulii OBYC pentru livrarea mărfii reclasificate, atașarea documentelor justificative.
 
@@ -162,8 +182,10 @@ Un document în ciornă se anulează fără transfer sau notă. Un document vali
 - [ ] Cu o locație destinație din afara stocului, cantitatea iese din stocul companiei și nota rămâne una singură (nu apare și nota automată de evaluare).
 - [ ] Cu decizia sau motivul cerute de regulă, **Validează** fără ele nu merge: câmpul se colorează în roșu și apare *Câmpuri obligatorii lipsă*.
 - [ ] Cu o linie de factură legată: depășirea cantității liniei e refuzată, iar o diferență între cost și prețul facturii lasă un mesaj în chatter.
-- [ ] **Anulează** pe un document validat creează transferul invers și nota de stornare; soldul contului destinație revine la valoarea de dinainte.
+- [ ] **Inversează** pe un document validat creează transferul invers și nota de inversare; soldul contului destinație revine la valoarea de dinainte.
 - [ ] Un document validat nu se poate șterge.
+- [ ] În **Balanța analitică a stocurilor**, după validarea unei reclasificări stoc → stoc, contul sursă are o ieșire și contul destinație o intrare cu valoarea liniei, iar **Diferența** nu se schimbă; după inversare, soldurile revin.
+- [ ] Cu gestiuni și un document cu o singură linie, în fișa pe gestiune ieșirea apare la gestiunea sursă și intrarea la gestiunea destinație, iar în jurnal există o singură notă (cea a documentului, fără nota de transfer a gestiunii).
 - [ ] Un utilizator doar cu **Reclasificări** nu poate crea sau modifica reguli.
 
 ## 9. Mesaje de eroare frecvente
@@ -180,8 +202,9 @@ Un document în ciornă se anulează fără transfer sau notă. Un document vali
 | *Stoc insuficient pentru … în …: … disponibil, … necesar.* | locația sursă nu are cantitatea cerută | alegeți altă locație sau reduceți cantitatea; cantitatea rezervată de alte transferuri nu e disponibilă: anulați rezervarea pe transferul respectiv sau reduceți cantitatea |
 | *Cantitatea reclasificată din … depășește cantitatea liniei facturii …* | s-a reclasificat deja cantitatea liniei | reduceți cantitatea sau legați altă linie |
 | *Linia facturii nu corespunde produsului sau nu este postată.* | linia legată e de alt produs sau factura nu e postată | alegeți linia corectă dintr-o factură postată |
-| *O reclasificare validată nu poate fi ștearsă: anulați-o.* | ștergere pe un document validat | folosiți **Anulează** |
+| *O reclasificare validată nu poate fi ștearsă: inversați-o.* | ștergere pe un document validat | folosiți **Inversează** |
 | *Nu există un tip de operațiune internă pentru compania …* | compania nu are niciun tip intern de operațiune | configurați un depozit al companiei |
+| *Gestiunea … are cont de stoc propriu …, diferit de contul de stoc … al produsului …* | ieșire (spre afara stocului) dintr-o gestiune cu cont propriu diferit de contul categoriei | reclasificați din gestiunea care folosește contul categoriei |
 | *Contul sursă și contul destinație trebuie să fie diferite.* / *Există deja o regulă pentru această pereche de conturi.* | regulă greșită sau dublată | corectați regula |
 
 ## 10. Capturi de ecran
@@ -195,7 +218,8 @@ Capturile sunt **generate automat** din `tests/test_screenshots.py` (mixinul `Sc
 | `03_document_validat.png` | 3 | documentul validat, cu Transfer și Notă contabilă |
 | `04_nota_contabila.png` | 4 | nota contabilă Dr 371 / Cr 3028 |
 | `05_decizie_obligatorie.png` | 5 | validarea blocată în formular când lipsește decizia conducerii |
-| `06_document_anulat.png` | 6 | documentul anulat, cu transferul invers și nota de stornare |
+| `06_document_anulat.png` | 6 | documentul inversat, cu transferul invers și nota de inversare |
+| `07_balanta_analitica.png` | 7 | balanța analitică a stocurilor desfășurată: ieșirile pe contul sursă, intrările pe contul destinație, pe rândul fiecărui transfer |
 
 Regenerare:
 
@@ -211,6 +235,7 @@ Regenerare:
 - Recomandați **decizia conducerii obligatorie** pe orice regulă care schimbă destinația bunurilor și **motivul obligatoriu** pe trecerile care nu apar expres în funcțiunea conturilor.
 - Pentru reclasificarea în mijloace fixe trimiteți la fișa modulului de active din `l10n_ro_ent`.
 - Nu există reguli implicite: fiecare companie își definește perechile, deci manualul trebuie să dea exemple (3028 → 371, 371 → 21x).
+- Arătați pasul 7 la instruire: contabilul verifică reclasificarea în balanța analitică (fără modificarea **Diferenței**), iar fișa de magazie se citește pe gestiune.
 - Meniul **Reguli de reclasificare** stă sub **Inventar → Operații**, nu sub Configurare, ca să-l vadă contabilul-șef fără rolul de Administrator Inventar.
 
 ---

@@ -44,11 +44,17 @@ When the rule asks for the **Management Decision** (or the **Reason**), the fiel
 
 ![Draft document without the management decision after pressing Validate: the Management Decision field is red and the message Missing required fields appears in the top right corner; the document stays in Draft](static/description/en/05_decizie_obligatorie.png)
 
-## 6. Cancel
+## 6. Reverse
 
-**Cancel** on a validated document does a reverse transfer (from the destination location back to the source one, with the same products and serial numbers) and posts a reversal of the journal entry. If the stock in the destination is no longer enough, the cancellation is refused. A draft document is cancelled without transfer or entry. A validated document cannot be deleted, only cancelled. Cancel it only from the document, not with *Reverse Entry* on the journal entry: that button does not cancel the transfer, so the document and the entry would no longer match.
+**Reverse** on a validated document does a reverse transfer (from the destination location back to the source one, with the same products and serial numbers) and posts a reversal entry: the same amounts with the accounts swapped (Dr source account / Cr destination account), dated today, in positive amounts. If the stock in the destination is no longer enough, the reversal is refused. A draft document has no transfer or entry: delete it. A validated document cannot be deleted, only reversed. Reverse it only from the document, not with *Reverse Entry* on the journal entry: that button does not reverse the transfer, so the document and the entry would no longer match.
 
-![Cancelled document: the status is Cancelled and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry](static/description/en/06_document_anulat.png)
+![Reversed document: the status is Reversed and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry](static/description/en/06_document_anulat.png)
+
+## 7. Stock reports
+
+With the *Analytic Stock Balance and Stock Sheet* module (`l10n_ro_stock_sheet`) installed, open **Inventory → Reporting → Balanță analitică stocuri** and unfold the account and the product: the reclassification shows as an **outgoing** line on the source account and an **incoming** line on the destination account, with the quantity and the value of the line, on the row of the transfer; the reversal shows as the opposite lines. The difference between the analytic and the synthetic balance does not change. With a destination outside the stock, only the outgoing line from the source account appears (the fixed asset accounts are not stock accounts).
+
+![Analytic stock balance unfolded by account, product and document after a reclassification and a reversal: outgoing lines on the source account, incoming lines on the destination account](static/description/en/07_balanta_analitica.png)
 
 ## Access
 
