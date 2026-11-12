@@ -135,7 +135,7 @@ Un document validat se poate inversa cu **Inversează**. Modulul:
 - postează **nota de inversare**, la data zilei, legată de nota inițială;
 - trece documentul în **Inversat** și arată **Transfer invers** și **Nota de inversare**.
 
-Butonul **Inversează** cere o confirmare. Un document în ciornă se anulează cu **Anulează**, fără transfer sau notă; starea afișată după anulare este tot **Inversat**, dar documentul nu are transfer invers și nici notă de inversare. Un document validat nu se poate șterge, doar inversa.
+Butonul **Inversează** cere o confirmare. Un document în ciornă nu are transfer sau notă: se șterge. Un document validat nu se poate șterge, doar inversa; starea **Inversat** înseamnă deci mereu un document care a avut transfer și notă, acum cu transfer invers și notă de inversare.
 
 **Monografie la inversare:** nota de inversare are aceleași sume, cu conturile inversate și în valori pozitive: **Dr 302800 = Cr 371000, 100,00 RON** (pentru documentul din captura 06, 50,00 RON). Nu este o notă de stornare în roșu, nici pe companiile cu contabilitate storno activă: rapoartele de stoc (balanța analitică și fișa de magazie) citesc conturile reclasificării din debitul și creditul notei, iar o notă în valori negative nu ar apărea în ele. Inversați reclasificarea doar din document, nu din nota contabilă: butonul standard *Intrare inversă* de pe notă nu inversează și transferul, deci documentul și nota nu ar mai corespunde. Operatorul care validează poate și inversa, fără drepturi de contabilitate.
 
