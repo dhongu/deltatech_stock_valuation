@@ -57,7 +57,7 @@ class TestLandedCostRouting(TestCommon):
                         {
                             "product_id": self.product.id,
                             "product_uom_qty": qty,
-                            "product_uom": self.product.uom_id.id,
+                            "uom_id": self.product.uom_id.id,
                             "location_id": self.env.ref("stock.stock_location_suppliers").id,
                             "location_dest_id": self.env.ref("stock.stock_location_stock").id,
                         }

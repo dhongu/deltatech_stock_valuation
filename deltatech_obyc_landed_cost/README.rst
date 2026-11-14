@@ -14,13 +14,16 @@ OBYC - Landed Cost Class 6 Routing
     :target: https://odoo-community.org/page/development-status
     :alt: Beta
 .. |badge2| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github
-    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_obyc_landed_cost
+    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_obyc_landed_cost
     :alt: dhongu/deltatech_stock_valuation
 .. |badge_fisa| image:: https://img.shields.io/badge/-Fi%C8%99%C4%83%20consultant-2ea44f.png
-    :target: https://github.com/dhongu/deltatech_stock_valuation/blob/19.0/deltatech_obyc_landed_cost/readme/FISA_CONSULTANT.md
+    :target: https://github.com/dhongu/deltatech_stock_valuation/blob/20.0/deltatech_obyc_landed_cost/readme/FISA_CONSULTANT.md
     :alt: Fișă consultant
+.. |badge_tests| image:: https://img.shields.io/badge/-13%20automated%20tests-2ea44f.png
+    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_obyc_landed_cost/tests
+    :alt: 13 automated tests
 
-|badge1| |badge2| |badge_fisa|
+|badge1| |badge2| |badge_fisa| |badge_tests|
 
 Landed costs on top of ``deltatech_obyc``. The stock account of a landed
 cost comes from the OBYC rule ``landed_cost``; this module adds, per
@@ -90,15 +93,15 @@ intermediary / Cr 624:
 Class 609, accounts outside class 6 and the debit of a negative cost are
 never rerouted.
 
-.. |Landed cost method setting| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/01_settings_landed_cost.png
-.. |Confirmed purchase order| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/02_purchase_order.png
-.. |Validated receipt| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/03_receipt.png
-.. |Receipt entry| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/04_receipt_note.png
-.. |Vendor bill of the goods| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/05_goods_bill.png
-.. |Transport bill with the Create Landed Costs button| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/06_transport_bill_button.png
-.. |Validated landed cost| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/07_landed_cost_form.png
-.. |Standard entry| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/08_note_standard.png
-.. |Entry through the intermediary account| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_obyc_landed_cost/static/description/en/09_note_intermediary.png
+.. |Landed cost method setting| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_obyc_landed_cost/static/description/en/01_settings_landed_cost.png
+.. |Confirmed purchase order| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_obyc_landed_cost/static/description/en/02_purchase_order.png
+.. |Validated receipt| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_obyc_landed_cost/static/description/en/03_receipt.png
+.. |Receipt entry| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_obyc_landed_cost/static/description/en/04_receipt_note.png
+.. |Vendor bill of the goods| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_obyc_landed_cost/static/description/en/05_goods_bill.png
+.. |Transport bill with the Create Landed Costs button| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_obyc_landed_cost/static/description/en/06_transport_bill_button.png
+.. |Validated landed cost| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_obyc_landed_cost/static/description/en/07_landed_cost_form.png
+.. |Standard entry| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_obyc_landed_cost/static/description/en/08_note_standard.png
+.. |Entry through the intermediary account| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_obyc_landed_cost/static/description/en/09_note_intermediary.png
 
 Changelog
 =========
@@ -153,6 +156,6 @@ Current maintainer:
 
 |maintainer-dhongu| 
 
-This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_obyc_landed_cost>`_ project on GitHub.
+This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_obyc_landed_cost>`_ project on GitHub.
 
 You are welcome to contribute.
