@@ -613,6 +613,22 @@ entry Dr 371.02 / Cr 371.09</li>
 </div>
 <div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <div class="mb-2"><span class="d-inline-block rounded-pill fw-bold text-uppercase" style="background-color:#DEF1DD;color:#006F42;padding:5px 14px;font-size:12px;letter-spacing:0.14em;"><span class="fa fa-history" style="margin-right:6px;" aria-hidden="true"></span>Versions</span></div>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;"><span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">19.0.1.0.23</span></h2>
+<ul>
+<li>The context key that stops the OBYC entry of the moves of a transfer is renamed from <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock_reclassification_skip_entry</code> to <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">skip_stock_valuation_entry</code>: it is a general key, any document that posts its own journal entry for the moves it creates can use it, it is not tied to the stock reclassification. The old key is no longer read: update <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_stock_reclass</code> together with this module.</li>
+</ul>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;"><span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">19.0.1.0.22</span></h2>
+<ul>
+<li>The stock moves of a transfer validated with the context key <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock_reclassification_skip_entry</code> (set by the stock reclassification document, <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_stock_reclass</code>) do not post the OBYC entry: the document posts its own. Without it a reclassification toward a location outside the stock (for example fixed assets) was posted twice when the rule of the move key had accounts, and was refused when the rule was missing.</li>
+</ul>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;"><span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">19.0.1.0.21</span></h2>
+<ul>
+<li>Fix: a transfer between two valuation areas through the transit location is valued. In Odoo 19 a stock-to-transit move is neither an entry nor an exit, so <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">stock.move.value</code> stayed empty and the OBYC entries of <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">internal_transfer_out</code> / <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">internal_transfer_in</code> were posted with value and quantity 0. The outgoing move is valued at the cost of the moved units according to the valuation method of the product: FIFO at the next cost layers (per lot for lot valuation), average cost with lot valuation at the cost of each lot, average cost with area price (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_stock_valuation</code>) at the price of the source area, otherwise at the current cost. The incoming move takes the value of the outgoing one: from the chained moves, or, when the two transfers were entered separately, from the average cost of the goods left in the transit location, so the transit account is cleared. Entries already posted at 0 are not changed.</li>
+</ul>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;"><span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">19.0.1.0.20</span></h2>
+<ul>
+<li>Fix: the lines of an OBYC stock entry get the valuation area of the stock move (for example the area of the warehouse). Until now the area stored on the lines was the default area of the company, because the lines were created before the stock move was linked to the entry. The account rule and the journal were already chosen from the area of the move; only the area stored on the lines was wrong, so any report or balance per area was off. Entries already posted are not changed.</li>
+</ul>
 <h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">19.0.1.0.19 <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">(2026-11-04)</span></h2>
 <ul>
 <li>Fix: on a company with valuation areas enabled and no default area, an invoice for a service or consumable from a category with a valuation class failed with "Valuation area is not defined". Only storable products require a valuation area now. For a non-storable product without an area, the OBYC rule without an area is used when one exists; otherwise the line gets the standard income or expense account of the product or its category. Storable products are not affected.</li>
@@ -637,40 +653,6 @@ entry Dr 371.02 / Cr 371.09</li>
 <h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">19.0.1.0.13 <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">(2026-10-10)</span></h2>
 <ul>
 <li>The module license changes from LGPL-3 to OPL-1 (same as the rest of the suite), so that OPL-1 modules can depend on it on Odoo Apps. No code change.</li>
-</ul>
-<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">19.0.1.0.12 <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">(2026-10-09)</span></h2>
-<ul>
-<li>Docs: the consultant sheet now marks account 357 as not recommended for drop shipments
-  (Dr 357 / Cr 401 or 408 is outside the function of the account in OMFP 1802/2014; 357 is only
-  for goods really held by a third party, through 371 -&gt; 357 -&gt; 607), and words the VAT point
-  precisely: the supplier invoice does not set the delivery date (art. 281 (6) Fiscal Code) but
-  can bring forward the VAT chargeability (art. 282 (2) a)). It also states that a carrier is not
-  a third party for account 357 (goods in transit stay in 371, or 327 if bought and on the way
-  to us) and how a cash-on-delivery amount collected by a courier is recorded (461). No code
-  change.</li>
-</ul>
-<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">19.0.1.0.11 <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">(2026-10-09)</span></h2>
-<ul>
-<li>Docs: the consultant sheet now explains the two ways to record a drop shipment (direct,
-  Dr 607 / Cr 408, or through the warehouse in two steps, Dr 371 / Cr 408 then Dr 607 / Cr 371),
-  and that account 357 is not used for it. New <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">readme/ROADMAP.md</code> with the sketch for several
-  transaction keys on the same stock move. No code change.</li>
-</ul>
-<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">19.0.1.0.10 <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">(2026-10-05)</span></h2>
-<ul>
-<li>New: reclassification by internal transfer. An internal transfer whose <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">internal_transfer</code>
-  rule has different accounts on the two sides (e.g. Dr 371 / Cr 3028, selected through the
-  account modifier of the operation type) now creates a stock entry, valued at the current
-  cost of the product; the quantity in stock does not change. A transfer whose rule has no
-  accounts, or the same account on both sides, still creates no entry.</li>
-<li>A stock entry is no longer created when the debit and credit accounts of the rule are the
-  same.</li>
-</ul>
-<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">19.0.1.0.9 <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">(2026-10-05)</span></h2>
-<ul>
-<li>New: the valuation class of a category is inherited. If a product has no class of its own
-  and its category has none either, the class of the nearest parent category that has one
-  is used.</li>
 </ul>
 <p><em>Older releases are listed in the module's HISTORY file.</em></p>
 </div>
@@ -713,6 +695,46 @@ entry Dr 371.02 / Cr 371.09</li>
     <a href="https://apps.odoo.com/apps/browse?author=Terrabit" target="_blank" rel="noopener"
        class="fw-semibold" style="color:#006F42;">All apps &rarr;</a></p>
   <div class="row g-3">
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/19.0/deltatech_obyc_landed_cost" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">OL</span>
+              <img src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_obyc_landed_cost/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">OBYC - Landed Cost Class 6 Routing</span>
+              <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:15px;line-height:1.45;color:#3d4752;">Landed costs on OBYC: route class 6 credit through an intermediary account</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <a href="https://apps.odoo.com/apps/modules/19.0/deltatech_stock_reclass" target="_blank" rel="noopener"
+         class="card h-100 text-decoration-none border" style="color:#212529;">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center mb-2">
+            <span class="d-inline-block position-relative me-2 flex-shrink-0" style="width:40px;height:40px;">
+              <span class="d-inline-block text-center fw-bold rounded"
+                    style="width:40px;height:40px;line-height:40px;font-size:14px;color:#ffffff;background-color:#006F42;">SR</span>
+              <img src="https://apps.odoocdn.com/apps/assets/19.0/deltatech_stock_reclass/icon.png" alt="" loading="lazy"
+                   class="position-absolute top-0 start-0 rounded" style="width:40px;height:40px;border:none;background-color:#ffffff;"/>
+            </span>
+            <span>
+              <span class="d-block fw-semibold" style="font-size:16px;line-height:1.25;">Stock Reclassification</span>
+              <span class="d-block" style="font-size:13px;color:#3d4752;">Valuation/Valuation</span>
+            </span>
+          </div>
+          <p class="mb-0" style="font-size:15px;line-height:1.45;color:#3d4752;">Move stock from one account to another with a document, a transfer and a journal entry</p>
+        </div>
+      </a>
+    </div>
     <div class="col-md-3 col-sm-6">
       <a href="https://apps.odoo.com/apps/modules/19.0/deltatech_stock_valuation" target="_blank" rel="noopener"
          class="card h-100 text-decoration-none border" style="color:#212529;">
