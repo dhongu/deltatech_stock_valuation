@@ -344,7 +344,8 @@ Nota se găsește în *Facturare → Contabilitate → Note contabile* (aplicaț
 **Elemente jurnal**. De la versiunea 19.0.1.0.24 postarea facturii corectează singură stocul.
 
 1. **Găsiți pe ecran:** pe lângă liniile obișnuite (408 debit 1.100,00 lei, TVA, 401 credit), două
-   linii cu eticheta **Diferență de preț: <produs>**, ascunse în tabul **Factură**, vizibile doar în
+   linii cu eticheta **Diferență de preț: <descrierea liniei de factură>** (numele produsului, dacă linia
+   nu are descriere), ascunse în tabul **Factură**, vizibile doar în
    **Elemente jurnal**: Dr 371/30x 100,00 lei / Cr 408 100,00 lei. Dacă prețul facturii e mai mic
    (de exemplu 90 lei), aceleași conturi apar cu sumă negativă (storno).
 2. **Cantitatea deja ieșită din stoc:** dacă din cele 10 bucăți s-au livrat 6, diferența de 100 lei
@@ -360,6 +361,8 @@ Nota se găsește în *Facturare → Contabilitate → Note contabile* (aplicaț
 4. **Verificați:** 408 pentru recepția respectivă are sold zero, valoarea mișcării de recepție și
    costul mediu al produsului urmează prețul facturii (110 lei), iar liniile de corecție dispar
    la **Resetează la ciornă**.
+
+![Factură de furnizor cu diferență de preț](screenshots/11b_vendor_bill_price_difference.png)
 
 Corecția se face doar pentru produsele cu clasă de evaluare, stocabile, ale căror recepții sunt
 deja validate și numai pentru cantitatea recepționată și încă nefacturată. Factura introdusă
