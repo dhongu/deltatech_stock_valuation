@@ -327,3 +327,15 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:deltatech_obyc.view_product_template_search_valuation_class
 msgid "Valuation Class"
 msgstr ""
+
+#. module: deltatech_obyc
+#. odoo-python
+#: code:addons/deltatech_obyc/models/account_move_line.py:0
+msgid "Price difference: %(name)s"
+msgstr ""
+
+#. module: deltatech_obyc
+#. odoo-python
+#: code:addons/deltatech_obyc/models/account_move_line.py:0
+msgid "Set the exchange difference accounts of the company %(company)s to post the invoice."
+msgstr ""

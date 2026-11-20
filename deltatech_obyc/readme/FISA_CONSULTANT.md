@@ -242,6 +242,12 @@ Date minime pentru demo:
    stinge (Pasul 8b).
 7. **Storno:** *Facturare (sau Contabilitate) → Configurare → Setări*, blocul **Contabilitate
    storno** → verificați că **Contabilitate storno** este bifat (la firmele RO este bifat implicit).
+8. **Diferențe de preț și de curs la factura de furnizor** (versiunea 19.0.1.0.24): verificați că
+   firma are completate conturile de **diferențe de curs** (câștig 765, pierdere 665) în
+   *Contabilitate → Configurare → Setări*; fără ele, factura în valută cu diferență de curs nu se
+   postează. Opțional, creați regula **Diferență de preț la recepție stoc** (clasă + arie), cu
+   Contul de evaluare 371/30x și Contul sursă 408; fără ea se folosește regula **Recepție stoc de
+   la furnizor**.
 
 Regula se caută **exact** pe combinația cheie + clasă + arie + modificator + companie: o regulă cu
 modificator gol nu acoperă un tip de operațiune care are modificator. Dacă toate cele trei conturi
@@ -326,10 +332,41 @@ Nota se găsește în *Facturare → Contabilitate → Note contabile* (aplicaț
    TVA deductibilă (debit 210,00 lei) și 401100 Furnizori (credit 1.210,00 lei).
 2. **Verificați:** linia de produs este pe 408, Contul sursă al regulii **Recepție stoc de la
    furnizor**, **nu** pe 371: stocul nu se mai debitează a doua oară (OBYC-001). După factură, 408
-   pentru această recepție are sold zero, dacă prețul și cursul facturii sunt cele de la recepție;
-   altfel vezi „Note de monografie".
+   pentru această recepție are sold zero: dacă prețul sau cursul diferă de cele de la recepție,
+   corecția se face automat (Pasul 6c).
 
 ![Factură de furnizor pe 408](screenshots/11_vendor_bill_408.png)
+
+### Pasul 6c — Factura de furnizor cu diferență de preț sau de curs (OBYC-014)
+
+*Facturare → Furnizori → Facturi* → **Nou(ă)** (sau **Creează factură** din comanda de achiziție)
+→ produsul recepționat, 10 buc. la **110 lei** (recepția: 100 lei) → **Confirmă** → tabul
+**Elemente jurnal**. De la versiunea 19.0.1.0.24 postarea facturii corectează singură stocul.
+
+1. **Găsiți pe ecran:** pe lângă liniile obișnuite (408 debit 1.100,00 lei, TVA, 401 credit), două
+   linii cu eticheta **Diferență de preț: <descrierea liniei de factură>** (numele produsului, dacă linia
+   nu are descriere), ascunse în tabul **Factură**, vizibile doar în
+   **Elemente jurnal**: Dr 371/30x 100,00 lei / Cr 408 100,00 lei. Dacă prețul facturii e mai mic
+   (de exemplu 90 lei), aceleași conturi apar cu sumă negativă (storno).
+2. **Cantitatea deja ieșită din stoc:** dacă din cele 10 bucăți s-au livrat 6, diferența de 100 lei
+   se înregistrează întâi pe stoc, apoi partea ieșită (60 lei) trece pe cheltuiala livrării:
+   Dr contul de cheltuială al regulii **Livrare stoc** (607 la mărfuri; 601/602/603 la materii și
+   materiale consumate) / Cr 371/30x.
+   În stoc rămân 4 buc. × 110 lei.
+3. **Factura în valută:** stocul rămâne la cursul de la recepție (element nemonetar, OMFP
+   1802/2014, pct. 94 lit. c) și pct. 315 alin. (3)). Diferența de curs dintre 408 (la cursul
+   recepției) și 401 (la cursul facturii) merge pe conturile de diferențe de curs ale companiei:
+   Dr 665 / Cr 408 la pierdere, Dr 408 / Cr 765 la câștig. Dacă factura are și diferență de preț,
+   cele două diferențe se înregistrează separat.
+4. **Verificați:** 408 pentru recepția respectivă are sold zero, valoarea mișcării de recepție și
+   costul mediu al produsului urmează prețul facturii (110 lei), iar liniile de corecție dispar
+   la **Resetează la ciornă**.
+
+![Factură de furnizor cu diferență de preț](screenshots/11b_vendor_bill_price_difference.png)
+
+Corecția se face doar pentru produsele cu clasă de evaluare, stocabile, ale căror recepții sunt
+deja validate și numai pentru cantitatea recepționată și încă nefacturată. Factura introdusă
+**înaintea** recepției nu are corecție: recepția își ia valoarea din factură.
 
 ### Pasul 7 — Returul la furnizor cu storno (înregistrare în roșu)
 
@@ -479,18 +516,24 @@ Cr 711; lipsuri Dr 607 / Cr 371, Dr 601 / Cr 301, respectiv Dr 711 / Cr 345. Res
   fiscal, art. 25 alin. (4) lit. c)), cu excepțiile prevăzute acolo.
 
 **Diferențe de preț și de curs între recepție și factura de furnizor.** Recepția se înregistrează
-la prețul comenzii, factura de furnizor la prețul și cursul ei. OBYC nu generează note de
-diferență de preț (cheile **Diferență de preț** nu sunt folosite), deci diferența rămâne în sold
-pe 408. Regularizarea se face **manual**:
-- diferența de preț: Dr/Cr 371 față de 408 pentru partea încă în stoc și Dr/Cr 607 (711 la
-  produse finite) față de 408 pentru partea deja vândută;
-- diferența de curs pe 408 (achiziții în valută): Dr 665 / Cr 408 (pierdere) sau Dr 408 / Cr 765
-  (câștig).
+la prețul comenzii, factura de furnizor la prețul și cursul ei. De la versiunea 19.0.1.0.24, la
+postarea facturii OBYC adaugă singur liniile de corecție (Pasul 6c):
 
-Atenție: la postarea facturii de furnizor dintr-o comandă de achiziție, Odoo 19 recalculează
-valoarea mișcării de recepție (și costul mediu) după prețul facturii, fără notă contabilă. Până la
-nota de regularizare, valoarea stocului din Odoo diferă de soldul 371 cu diferența de preț a
-stocului rămas; de verificat la controlul lunar.
+| Situație | Nota de corecție |
+|---|---|
+| diferență de preț, marfa în stoc | Dr 371/30x / Cr 408 (storno la diferență negativă) |
+| cantitatea deja ieșită | Dr cheltuiala regulii **Livrare stoc** (607 la mărfuri; 601/602/603 la materii și materiale) / Cr 371/30x pentru partea ieșită |
+| diferență de curs, pierdere | Dr 665 / Cr 408 |
+| diferență de curs, câștig | Dr 408 / Cr 765 |
+
+Stocul nu se corectează pentru diferența de curs (element nemonetar, rămâne la cursul de la
+recepție). Valoarea mișcării de recepție și costul mediu urmează prețul facturii, iar partea
+ieșită a diferenței merge pe cheltuială prin linia de corecție.
+
+Rămân **manuale**: facturile postate înainte de versiunea 19.0.1.0.24 (soldul rămas pe 408 se
+regularizează ca mai sus), notele de credit de la furnizor cu diferență de preț, reducerile
+comerciale primite după livrare (partea ieșită se înregistrează pe 609, nu pe 607; OMFP 1802/2014,
+pct. 76 alin. (2)) și datoriile în lei decontate după un curs valutar (668/768, nu 665/765; pct. 94 lit. b)).
 
 Observații:
 - **Livrarea directă (dropship)** generează notă cu valoare: mișcarea furnizor → client se
@@ -579,14 +622,15 @@ Observații:
   jurnalul ales în documentul Costuri adiționale;
 - costul mărfii vândute la livrare și lipsa liniilor de cost pe factura de vânzare;
 - inversarea în roșu a retururilor, cu storno activ;
-- valorizarea mișcărilor de livrare directă.
+- valorizarea mișcărilor de livrare directă;
+- corecția stocului și a lui 408 la factura de furnizor cu diferență de preț sau de curs (de la 19.0.1.0.24).
 
 **Ce rămâne manual:**
 - întreținerea matricei de reguli (o regulă lipsă blochează validarea documentului);
 - veniturile pentru livrările nefacturate la sfârșit de lună (418), consignația și facturile
   emise înainte de livrare (secțiunea 9);
 - alegerea contului de pe linia de cost la costurile de achiziție și tratarea părții deja livrate;
-- regularizarea diferențelor de preț și de curs rămase pe 408;
+- regularizarea diferențelor de preț și de curs rămase pe 408 la facturile postate înainte de 19.0.1.0.24, la notele de credit și la facturile postate înaintea recepției;
 - imputarea lipsurilor, ajustarea TVA și impozitul pe profit la inventar;
 - corecția facturilor postate înainte de versiunea 19.0.1.0.4 (secțiunea 9, OBYC-001).
 
@@ -612,7 +656,8 @@ Observații:
 - [ ] liniile notelor de stoc au produs, cantitate semnată (pozitivă pe debit, negativă pe credit) și unitate de măsură
 - [ ] la ajustările de inventar, plusul folosește regula **Ajustare inventar plus** și lipsa regula **Ajustare inventar minus**; la bazele actualizate de la o versiune anterioară 19.0.1.0.6, regulile au fost verificate (OBYC-005); imputarea și TVA-ul lipsurilor sunt înregistrate manual
 - [ ] **lunar:** soldul 371 (301, 345) = raportul de evaluare a stocului pe arie, la aceeași dată
-- [ ] **lunar:** soldul 408 = recepțiile nefacturate; analitic pe furnizor / recepție, fără solduri rămase din diferențe de preț sau de curs
+- [ ] factura de furnizor cu preț sau curs diferit: apar liniile **Diferență de preț: <produs>** (Dr 371/30x / Cr 408; 665/765 la curs), 408 se închide, valoarea recepției și costul mediu urmează prețul facturii; liniile dispar la **Resetează la ciornă** (Pasul 6c)
+- [ ] **lunar:** soldul 408 = recepțiile nefacturate; analitic pe furnizor / recepție, fără solduri rămase din facturi vechi (înainte de 19.0.1.0.24), note de credit sau facturi postate înaintea recepției
 - [ ] **lunar:** livrările nefacturate la sfârșitul lunii au factura cu data contabilă în luna livrării sau nota pe 418 cu inversare pe 1 a lunii următoare (OBYC-002), nu pe amândouă
 - [ ] regulile **Venituri** și **Recepție stoc de la furnizor** există pentru fiecare arie din care se livrează sau se recepționează și pentru aria companiei (facturile fără comandă)
 - [ ] nota de credit (client sau furnizor) este pe același cont ca factura, în roșu cu storno activ
@@ -706,9 +751,15 @@ Observații:
 - **OBYC-009 — reparat în 19.0.1.0.21:** transferul între arii prin tranzit este evaluat (la
   plecare costul curent, la sosire valoarea ieșirii), deci notele nu mai ies cu 0 (Pasul 8b).
   Notele postate înainte de reparație cu valoare 0 nu se corectează automat.
-- Cheile **Evaluare stoc**, **Diferență de preț** și **Diferență de preț la recepție stoc** apar
-  în listă, dar nu sunt folosite de fluxurile actuale; diferențele de preț nu au tratament OBYC
-  (secțiunea 6, „Note de monografie").
+- Cheile **Evaluare stoc** și **Diferență de preț** apar în listă, dar nu sunt folosite de
+  fluxurile actuale. Cheia **Diferență de preț la recepție stoc** se folosește de la versiunea
+  19.0.1.0.24 la corecția facturii de furnizor (Pasul 6c); fără regulă proprie, se folosește regula
+  **Recepție stoc de la furnizor**. La cost mediu, Contul sursă al regulii proprii trebuie să fie 408,
+  altfel 408 nu se închide.
+- **„Setați conturile de diferențe de curs ale companiei … pentru a posta factura."** Factura de
+  furnizor în valută cu diferență de curs nu se postează dacă lipsesc conturile de diferențe de curs
+  ale companiei. Completați-le în *Contabilitate → Configurare → Setări* (conturile de câștig și de
+  pierdere din diferențe de curs, 765 și 665) și postați din nou factura.
 - Gestiunile la preț cu amănuntul (378 / 4428) nu sunt suportate (secțiunea 1).
 
 ## 10. Capturi de ecran

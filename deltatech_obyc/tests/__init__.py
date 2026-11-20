@@ -11,3 +11,4 @@ from . import test_obyc_entries
 from . import test_formatted_display_name
 from . import test_area_price
 from . import test_config_access
+from . import test_obyc_price_difference

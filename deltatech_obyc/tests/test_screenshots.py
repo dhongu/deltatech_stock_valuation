@@ -243,6 +243,10 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         cls.service_invoice = cls._make_sale_invoice(qty=1.0, price=100.0, product=cls.service)
         company.valuation_area_id = cls.valuation_area
 
+        # 7) Factura de furnizor cu diferență de preț (Pasul 6c, OBYC-014): recepție din comandă
+        #    la 100 lei, factură la 110 lei → linii de corecție Dr 371 / Cr 408
+        cls.price_diff_bill = cls._make_price_difference_bill(qty=10.0, order_price=100.0, bill_price=110.0)
+
         # --- Acțiuni -----------------------------------------------------------------
         cls.act_determination = env.ref("deltatech_obyc.action_product_account_determination").id
         cls.act_valuation_class = env.ref("deltatech_obyc.action_product_valuation_class").id
@@ -331,6 +335,42 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
         )
         invoice.action_post()
         return invoice
+
+    @classmethod
+    def _make_price_difference_bill(cls, qty, order_price, bill_price):
+        tax = cls.env.company.account_purchase_tax_id
+        order = cls.env["purchase.order"].create(
+            {
+                "partner_id": cls.supplier.id,
+                "order_line": [
+                    Command.create(
+                        {
+                            "product_id": cls.product.id,
+                            "product_qty": qty,
+                            "price_unit": order_price,
+                            "tax_ids": [Command.set(tax.ids)],
+                        }
+                    )
+                ],
+            }
+        )
+        order.button_confirm()
+        picking = order.picking_ids
+        picking.move_ids._set_quantity_done(qty)
+        picking.with_context(demo_mode=True).button_validate()
+        order.action_create_invoice()
+        bill = order.invoice_ids
+        bill.write(
+            {
+                "invoice_date": fields.Date.today(),
+                "ref": "FF-1002",
+                "invoice_payment_term_id": cls.env.ref("account.account_payment_term_immediate").id,
+            }
+        )
+        bill.invoice_line_ids.price_unit = bill_price
+        # etichetele liniilor de corecție se traduc după limba din context: captura e în RO
+        bill.with_context(lang="ro_RO").action_post()
+        return bill
 
     @classmethod
     def _make_vendor_bill(cls, qty, price):
@@ -428,6 +468,11 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
             self._dr_cr(self.vendor_bill), [("401", 0.0, 1210.0), ("408", 1000.0, 0.0), ("442", 210.0, 0.0)]
         )
         self.assertEqual(self._dr_cr(self.move_landed_cost), [("371", 50.0, 0.0), ("408", 0.0, 50.0)])
+        # factura cu diferență de preț (OBYC-014): linia produsului pe 408 + corecția Dr 371 / Cr 408
+        self.assertEqual(
+            self._dr_cr(self.price_diff_bill),
+            [("371", 100.0, 0.0), ("401", 0.0, 1331.0), ("408", 0.0, 100.0), ("408", 1100.0, 0.0), ("442", 231.0, 0.0)],
+        )
         self.assertEqual(self.move_delivery.journal_id, self.stock_journal)
         # serviciul fără arie: factura postată, linia fără arie, pe contul de venit al categoriei
         self.assertEqual(self.service_invoice.state, "posted")
@@ -526,6 +571,11 @@ class TestObycScreenshots(AccountTestInvoicingCommon, ScreenshotCase or object):
             {
                 **self.account_move_shot(self.vendor_bill, "11_vendor_bill_408.png"),
                 "url": f"action={self.act_in_invoice}&id={self.vendor_bill.id}&model=account.move&view_type=form",
+            },
+            # 11b. Factura cu diferență de preț: liniile de corecție Dr 371 / Cr 408 (OBYC-014)
+            {
+                **self.account_move_shot(self.price_diff_bill, "11b_vendor_bill_price_difference.png"),
+                "url": f"action={self.act_in_invoice}&id={self.price_diff_bill.id}&model=account.move&view_type=form",
             },
         ]
         self.capture_screenshots(shots)
