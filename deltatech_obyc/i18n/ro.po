@@ -336,3 +336,15 @@ msgstr "Arie de evaluare"
 #: model_terms:ir.ui.view,arch_db:deltatech_obyc.view_product_template_search_valuation_class
 msgid "Valuation Class"
 msgstr "Clasă de evaluare"
+
+#. module: deltatech_obyc
+#. odoo-python
+#: code:addons/deltatech_obyc/models/account_move_line.py:0
+msgid "Price difference: %(name)s"
+msgstr "Diferență de preț: %(name)s"
+
+#. module: deltatech_obyc
+#. odoo-python
+#: code:addons/deltatech_obyc/models/account_move_line.py:0
+msgid "Set the exchange difference accounts of the company %(company)s to post the invoice."
+msgstr "Setați conturile de diferențe de curs ale companiei %(company)s pentru a posta factura."
