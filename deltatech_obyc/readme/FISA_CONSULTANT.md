@@ -349,7 +349,8 @@ Nota se găsește în *Facturare → Contabilitate → Note contabile* (aplicaț
    (de exemplu 90 lei), aceleași conturi apar cu sumă negativă (storno).
 2. **Cantitatea deja ieșită din stoc:** dacă din cele 10 bucăți s-au livrat 6, diferența de 100 lei
    se înregistrează întâi pe stoc, apoi partea ieșită (60 lei) trece pe cheltuiala livrării:
-   Dr 607 (contul de destinație al regulii **Livrare stoc**; 711 la produse finite) / Cr 371/30x.
+   Dr contul de cheltuială al regulii **Livrare stoc** (607 la mărfuri; 601/602/603 la materii și
+   materiale consumate) / Cr 371/30x.
    În stoc rămân 4 buc. × 110 lei.
 3. **Factura în valută:** stocul rămâne la cursul de la recepție (element nemonetar, OMFP
    1802/2014, pct. 94 lit. c) și pct. 315 alin. (3)). Diferența de curs dintre 408 (la cursul
@@ -518,7 +519,7 @@ postarea facturii OBYC adaugă singur liniile de corecție (Pasul 6c):
 | Situație | Nota de corecție |
 |---|---|
 | diferență de preț, marfa în stoc | Dr 371/30x / Cr 408 (storno la diferență negativă) |
-| cantitatea deja livrată | Dr 607 (711 la produse finite) / Cr 371/30x pentru partea ieșită |
+| cantitatea deja ieșită | Dr cheltuiala regulii **Livrare stoc** (607 la mărfuri; 601/602/603 la materii și materiale) / Cr 371/30x pentru partea ieșită |
 | diferență de curs, pierdere | Dr 665 / Cr 408 |
 | diferență de curs, câștig | Dr 408 / Cr 765 |
 
@@ -529,7 +530,7 @@ ieșită a diferenței merge pe cheltuială prin linia de corecție.
 Rămân **manuale**: facturile postate înainte de versiunea 19.0.1.0.24 (soldul rămas pe 408 se
 regularizează ca mai sus), notele de credit de la furnizor cu diferență de preț, reducerile
 comerciale primite după livrare (partea ieșită se înregistrează pe 609, nu pe 607; OMFP 1802/2014,
-pct. 76) și datoriile în lei decontate după un curs valutar (668/768, nu 665/765).
+pct. 76 alin. (2)) și datoriile în lei decontate după un curs valutar (668/768, nu 665/765; pct. 94 lit. b)).
 
 Observații:
 - **Livrarea directă (dropship)** generează notă cu valoare: mișcarea furnizor → client se
