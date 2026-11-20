@@ -1,6 +1,7 @@
 ## 19.0.1.0.24
 
 - Fix (OBYC-014): a vendor bill with a price or exchange rate different from the receipt now corrects the stock. Before, the bill debited 408100 at the invoice price while the receipt had credited it at the order price, so 408100 stayed open, 371/30x was not corrected and the stock card no longer matched the ledger. On posting, correction lines (hidden type, removed on reset to draft) are added to the bill: the price difference goes Dr 371/30x / Cr 408100 (reversed when the bill is lower), taken from the `stock_receipt_price_difference` rule (the `stock_receipt` rule when it is missing); for the quantity already delivered it moves on to the delivery expense (Dr expense of `stock_delivery` / Cr 371/30x). An exchange rate difference does not change the stock (non-monetary item, kept at the receipt rate): it goes to the exchange difference accounts of the company (665/765). The value of the receipt moves follows the ledger, so the average cost follows the invoice price. Credit notes and bills posted before the receipt are not affected. Entries already posted are not changed.
+- Consultant sheet: new step 6c (bill with price or exchange rate difference), updated monograph notes, configuration (exchange difference accounts, optional `stock_receipt_price_difference` rule), checks and error message.
 
 ## 19.0.1.0.23
 
