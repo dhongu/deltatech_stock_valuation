@@ -152,7 +152,7 @@ class StockReclassification(models.Model):
                         {
                             "product_id": line.product_id.id,
                             "product_uom_qty": line.quantity,
-                            "product_uom": line.product_id.uom_id.id,
+                            "uom_id": line.product_id.uom_id.id,
                             "location_id": location_src.id,
                             "location_dest_id": location_dest.id,
                             "company_id": self.company_id.id,
@@ -170,7 +170,7 @@ class StockReclassification(models.Model):
         moves._do_unreserve()
         for line, move in zip(self.line_ids, moves, strict=True):
             taken = move._update_reserved_quantity(line.quantity, location_src, lot_id=line.lot_id, strict=False)
-            if float_compare(taken, line.quantity, precision_rounding=move.product_uom.rounding) < 0:
+            if move.uom_id.compare(taken, line.quantity) < 0:
                 raise UserError(
                     self.env._(
                         "Not enough stock of %(product)s in %(location)s: %(taken)s available, %(needed)s needed.",
@@ -265,7 +265,8 @@ class StockReclassification(models.Model):
                 # lines of a many-line entry would be repeated for every move
                 vals["l10n_ro_transfer_move_id"] = note.id
             if force_value or float_is_zero(move.value, precision_rounding=0.0001):
-                vals["value"] = line.value
+                # in 20 the value of an outgoing move is negative
+                vals["value"] = -line.value if move.is_out else line.value
             move.sudo().write(vals)
 
     # ------------------------------------------------------------------ actions
@@ -368,9 +369,9 @@ class StockReclassificationLine(models.Model):
     def _check_before_validate(self):
         for line in self:
             product = line.product_id
-            if product.tracking != "none" and not line.lot_id:
+            if product.tracking and not line.lot_id:
                 raise UserError(self.env._("Select the lot or serial number of %s.", product.display_name))
-            if product.tracking == "none" and line.lot_id:
+            if not product.tracking and line.lot_id:
                 raise UserError(self.env._("%s is not tracked: remove the lot.", product.display_name))
             if product.tracking == "serial" and float_compare(line.quantity, 1.0, precision_digits=0) != 0:
                 raise UserError(self.env._("A serial number has quantity 1 (%s).", product.display_name))
@@ -397,14 +398,7 @@ class StockReclassificationLine(models.Model):
                 ]
             ).mapped("quantity")
         )
-        if (
-            float_compare(
-                already + self.quantity,
-                self._invoice_line_quantity(),
-                precision_rounding=self.product_id.uom_id.rounding,
-            )
-            > 0
-        ):
+        if self.product_id.uom_id.compare(already + self.quantity, self._invoice_line_quantity()) > 0:
             raise UserError(
                 self.env._(
                     "The reclassified quantity of %(product)s exceeds the quantity of the bill line %(bill)s.",
@@ -425,18 +419,16 @@ class StockReclassificationLine(models.Model):
     def _set_cost_from_moves(self, picking):
         moves = picking.move_ids.sorted("id")
         for line, move in zip(self, moves, strict=True):
-            rounding = line.product_id.uom_id.rounding
             if move.is_out and not float_is_zero(move.value, precision_rounding=0.0001):
-                value = move.value
+                # in 20 the value of an outgoing move is negative
+                value = abs(move.value)
             else:
                 value = line._get_cost_without_move() * line.quantity
             value = line.currency_id.round(value)
             line.write(
                 {
                     "value": value,
-                    "unit_cost": value / line.quantity
-                    if not float_is_zero(line.quantity, precision_rounding=rounding)
-                    else 0.0,
+                    "unit_cost": value / line.quantity if not line.product_id.uom_id.is_zero(line.quantity) else 0.0,
                 }
             )
 

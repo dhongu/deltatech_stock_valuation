@@ -1,6 +1,9 @@
+from psycopg2 import IntegrityError
+
 from odoo import Command, fields
 from odoo.exceptions import AccessError, UserError
 from odoo.tests import TransactionCase, tagged
+from odoo.tools import mute_logger
 
 
 @tagged("post_install", "-at_install")
@@ -33,7 +36,7 @@ class TestStockReclassification(TransactionCase):
                 Command.create(
                     {
                         "product_id": product.id,
-                        "product_uom_id": product.uom_id.id,
+                        "uom_id": product.uom_id.id,
                         "location_id": self.supplier.id,
                         "location_dest_id": self.stock.id,
                         "lot_id": lot.id,
@@ -45,7 +48,7 @@ class TestStockReclassification(TransactionCase):
             {
                 "product_id": product.id,
                 "product_uom_qty": qty,
-                "product_uom": product.uom_id.id,
+                "uom_id": product.uom_id.id,
                 "location_id": self.supplier.id,
                 "location_dest_id": self.stock.id,
                 "move_line_ids": move_line_vals,
@@ -200,7 +203,7 @@ class TestStockReclassification(TransactionCase):
         doc.action_validate()
         move = doc.picking_id.move_ids
         self.assertEqual(move.account_move_id, doc.account_move_id)
-        self.assertEqual(move.value, 40.0)
+        self.assertEqual(move.value, -40.0)  # outgoing move: negative value in 20
 
     # ------------------------------------------------------------ validations
 
@@ -248,11 +251,11 @@ class TestStockReclassification(TransactionCase):
             doc.action_validate()
 
     def test_pair_must_differ_and_be_unique(self):
-        with self.assertRaises(Exception):  # noqa: B017 - SQL constraint
+        with mute_logger("odoo.sql_db"), self.assertRaises(IntegrityError):
             self.env["stock.reclassification.rule"].create(
                 {"account_src_id": self.acc_a.id, "account_dest_id": self.acc_a.id}
             )
-        with self.assertRaises(Exception):  # noqa: B017 - SQL constraint
+        with mute_logger("odoo.sql_db"), self.assertRaises(IntegrityError):
             self.env["stock.reclassification.rule"].create(
                 {"account_src_id": self.acc_a.id, "account_dest_id": self.acc_b.id}
             )
@@ -392,7 +395,7 @@ class TestStockReclassification(TransactionCase):
         self._receive(product, 10)
         doc = self._doc(qty=4, product=product, dest=self.outside)
         doc.action_validate()
-        self.assertEqual(doc.picking_id.move_ids.value, 40.0)
+        self.assertEqual(doc.picking_id.move_ids.value, -40.0)  # outgoing move: negative value in 20
         product.with_company(self.company).standard_price = 15.0
         doc.action_cancel()
         self.assertEqual(doc.reverse_account_move_id.amount_total, 40.0)

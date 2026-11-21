@@ -3,7 +3,7 @@
 
 {
     "name": "Stock Reclassification",
-    "version": "19.0.1.0.3",
+    "version": "20.0.1.0.3",
     "images": ["static/description/main_screenshot.png"],
     "summary": "Move stock from one account to another with a document, a transfer and a journal entry",
     "category": "Valuation/Valuation",
@@ -12,7 +12,7 @@
     "depends": ["stock_account"],
     "data": [
         "security/security.xml",
-        "security/ir.model.access.csv",
+        "security/ir.access.csv",
         "data/ir_sequence_data.xml",
         "views/reclassification_rule_views.xml",
         "views/reclassification_views.xml",

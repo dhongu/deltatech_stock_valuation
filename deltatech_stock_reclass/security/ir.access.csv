@@ -1,0 +1,8 @@
+id,name,model_id,group_id/id,operation,domain
+access_stock_reclassification_user,stock.reclassification user,stock.reclassification,deltatech_stock_reclass.group_stock_reclassification_user,crud,
+rule_stock_reclassification_company,Stock reclassification: multi-company,stock.reclassification,,crud,"[('company_id', 'in', company_ids)]"
+access_stock_reclassification_line_user,stock.reclassification.line user,stock.reclassification.line,deltatech_stock_reclass.group_stock_reclassification_user,crud,
+rule_stock_reclassification_line_company,Stock reclassification line: multi-company,stock.reclassification.line,,crud,"[('company_id', 'in', company_ids)]"
+access_stock_reclassification_rule_user,stock.reclassification.rule user,stock.reclassification.rule,deltatech_stock_reclass.group_stock_reclassification_user,r,
+access_stock_reclassification_rule_manager,stock.reclassification.rule manager,stock.reclassification.rule,deltatech_stock_reclass.group_stock_reclassification_manager,crud,
+rule_stock_reclassification_rule_company,Stock reclassification rule: multi-company,stock.reclassification.rule,,crud,"[('company_id', 'in', company_ids)]"
