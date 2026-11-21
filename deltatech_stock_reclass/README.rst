@@ -14,10 +14,10 @@ Stock Reclassification
     :target: https://odoo-community.org/page/development-status
     :alt: Beta
 .. |badge2| image:: https://img.shields.io/badge/github-dhongu%2Fdeltatech_stock_valuation-lightgray.png?logo=github
-    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_stock_reclass
+    :target: https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_stock_reclass
     :alt: dhongu/deltatech_stock_valuation
 .. |badge_fisa| image:: https://img.shields.io/badge/-Fi%C8%99%C4%83%20consultant-2ea44f.png
-    :target: https://github.com/dhongu/deltatech_stock_valuation/blob/19.0/deltatech_stock_reclass/readme/FISA_CONSULTANT.md
+    :target: https://github.com/dhongu/deltatech_stock_valuation/blob/20.0/deltatech_stock_reclass/readme/FISA_CONSULTANT.md
     :alt: Fișă consultant
 
 |badge1| |badge2| |badge_fisa|
@@ -176,13 +176,13 @@ validate documents) and **Reclassification Configuration** (manage the
 rules). The **Reclassification Rules** menu (under **Inventory →
 Operations**) is visible only to the second one.
 
-.. |Reclassification rule 302800 → 371000: Source Account 302800 Other consumables and Destination Account 371000 Merchandise are highlighted, Destination Type is Stock account change, Management Decision Required is ticked and Reason Required is not| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/01_regula_reclasificare.png
-.. |Draft reclassification: rule 302800 → 371000 and the Validate button are highlighted; source and destination location DC/Stock, journal Inventory Valuation, management decision filled in and the Products tab with Marfă de reclasificat, quantity 4.00| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/02_document_ciorna.png
-.. |Validated reclassification: the status is Done, the Transfer (DC/INT/00001) and Journal Entry fields are highlighted, and the product line shows quantity 4.00, unit cost 25.00 lei and value 100.00 lei| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/03_document_validat.png
-.. |Journal entry of the reclassification: credit 302800 Other consumables 100.00 lei and debit 371000 Merchandise 100.00 lei, with the product in the label of both lines| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/04_nota_contabila.png
-.. |Draft document without the management decision after pressing Validate: the Management Decision field is red and the message Missing required fields appears in the top right corner; the document stays in Draft| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/05_decizie_obligatorie.png
-.. |Reversed document: the status is Reversed and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/06_document_anulat.png
-.. |Analytic stock balance unfolded by account, product and document after a reclassification and a reversal: outgoing lines on the source account, incoming lines on the destination account| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/19.0/deltatech_stock_reclass/static/description/en/07_balanta_analitica.png
+.. |Reclassification rule 302800 → 371000: Source Account 302800 Other consumables and Destination Account 371000 Merchandise are highlighted, Destination Type is Stock account change, Management Decision Required is ticked and Reason Required is not| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_stock_reclass/static/description/en/01_regula_reclasificare.png
+.. |Draft reclassification: rule 302800 → 371000 and the Validate button are highlighted; source and destination location DC/Stock, journal Inventory Valuation, management decision filled in and the Products tab with Marfă de reclasificat, quantity 4.00| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_stock_reclass/static/description/en/02_document_ciorna.png
+.. |Validated reclassification: the status is Done, the Transfer (DC/INT/00001) and Journal Entry fields are highlighted, and the product line shows quantity 4.00, unit cost 25.00 lei and value 100.00 lei| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_stock_reclass/static/description/en/03_document_validat.png
+.. |Journal entry of the reclassification: credit 302800 Other consumables 100.00 lei and debit 371000 Merchandise 100.00 lei, with the product in the label of both lines| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_stock_reclass/static/description/en/04_nota_contabila.png
+.. |Draft document without the management decision after pressing Validate: the Management Decision field is red and the message Missing required fields appears in the top right corner; the document stays in Draft| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_stock_reclass/static/description/en/05_decizie_obligatorie.png
+.. |Reversed document: the status is Reversed and the Reverse Transfer and Reversal Entry fields are highlighted next to the Transfer and Journal Entry| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_stock_reclass/static/description/en/06_document_anulat.png
+.. |Analytic stock balance unfolded by account, product and document after a reclassification and a reversal: outgoing lines on the source account, incoming lines on the destination account| image:: https://raw.githubusercontent.com/dhongu/deltatech_stock_valuation/20.0/deltatech_stock_reclass/static/description/en/07_balanta_analitica.png
 
 Changelog
 =========
@@ -281,6 +281,6 @@ Current maintainer:
 
 |maintainer-dhongu| 
 
-This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/19.0/deltatech_stock_reclass>`_ project on GitHub.
+This module is part of the `dhongu/deltatech_stock_valuation <https://github.com/dhongu/deltatech_stock_valuation/tree/20.0/deltatech_stock_reclass>`_ project on GitHub.
 
 You are welcome to contribute.
