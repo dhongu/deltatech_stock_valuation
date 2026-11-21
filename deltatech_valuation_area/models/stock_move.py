@@ -81,7 +81,9 @@ class StockMove(models.Model):
                 continue
             # convenție: cantitate SEMNATĂ — pozitivă pe linia de debit (intrare),
             # negativă pe linia de credit (ieșire); agregările din evaluare se bazează pe ea
-            signed_quantity = -quantity if vals.get("credit") else quantity
+            # (din 30.10.2026 nucleul dă doar `balance`, fără debit/credit)
+            is_credit = vals.get("credit") or vals.get("balance", 0.0) < 0
+            signed_quantity = -quantity if is_credit else quantity
             vals.setdefault("quantity", signed_quantity)
             vals.setdefault("product_uom_id", self.product_id.uom_id.id)
             if valuation_area:

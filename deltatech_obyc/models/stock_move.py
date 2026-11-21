@@ -252,6 +252,11 @@ class StockMove(models.Model):
             move.value = value
 
     def _should_create_account_move(self):
+        # moves created by another document that posts its own journal entry (for example the
+        # stock reclassification) must not post the automatic entry as well: the document puts
+        # the key `skip_stock_valuation_entry` in the context
+        if self.env.context.get("skip_stock_valuation_entry"):
+            return False
         if not self.product_id._get_valuation_class():
             return super()._should_create_account_move()
         self.ensure_one()
