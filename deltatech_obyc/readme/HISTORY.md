@@ -1,3 +1,7 @@
+## 20.0.1.0.17 (2026-11-21)
+
+- Forward-port of 19.0.1.0.22/19.0.1.0.23: the stock moves of a transfer validated with the context key `skip_stock_valuation_entry` (set by a document that posts its own journal entry, for example the stock reclassification of `deltatech_stock_reclass`) do not post the OBYC entry. Without it a reclassification of an OBYC product was posted twice (the document entry and the OBYC entry of the moves), and was refused when the rule of the move key was missing.
+
 ## 20.0.1.0.16 (2026-11-04)
 
 - Fix: on a company with valuation areas enabled and no default area, an invoice for a service or consumable from a category with a valuation class failed with "Valuation area is not defined". Only storable products require a valuation area now. For a non-storable product without an area, the OBYC rule without an area is used when one exists; otherwise the line gets the standard income or expense account of the product or its category. Storable products are not affected.
