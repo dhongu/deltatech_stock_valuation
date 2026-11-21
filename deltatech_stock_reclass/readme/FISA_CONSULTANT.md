@@ -148,7 +148,7 @@ Cu modulul `l10n_ro_stock_sheet` (Fișă de magazie și balanță analitică a s
 - **Între conturi de stoc** (ex. 371 → 3028): pe contul sursă apare o **ieșire**, iar pe contul destinație o **intrare**, cu cantitatea și valoarea liniei, pe rândul transferului documentului. Valoarea totală a stocului nu se schimbă, iar **Diferența** dintre analitic și sintetic rămâne aceeași ca înainte de document, cu condiția ca **Data** documentului să fie data validării (vezi pasul 4); altfel, în perioada dintre cele două date, analiticul și sinteticul diferă temporar.
 - **Spre o locație din afara stocului** (ex. mijloc fix): apare o ieșire din contul sursă, la costul din stoc. Contul de imobilizări nu apare în balanță, pentru că balanța de stoc cuprinde doar conturile din clasa 3.
 - **Inversarea** apare ca rânduri contrare (intrare pe contul sursă, ieșire din contul destinație), iar soldurile revin la valoarea de dinainte: mișcarea inversă primește valoarea documentului, nu costul zilei, ca să corespundă notei de inversare.
-- **Fișa pe gestiune** (cu `l10n_ro_stock_gestiune` și `l10n_ro_stock_sheet_gestiune`): într-o singură gestiune apare corect, ca la companie. Între două gestiuni, un document cu **o singură linie** apare ca ieșire din gestiunea sursă, pe contul sursă, și ca intrare în gestiunea destinație, pe contul destinație. Gestiunea nu mai postează nota ei de transfer pentru aceste mișcări (versiunea 19.0.3.1.8 a modulului `l10n_ro_stock_gestiune`), deci nu există două note.
+- **Fișa pe gestiune** (cu `l10n_ro_stock_gestiune` și `l10n_ro_stock_sheet_gestiune`): într-o singură gestiune apare corect, ca la companie. Între două gestiuni, un document cu **o singură linie** apare ca ieșire din gestiunea sursă, pe contul sursă, și ca intrare în gestiunea destinație, pe contul destinație. Gestiunea nu postează nota ei de transfer pentru aceste mișcări (pe 19.0, de la versiunea 19.0.3.1.8 a modulului `l10n_ro_stock_gestiune`), deci nu există două note. **Pe Odoo 20** această corecție nu e încă portată în `l10n_ro_stock_gestiune` (20.0.3.1.6): până la port, verificați să nu apară o a doua notă de transfer între gestiuni.
 
 ![Balanța analitică a stocurilor, desfășurată pe cont, produs și document, după reclasificarea 3028 → 371 și inversarea unui document: pe contul 302800 apar ieșirile, pe 371000 intrările, cu cantitate și valoare pe rândul fiecărui transfer; soldul final al contului 302800 este negativ doar pentru că stocul inițial al exemplului nu e înregistrat pe acest cont, iar Diferența rămâne 0](../static/description/07_balanta_analitica.png)
 
@@ -164,9 +164,9 @@ Cu modulul `l10n_ro_stock_sheet` (Fișă de magazie și balanță analitică a s
 | Modul | Rol |
 |---|---|
 | `stock_account` (Odoo standard) | costul mărfii, transferurile de stoc, jurnalul de stoc |
-| `deltatech_obyc` (de la versiunea 19.0.1.0.23) | determinarea conturilor după clasa de evaluare: transferurile documentului nu postează nota automată OBYC, pentru că documentul își postează propria notă (cheia de context `skip_stock_valuation_entry`) |
+| `deltatech_obyc` (pe 19.0 de la 19.0.1.0.23, pe 20.0 de la 20.0.1.0.17) | determinarea conturilor după clasa de evaluare: transferurile documentului nu postează nota automată OBYC, pentru că documentul își postează propria notă (cheia de context `skip_stock_valuation_entry`) |
 | `l10n_ro_stock_sheet` | balanța analitică a stocurilor și fișa de magazie: arată reclasificarea ca ieșire din contul sursă și intrare în contul destinație (pasul 7) |
-| `l10n_ro_stock_gestiune` (de la 19.0.3.1.8) | fișa pe gestiune; nu postează nota proprie de transfer între gestiuni pentru mișcările documentului, iar `l10n_ro_stock_obyc` (de la 19.0.1.0.6) permite inversarea reclasificărilor spre afara stocului fără regulă OBYC de regularizare |
+| `l10n_ro_stock_gestiune` (pe 19.0 de la 19.0.3.1.8) | fișa pe gestiune; nu postează nota proprie de transfer între gestiuni pentru mișcările documentului, iar `l10n_ro_stock_obyc` (pe 19.0 de la 19.0.1.0.6) permite inversarea reclasificărilor spre afara stocului fără regulă OBYC de regularizare. Pe Odoo 20 ambele corecții nu sunt încă portate (20.0.3.1.6, respectiv 20.0.1.0.4) |
 | modulul de active din `l10n_ro_ent` | pentru reclasificarea stoc → mijloc fix: pragul pe unitate și crearea activelor din documentul de reclasificare |
 
 **Ce e automat:** transferul de stoc, nota contabilă la costul din stoc, verificările de regulă, loturi, serii, stoc și cantitatea facturii, inversarea la nevoie.
@@ -194,6 +194,8 @@ Cu modulul `l10n_ro_stock_sheet` (Fișă de magazie și balanță analitică a s
 | Mesaj | Cauză | Remediere |
 |---|---|---|
 | *Adăugați cel puțin un produs.* | documentul nu are linii | adăugați produsele în fila **Produse** |
+| *Cantitatea trebuie să fie pozitivă.* | o linie are cantitatea zero sau negativă | introduceți o cantitate mai mare decât zero |
+| *Doar o reclasificare în ciornă poate fi validată.* | validare repetată pe un document deja efectuat sau inversat | nu e nevoie de altă acțiune; pentru o nouă reclasificare creați un document nou |
 | *Câmpuri obligatorii lipsă* | în formular, regula cere decizia sau motivul, iar câmpul e gol | completați câmpul colorat în roșu (**Decizie conducere** sau **Motiv**) |
 | *Regula … cere decizia conducerii.* / *Regula … cere motivul.* | aceeași verificare, pe server (import, apel API) | completați câmpul și validați din nou |
 | *Regula … este arhivată.* | regula a fost arhivată după crearea documentului | alegeți o regulă activă |
@@ -225,7 +227,7 @@ Capturile sunt **generate automat** din `tests/test_screenshots.py` (mixinul `Sc
 Regenerare:
 
 ```bash
-./odoo/odoo-bin -c odoo.conf -d test19 -i l10n_ro,deltatech_stock_reclass,deltatech_doc_screenshots \
+./odoo/odoo-bin -c odoo.conf -d test20 -i l10n_ro,deltatech_stock_reclass,deltatech_doc_screenshots \
     --test-tags=fise_screenshots --stop-after-init --http-port=8170
 ```
 
