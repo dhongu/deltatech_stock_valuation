@@ -1,3 +1,9 @@
+## 20.0.1.0.9 (2026-11-21)
+
+- Fix: the stock valuation entry lines get a negative quantity on the credit side again. Since
+  Odoo 20 builds these lines with `balance` only (no `debit`/`credit`), the credit line had a
+  positive quantity.
+
 ## 20.0.1.0.8 (2026-11-04)
 
 - Fix: the valuation area is computed on invoice lines only for storable products. Lines with
