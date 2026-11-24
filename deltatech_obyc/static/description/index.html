@@ -616,6 +616,10 @@ between valuation areas until OBYC-009 is fixed.</li>
 </div>
 <div class="tab-pane fade py-2" id="tb-panel-versions" style="font-size:16px;line-height:1.65;color:#212529;font-weight:400;">
 <div class="mb-2"><span class="d-inline-block rounded-pill fw-bold text-uppercase" style="background-color:#DEF1DD;color:#006F42;padding:5px 14px;font-size:12px;letter-spacing:0.14em;"><span class="fa fa-history" style="margin-right:6px;" aria-hidden="true"></span>Versions</span></div>
+<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">20.0.1.0.18 <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">(2026-11-24)</span></h2>
+<ul>
+<li>Tests: the scenarios that edit the quantity of a done receipt (<code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">test_02_edit_done_quantity_*</code>, <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">test_05_edit_done_quantity_*</code>) are skipped when <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">l10n_ro_stock_constraints</code> is installed (e.g. with the CMP/FIFO packs), which forbids that edit on purpose. They failed on databases that mix <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_obyc</code> with the Romanian modules, such as Odoo.sh builds. No code change.</li>
+</ul>
 <h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">20.0.1.0.17 <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">(2026-11-21)</span></h2>
 <ul>
 <li>Forward-port of 19.0.1.0.22/19.0.1.0.23: the stock moves of a transfer validated with the context key <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">skip_stock_valuation_entry</code> (set by a document that posts its own journal entry, for example the stock reclassification of <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">deltatech_stock_reclass</code>) do not post the OBYC entry. Without it a reclassification of an OBYC product was posted twice (the document entry and the OBYC entry of the moves), and was refused when the rule of the move key was missing.</li>
@@ -671,11 +675,6 @@ between valuation areas until OBYC-009 is fixed.</li>
   and its category has none either, the class of the nearest parent category that has one
   is used.</li>
 </ul>
-<h2 class="mt-5 mb-3" style="border:none;font-family:'Caveat',Georgia,'Times New Roman',serif;font-weight:700;color:#006F42;font-size:36px;line-height:1.1;letter-spacing:0;">20.0.1.0.8 <span style="display:inline-block;padding:0 6px;white-space:nowrap;background-image:url(https://apps.odoo.com/openerp_website/static/src/img/highlights/green_highlight_03.svg);background-position:center 75%;background-repeat:no-repeat;background-size:100% 60%;">(2026-10-06)</span></h2>
-<ul>
-<li>In the valuation class and account modifier dropdowns the code is shown in a second, dimmed
-  column; both can also be searched by code. The plain name, <code class="border rounded px-2" style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;">[CODE] Name</code>, is unchanged.</li>
-</ul>
 <p><em>Older releases are listed in the module's HISTORY file.</em></p>
 </div>
 </div>
@@ -683,7 +682,7 @@ between valuation areas until OBYC-009 is fixed.</li>
 <div class="row text-center mt-4 mb-1 g-3">
   <div class="col-md-6">
     <div class="border rounded-3 px-4 py-2 h-100">
-      <div class="fw-bold" style="font-size:2.2rem;color:#006F42;line-height:1;">800+</div>
+      <img src="https://www.terrabit.ro/theme_terrabit/apps-count.svg" width="140" height="44" alt="800+" loading="lazy" style="display:block;margin:-4px auto;border:none;"/>
       <div class="mt-2" style="font-size:0.9rem;color:#3d4752;">Modules published on Odoo Apps</div>
     </div>
   </div>
