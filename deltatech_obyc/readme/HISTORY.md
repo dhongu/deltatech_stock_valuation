@@ -1,3 +1,7 @@
+## 20.0.1.0.18 (2026-11-24)
+
+- Tests: the scenarios that edit the quantity of a done receipt (`test_02_edit_done_quantity_*`, `test_05_edit_done_quantity_*`) are skipped when `l10n_ro_stock_constraints` is installed (e.g. with the CMP/FIFO packs), which forbids that edit on purpose. They failed on databases that mix `deltatech_obyc` with the Romanian modules, such as Odoo.sh builds. No code change.
+
 ## 20.0.1.0.17 (2026-11-21)
 
 - Forward-port of 19.0.1.0.22/19.0.1.0.23: the stock moves of a transfer validated with the context key `skip_stock_valuation_entry` (set by a document that posts its own journal entry, for example the stock reclassification of `deltatech_stock_reclass`) do not post the OBYC entry. Without it a reclassification of an OBYC product was posted twice (the document entry and the OBYC entry of the moves), and was refused when the rule of the move key was missing.

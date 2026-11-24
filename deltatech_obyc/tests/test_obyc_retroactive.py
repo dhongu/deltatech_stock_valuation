@@ -139,6 +139,10 @@ class TestObycRetroactiveRecompute(TestCommon):
 
     # 2) cantitatea unei intrări validate editată după o ieșire
     def _scenario_edit_done_quantity(self, product):
+        if hasattr(self.env["stock.move.line"], "_check_quantity_vs_valuation"):
+            # `l10n_ro_stock_constraints` (adus de pachetele CMP/FIFO) interzice, intenționat,
+            # editarea cantității unei mișcări validate și valorizate: scenariul nu se aplică.
+            self.skipTest("l10n_ro_stock_constraints forbids editing the quantity of a done valued move")
         order_1 = self._purchase(product, 10.0, 100.0)
         self._purchase(product, 10.0, 200.0)
         delivery = self._deliver(product, 5.0)
