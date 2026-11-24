@@ -159,8 +159,9 @@ repos:
   # Pagina Apps Store, la cerere: `pre-commit run --hook-stage manual --all-files`.
   # Ordinea contează: tb-test-stats -> tb-gen-index, după oca-gen-addon-readme.
   - repo: https://github.com/dhongu/terrabit-pre-commit-hooks
-    rev: v1.1.0
+    rev: v1.16.0
     hooks:
+      - id: check-xss-patterns
       - id: tb-test-stats
         args: [--branch=18.0]
       - id: tb-gen-index
